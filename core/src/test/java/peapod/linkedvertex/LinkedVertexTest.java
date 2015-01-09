@@ -13,12 +13,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 /**
+ * Tests direct links between vertices using @LinkedVertex.
  * Created by wisa on 07/01/2015.
  */
 public class LinkedVertexTest {
 
     private Person alice;
-    private Vertex v;
     private FramedGraph graph;
 
     @Before
@@ -45,6 +45,12 @@ public class LinkedVertexTest {
     @Test
     public void testLinkedVerticesWithDefaultAnnotation() {
         assertEquals(2, alice.getFriendsWithAnnotationDefault().size());
+        assertThat(alice.getFriends(), hasItems(graph.v(2, Person.class), graph.v(3, Person.class)));
+    }
+
+    @Test
+    public void testLinkedVerticesWithDefaultAnnotationOut() {
+        assertEquals(2, alice.getFriendsWithAnnotationOut().size());
         assertThat(alice.getFriends(), hasItems(graph.v(2, Person.class), graph.v(3, Person.class)));
     }
 
