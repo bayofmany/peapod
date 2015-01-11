@@ -62,16 +62,16 @@ import java.util.NoSuchElementException;
  */
 public class FramedGraph implements AutoCloseable {
 
-    private Graph graph;
+    private final Graph graph;
 
-    private Framer framer = new Framer() {
+    private final Framer framer = new Framer() {
         @Override
         @SuppressWarnings("unchecked")
-        public <S> S frame(Class<S> clazz, Element el) {
+        public <S> S frame(Class<S> clazz, Element element) {
             try {
                 Class<?> framingClass = clazz.getClassLoader().loadClass(clazz.getName() + "$Impl");
-                Constructor<?> constructor = framingClass.getConstructor(Vertex.class);
-                return (S) constructor.newInstance(el);
+                Constructor<?> constructor = framingClass.getConstructor(Vertex.class, FramedGraph.class);
+                return (S) constructor.newInstance(element, FramedGraph.this);
             } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
                 throw new RuntimeException(e);
             }
@@ -83,10 +83,10 @@ public class FramedGraph implements AutoCloseable {
     }
 
     /**
-     * Add a linkedvertex of type {@link V} to the graph. The label will be the lowercase value of the class.
+     * Add a linked vertex of type {@link V} to the graph. The label will be the lowercase value of the class.
      *
      * @param clazz a class implementing {@link FramedVertex} and annotated with {@link com.tinkerpop.gremlin.structure.Vertex}
-     * @return The newly created labeled linkedvertex
+     * @return The newly created labeled linked vertex
      */
     public <V> V addVertex(Class<V> clazz) {
         Vertex v = graph.addVertex(toLabel(clazz));
@@ -94,10 +94,10 @@ public class FramedGraph implements AutoCloseable {
     }
 
     /**
-     * Add a linkedvertex of type {@link V} and given id to the graph. The label will be the lowercase value of the class.
+     * Add a linked vertex of type {@link V} and given id to the graph. The label will be the lowercase value of the class.
      *
      * @param clazz a class implementing {@link FramedVertex} and annotated with {@link com.tinkerpop.gremlin.structure.Vertex}
-     * @return The newly created labeled linkedvertex
+     * @return The newly created labeled linked vertex
      */
     public <V> V addVertex(Class<V> clazz, Object id) {
         Vertex v = graph.addVertex(T.id, id, T.label, toLabel(clazz));
@@ -111,8 +111,8 @@ public class FramedGraph implements AutoCloseable {
     /**
      * Get a {@link Vertex} given its unique identifier.
      *
-     * @param id The unique identifier of the linkedvertex to locate
-     * @throws NoSuchElementException if the linkedvertex is not found.
+     * @param id The unique identifier of the linked vertex to locate
+     * @throws NoSuchElementException if the linked vertex is not found.
      */
     @SuppressWarnings("unchecked")
     public <V> V v(Object id, Class<V> clazz)  throws NoSuchElementException {

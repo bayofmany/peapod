@@ -2,10 +2,7 @@ package peapod;
 
 import com.tinkerpop.gremlin.structure.Edge;
 
-/**
- * Created by Willem on 26/12/2014.
- */
-public interface FramedEdge {
+public interface FramedEdge extends FramedElement {
 
     Edge edge();
 }

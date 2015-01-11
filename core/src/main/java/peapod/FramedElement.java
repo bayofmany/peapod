@@ -41,35 +41,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package peapod.edge;
+package peapod;
 
-import peapod.annotations.LinkedEdge;
-import peapod.annotations.Vertex;
+import com.tinkerpop.gremlin.structure.Element;
 
-import java.util.List;
+public interface FramedElement {
 
-import static peapod.Direction.*;
+    Element element();
 
-@Vertex
-public abstract class Person {
-
-    public abstract String getName();
-
-    public abstract List<Friend> getFriends();
-
-    public abstract void addFriend(Person person);
-
-    @LinkedEdge
-    public abstract List<Friend> getFriendsWithAnnotationDefault();
-
-    @LinkedEdge(direction = OUT)
-    public abstract List<Friend> getFriendsWithAnnotationOut();
-
-    @LinkedEdge(direction = IN)
-    public abstract List<Friend> getFriendsWithAnnotationIn();
-
-    @LinkedEdge(direction = BOTH)
-    public abstract List<Friend> getFriendsWithAnnotationBoth();
-
-
+    FramedGraph graph();
 }
