@@ -3,16 +3,17 @@ package peapod.impl;
 import com.google.common.base.Preconditions;
 import com.squareup.javawriter.JavaWriter;
 import com.tinkerpop.gremlin.structure.VertexProperty;
+import org.slf4j.Logger;
 import peapod.Direction;
 import peapod.FramedEdge;
 import peapod.FramedVertex;
 import peapod.annotations.*;
-import org.slf4j.Logger;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import java.io.IOException;
@@ -22,7 +23,7 @@ import java.util.*;
 import static javax.lang.model.element.ElementKind.*;
 import static javax.lang.model.element.Modifier.*;
 import static javax.lang.model.type.TypeKind.VOID;
-import static javax.tools.Diagnostic.Kind.ERROR;
+import static javax.tools.Diagnostic.Kind.*;
 import static javax.tools.Diagnostic.Kind.OTHER;
 import static org.slf4j.LoggerFactory.getLogger;
 import static peapod.Direction.OUT;
@@ -84,7 +85,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
                     .emitStatement("return v")
                     .endMethod();
 
-            implementAbstractMethods(type, "v", writer);
+            implementAbstractMethods(type, "v", writer, true);
 
             writer.beginMethod("int", "hashCode", EnumSet.of(PUBLIC))
                     .emitStatement("return v.hashCode()")
@@ -103,102 +104,127 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
     }
 
-    private void implementAbstractMethods(TypeElement type, String fieldName, JavaWriter writer) throws IOException {
-        for (Element el : type.getEnclosedElements()) {
-            if (el.getKind() == METHOD) {
-                ExecutableElement executableEl = (ExecutableElement) el;
-                if (isGetter(executableEl)) {
-                    boolean hidden = isHiddenProperty(executableEl);
-                    String property = getPropertyName(executableEl);
+    private void implementAbstractMethods(TypeElement type, String fieldName, JavaWriter writer, boolean vertex) throws IOException {
+        List<Element> elements = new ArrayList<>(type.getEnclosedElements());
 
-                    Set<Modifier> modifiers = new HashSet<>(el.getModifiers());
-                    modifiers.remove(ABSTRACT);
+        TypeMirror superType = type.getSuperclass();
+        while (superType.getKind() == TypeKind.DECLARED) {
+            TypeElement element = (TypeElement) types.asElement(superType);
+            elements.addAll(element.getEnclosedElements());
+            superType = element.getSuperclass();
+        }
 
-                    CollectionType collectionType = getCollectionType(executableEl.getReturnType());
-                    if (collectionType != null) {
-                        DeclaredType returnType = (DeclaredType) executableEl.getReturnType();
-                        Preconditions.checkState(returnType.getTypeArguments().size() == 1, "Only one type argument supported");
-                        TypeMirror collectionContent = returnType.getTypeArguments().get(0);
-                        log.info("Collection parameter type is {}", collectionContent);
+        for (Element el : elements) {
+            if (el.getKind() != METHOD) {
+                continue;
+            }
 
-                        Element element = types.asElement(collectionContent);
-                        Vertex vertexAnnotation = element.getAnnotation(Vertex.class);
-                        Edge edgeAnnotation = element.getAnnotation(Edge.class);
+            ExecutableElement executableEl = (ExecutableElement) el;
+            if (!executableEl.getModifiers().contains(ABSTRACT)) {
+                continue;
+            }
 
-                        if (vertexAnnotation != null) {
-                            LinkedVertex linked = executableEl.getAnnotation(LinkedVertex.class);
-                            String edgeLabel = linked == null ? NounHelper.isPlural(property) ? NounHelper.singularize(property) : property : linked.label();
+            Set<Modifier> modifiers = new HashSet<>(el.getModifiers());
+            modifiers.remove(ABSTRACT);
 
-                            Direction direction = linked == null ? OUT : linked.direction();
-                            String statement = String.format("%s.%s(\"%s\").map(v -> (%s) new %s$Impl(%s.get())", fieldName, direction.toMethod(), edgeLabel, element.getSimpleName(), element.getSimpleName(), fieldName);
+            if (isGetter(executableEl)) {
+                boolean hidden = isHiddenProperty(executableEl);
+                String property = getPropertyName(executableEl);
 
-                            writer.beginMethod(returnType.toString(), executableEl.getSimpleName().toString(), modifiers)
-                                    .emitStatement("return " + collectionType.wrap(statement))
-                                    .endMethod();
-                        } else if (edgeAnnotation != null) {
-                            LinkedEdge linked = executableEl.getAnnotation(LinkedEdge.class);
-                            Direction direction = linked == null ? OUT : linked.direction();
+                CollectionType collectionType = getCollectionType(executableEl.getReturnType());
+                if (collectionType != null) {
+                    DeclaredType returnType = (DeclaredType) executableEl.getReturnType();
+                    Preconditions.checkState(returnType.getTypeArguments().size() == 1, "Only one type argument supported");
+                    TypeMirror collectionContent = returnType.getTypeArguments().get(0);
+                    log.info("Collection parameter type is {}", collectionContent);
 
-                            String statement = String.format("%s.%sE(\"%s\").map(%s -> (%s) new %s$Impl(%s.get())", fieldName, direction.toMethod(), edgeAnnotation.label(), fieldName, element.getSimpleName(), element.getSimpleName(), fieldName);
+                    Element element = types.asElement(collectionContent);
+                    Vertex vertexAnnotation = element.getAnnotation(Vertex.class);
+                    Edge edgeAnnotation = element.getAnnotation(Edge.class);
 
-                            writer.beginMethod(returnType.toString(), executableEl.getSimpleName().toString(), modifiers)
-                                    .emitStatement("return " + collectionType.wrap(statement))
-                                    .endMethod();
-                        } else {
-                            throw new IllegalArgumentException("Not supported, non-edge collection type: " + returnType);
-                        }
-                    } else if (isVertex(executableEl.getReturnType())) {
-                        boolean in = executableEl.getAnnotation(In.class) != null;
+                    if (vertexAnnotation != null) {
+                        LinkedVertex linked = executableEl.getAnnotation(LinkedVertex.class);
+                        String edgeLabel = linked == null ? NounHelper.isPlural(property) ? NounHelper.singularize(property) : property : linked.label();
 
-                        Element element = types.asElement(executableEl.getReturnType());
-                        writer.beginMethod(executableEl.getReturnType().toString(), executableEl.getSimpleName().toString(), modifiers)
-                                .emitStatement("return " + fieldName + "." + (in ? "in" : "out") + "V().map(v -> new " + element.getSimpleName() + "$Impl(v.get())).next()")
+                        Direction direction = linked == null ? OUT : linked.direction();
+                        String statement = String.format("%s.%s(\"%s\").map(v -> (%s) new %s$Impl(%s.get())", fieldName, direction.toMethod(), edgeLabel, element, element, fieldName);
+
+                        writer.beginMethod(returnType.toString(), executableEl.getSimpleName().toString(), modifiers)
+                                .emitStatement("return " + collectionType.wrap(statement))
+                                .endMethod();
+                    } else if (edgeAnnotation != null) {
+                        LinkedEdge linked = executableEl.getAnnotation(LinkedEdge.class);
+                        Direction direction = linked == null ? OUT : linked.direction();
+
+                        String statement = String.format("%s.%sE(\"%s\").map(%s -> (%s) new %s$Impl(%s.get())", fieldName, direction.toMethod(), edgeAnnotation.label(), fieldName, element, element, fieldName);
+
+                        writer.beginMethod(returnType.toString(), executableEl.getSimpleName().toString(), modifiers)
+                                .emitStatement("return " + collectionType.wrap(statement))
                                 .endMethod();
                     } else {
-                        String className;
-
-                        boolean isPrimitive = executableEl.getReturnType().getKind().isPrimitive();
-                        if (isPrimitive) {
-                            className = primitiveToClass(executableEl.getReturnType());
-                        } else {
-                            className = executableEl.getReturnType().toString();
-                        }
-
-
-                        String propertyName = "\"" + property + "\"";
-                        propertyName = hidden ? "com.tinkerpop.gremlin.structure.Graph.Key.hide(" + propertyName + ")" : propertyName;
-
-                        writer.beginMethod(executableEl.getReturnType().toString(), executableEl.getSimpleName().toString(), modifiers)
-                                .emitStatement("return %s.<%s>property(%s).orElse(%s)", fieldName, className, propertyName, getDefaultValue(executableEl.getReturnType()))
-                                .endMethod();
+                        generateNotSupportedMethod(type, writer, executableEl, modifiers);
                     }
+                } else if (isVertex(executableEl.getReturnType())) {
+                    boolean in = executableEl.getAnnotation(In.class) != null;
 
-
-                } else if (isSetter(executableEl)) {
-                    String property = getPropertyName(executableEl);
-                    Set<Modifier> modifiers = new HashSet<>(el.getModifiers());
-                    modifiers.remove(ABSTRACT);
+                    Element element = types.asElement(executableEl.getReturnType());
+                    writer.beginMethod(executableEl.getReturnType().toString(), executableEl.getSimpleName().toString(), modifiers)
+                            .emitStatement("return " + fieldName + "." + (in ? "in" : "out") + "V().map(v -> new " + element.getSimpleName() + "$Impl(v.get())).next()")
+                            .endMethod();
+                } else {
+                    String className;
+                    if (executableEl.getReturnType().getKind().isPrimitive()) {
+                        className = primitiveToClass(executableEl.getReturnType());
+                    } else {
+                        className = executableEl.getReturnType().toString();
+                    }
 
                     String propertyName = "\"" + property + "\"";
-                    boolean hidden = isHiddenProperty(executableEl);
                     propertyName = hidden ? "com.tinkerpop.gremlin.structure.Graph.Key.hide(" + propertyName + ")" : propertyName;
 
-                    TypeMirror propertyType = executableEl.getParameters().get(0).asType();
-                    writer.beginMethod("void", executableEl.getSimpleName().toString(), modifiers, propertyType.toString(), property);
-                    boolean isPrimitive = propertyType.getKind().isPrimitive();
-                    if (isPrimitive) {
-                        writer.emitStatement(fieldName + ".singleProperty(%s, %s)", propertyName, property);
-                    } else {
-                        writer.beginControlFlow("if (" + property + " == null)")
-                                .emitStatement(fieldName + ".property(%s).remove()", propertyName)
-                                .nextControlFlow("else")
-                                .emitStatement(fieldName + ".singleProperty(%s, %s)", propertyName, property)
-                                .endControlFlow();
-                    }
-                    writer.endMethod();
+                    writer.beginMethod(executableEl.getReturnType().toString(), executableEl.getSimpleName().toString(), modifiers)
+                            .emitStatement("return %s.<%s>property(%s).orElse(%s)", fieldName, className, propertyName, getDefaultValue(executableEl.getReturnType()))
+                            .endMethod();
                 }
+            } else if (isSetter(executableEl)) {
+                String property = getPropertyName(executableEl);
+
+                String propertyName = "\"" + property + "\"";
+                boolean hidden = isHiddenProperty(executableEl);
+                propertyName = hidden ? "com.tinkerpop.gremlin.structure.Graph.Key.hide(" + propertyName + ")" : propertyName;
+
+                TypeMirror propertyType = executableEl.getParameters().get(0).asType();
+                writer.beginMethod("void", executableEl.getSimpleName().toString(), modifiers, propertyType.toString(), property);
+                boolean isPrimitive = propertyType.getKind().isPrimitive();
+                if (isPrimitive) {
+                    writer.emitStatement(fieldName + ".%s(%s, %s)", vertex ? "singleProperty": "property" ,propertyName, property);
+                } else {
+                    writer.beginControlFlow("if (" + property + " == null)")
+                            .emitStatement(fieldName + ".property(%s).remove()", propertyName)
+                            .nextControlFlow("else")
+                            .emitStatement(fieldName + ".%s(%s, %s)", vertex ? "singleProperty": "property", propertyName, property)
+                            .endControlFlow();
+                }
+                writer.endMethod();
+            } else {
+                generateNotSupportedMethod(type, writer, executableEl, modifiers);
             }
+
         }
+    }
+
+    private void generateNotSupportedMethod(TypeElement type, JavaWriter writer, ExecutableElement method, Set<Modifier> modifiers) throws IOException {
+        messager.printMessage(WARNING, "Abstract method not yet supported: " + method, type);
+
+        List<String> parameters = new ArrayList<>();
+        for (VariableElement var : method.getParameters()) {
+            parameters.add(var.asType().toString());
+            parameters.add(var.toString());
+        }
+
+        writer.beginMethod(method.getReturnType().toString(), method.getSimpleName().toString(), modifiers, parameters, null)
+                .emitStatement("throw new RuntimeException(\"Not yet supported exception\")")
+                .endMethod();
     }
 
     private boolean isHiddenProperty(ExecutableElement executableEl) {
@@ -273,7 +299,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
                     .emitStatement("return e")
                     .endMethod();
 
-            implementAbstractMethods(type, "e", writer);
+            implementAbstractMethods(type, "e", writer, false);
 
             writer.beginMethod("int", "hashCode", EnumSet.of(PUBLIC))
                     .emitStatement("return e.hashCode()")
@@ -335,11 +361,11 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
 
     private boolean isGetter(ExecutableElement el) {
-        return "get".equals(el.getSimpleName().subSequence(0, 3)) && el.getParameters().isEmpty() && el.getModifiers().contains(ABSTRACT);
+        return "get".equals(el.getSimpleName().subSequence(0, 3)) && el.getParameters().isEmpty();
     }
 
     private boolean isSetter(ExecutableElement el) {
-        return "set".equals(el.getSimpleName().subSequence(0, 3)) && el.getParameters().size() == 1 && el.getReturnType().getKind() == VOID && el.getModifiers().contains(ABSTRACT);
+        return "set".equals(el.getSimpleName().subSequence(0, 3)) && el.getParameters().size() == 1 && el.getReturnType().getKind() == VOID;
     }
 
     private String getPropertyName(ExecutableElement el) {
