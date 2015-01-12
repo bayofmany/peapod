@@ -45,7 +45,6 @@ package peapod.impl;
 
 import com.google.common.base.Preconditions;
 import com.squareup.javawriter.JavaWriter;
-import org.slf4j.Logger;
 import peapod.Direction;
 import peapod.FramedEdge;
 import peapod.FramedGraph;
@@ -61,14 +60,15 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.annotation.Annotation;
 import java.util.*;
 
 import static javax.lang.model.element.ElementKind.*;
 import static javax.lang.model.element.Modifier.*;
+import static javax.lang.model.type.TypeKind.DECLARED;
 import static javax.lang.model.type.TypeKind.VOID;
 import static javax.tools.Diagnostic.Kind.*;
 import static javax.tools.Diagnostic.Kind.OTHER;
-import static org.slf4j.LoggerFactory.getLogger;
 import static peapod.Direction.OUT;
 
 /**
@@ -78,8 +78,6 @@ import static peapod.Direction.OUT;
 @SupportedAnnotationTypes({"peapod.annotations.Vertex"})
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public final class AnnotationProcessor extends AbstractProcessor {
-
-    private static final Logger log = getLogger(AnnotationProcessor.class);
 
     private Messager messager;
 
@@ -187,7 +185,6 @@ public final class AnnotationProcessor extends AbstractProcessor {
                     DeclaredType returnType = (DeclaredType) method.getReturnType();
                     Preconditions.checkState(returnType.getTypeArguments().size() == 1, "Only one type argument supported");
                     TypeMirror collectionContent = returnType.getTypeArguments().get(0);
-                    log.info("Collection parameter type is {}", collectionContent);
 
                     Element element = types.asElement(collectionContent);
                     Vertex vertexAnnotation = element.getAnnotation(Vertex.class);
@@ -215,7 +212,16 @@ public final class AnnotationProcessor extends AbstractProcessor {
                     } else {
                         generateNotSupportedMethod("001", method, writer);
                     }
-                } else if (isVertex(method.getReturnType())) {
+                } else if (isVertex(method.getReturnType()) && vertex) {
+                    Direction direction = method.getAnnotation(LinkedVertex.class) == null ? OUT : method.getAnnotation(LinkedVertex.class).direction();
+
+                    Element element = types.asElement(method.getReturnType());
+                    writer.beginMethod(method.getReturnType().toString(), method.getSimpleName().toString(), modifiers)
+                            .emitStatement("com.tinkerpop.gremlin.process.graph.GraphTraversal<Vertex, %s> traversal = %s.%s(\"%s\").map(v -> new %s$Impl(v.get(), graph))",
+                                    method.getReturnType().toString(), fieldName, direction.toMethod(), property, element.getSimpleName())
+                            .emitStatement("return traversal.hasNext()? traversal.next() : null")
+                            .endMethod();
+                } else if (isVertex(method.getReturnType()) && !vertex) {
                     boolean in = method.getAnnotation(In.class) != null;
 
                     Element element = types.asElement(method.getReturnType());
@@ -240,42 +246,76 @@ public final class AnnotationProcessor extends AbstractProcessor {
             } else if (isSetter(method)) {
                 String property = getPropertyName(method, "set");
 
-                String propertyName = "\"" + property + "\"";
-                boolean hidden = isHiddenProperty(method);
-                propertyName = hidden ? "com.tinkerpop.gremlin.structure.Graph.Key.hide(" + propertyName + ")" : propertyName;
-
                 TypeMirror propertyType = method.getParameters().get(0).asType();
-                writer.beginMethod("void", method.getSimpleName().toString(), modifiers, propertyType.toString(), property);
-                boolean isPrimitive = propertyType.getKind().isPrimitive();
-                if (isPrimitive) {
-                    writer.emitStatement(fieldName + ".%s(%s, %s)", vertex ? "singleProperty" : "property", propertyName, property);
-                } else {
-                    writer.beginControlFlow("if (" + property + " == null)")
-                            .emitStatement(fieldName + ".property(%s).remove()", propertyName)
-                            .nextControlFlow("else")
-                            .emitStatement(fieldName + ".%s(%s, %s)", vertex ? "singleProperty" : "property", propertyName, property)
+                Element propertyTypeElement = types.asElement(propertyType);
+
+                Vertex vertexAnnotation = propertyTypeElement == null ? null : propertyTypeElement.getAnnotation(Vertex.class);
+                Edge edgeAnnotation = propertyTypeElement == null ? null : propertyTypeElement.getAnnotation(Edge.class);
+                if (vertexAnnotation != null) {
+                    writer.beginMethod("void", method.getSimpleName().toString(), modifiers, propertyTypeElement.toString(), property)
+                            .emitStatement("v.outE(\"%s\").remove()", property)
+                            .beginControlFlow("if (" + property + " != null)")
+                            .emitStatement("v.addEdge(\"%s\", ((FramedVertex)%s).vertex())", property, property)
                             .endControlFlow();
+                    writer.endMethod();
+                } else if (edgeAnnotation != null) {
+                    generateNotSupportedMethod("004", method, writer);
+
+                } else {
+                    String propertyName = "\"" + property + "\"";
+                    boolean hidden = isHiddenProperty(method);
+                    propertyName = hidden ? "com.tinkerpop.gremlin.structure.Graph.Key.hide(" + propertyName + ")" : propertyName;
+
+                    writer.beginMethod("void", method.getSimpleName().toString(), modifiers, propertyType.toString(), property);
+                    boolean isPrimitive = propertyType.getKind().isPrimitive();
+                    if (isPrimitive) {
+                        writer.emitStatement(fieldName + ".%s(%s, %s)", vertex ? "singleProperty" : "property", propertyName, property);
+                    } else {
+                        writer.beginControlFlow("if (" + property + " == null)")
+                                .emitStatement(fieldName + ".property(%s).remove()", propertyName)
+                                .nextControlFlow("else")
+                                .emitStatement(fieldName + ".%s(%s, %s)", vertex ? "singleProperty" : "property", propertyName, property)
+                                .endControlFlow();
+                    }
+                    writer.endMethod();
                 }
-                writer.endMethod();
             } else if (isAdder(method)) {
                 String propertyName = getPropertyName(method, "add");
 
                 VariableElement parameter = method.getParameters().get(0);
                 Element propertyType = types.asElement(parameter.asType());
 
-                Vertex vertexAnnotation = propertyType.getAnnotation(Vertex.class);
-                if (vertexAnnotation != null) {
-                    writer.beginMethod("void", method.getSimpleName().toString(), modifiers, propertyType.toString(), parameter.getSimpleName().toString());
-                    writer.emitStatement(" v.addEdge(\"%s\", ((FramedVertex) %s).vertex())", propertyName, parameter.getSimpleName().toString());
+                if (hasAnnotation(parameter.asType(), Vertex.class)) {
+                    String statement = String.format("v.addEdge(\"%s\", ((FramedVertex) %s).vertex())", propertyName, parameter.getSimpleName().toString());
+                    if (hasAnnotation(method.getReturnType(), Edge.class)) {
+                        statement = String.format("return new %s$Impl(%s, graph)", method.getReturnType().toString(), statement);
+                    } else if (method.getReturnType().getKind() != VOID) {
+                        generateNotSupportedMethod("005", method, writer);
+                        continue;
+                    }
+
+                    writer.beginMethod(method.getReturnType().toString(), method.getSimpleName().toString(), modifiers, propertyType.toString(), parameter.getSimpleName().toString());
+                    writer.emitStatement(statement);
                     writer.endMethod();
                 } else {
                     generateNotSupportedMethod("002", method, writer);
                 }
             } else {
+                //                            .emitStatement("v.outE(\"%s\").as(\"X\").inV().retain(((FramedVertex)%s).vertex()).back(\"X\").remove()",
+//                                    property, property)
+
                 generateNotSupportedMethod("003", method, writer);
             }
 
         }
+    }
+
+    private boolean hasAnnotation(TypeMirror type, Class<? extends Annotation> annotation) {
+        if (type.getKind() != DECLARED) {
+            return false;
+        }
+        Element element = types.asElement(type);
+        return element.getAnnotation(annotation) != null;
     }
 
     private void generateNotSupportedMethod(String code, ExecutableElement method, JavaWriter writer) throws IOException {
@@ -395,14 +435,12 @@ public final class AnnotationProcessor extends AbstractProcessor {
     }
 
     private CollectionType getCollectionType(TypeMirror type) {
-        log.info("Check if {} is of collection type", type);
         if (type instanceof DeclaredType) {
             DeclaredType declaredType = (DeclaredType) type;
 
             boolean classOrInterface = declaredType.asElement().getKind().equals(CLASS) || declaredType.asElement().getKind().equals(INTERFACE);
             if (classOrInterface) {
                 TypeElement element = (TypeElement) declaredType.asElement();
-                log.info("Collection type is {}", element);
                 try {
                     Class<?> clazz = Class.forName(element.getQualifiedName().toString());
                     boolean iterable = Iterable.class.isAssignableFrom(clazz);
@@ -445,7 +483,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
     }
 
     private boolean isAdder(ExecutableElement el) {
-        return "add".equals(el.getSimpleName().subSequence(0, 3)) && el.getParameters().size() == 1 && el.getReturnType().getKind() == VOID;
+        return "add".equals(el.getSimpleName().subSequence(0, 3)) && el.getParameters().size() == 1;
     }
 
     private String getPropertyName(ExecutableElement method, String prefix) {

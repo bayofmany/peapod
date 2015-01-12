@@ -45,6 +45,7 @@ package peapod;
 
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.TraversalStrategies;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.filter.HasStep;
 import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
 import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
@@ -57,12 +58,13 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Extension of {@link com.tinkerpop.gremlin.process.Traversal} supporting framed vertices and edges.
  * Created by wisa on 09/01/2015.
  */
-public class FramedTraversal<S, E> extends DefaultTraversal<S, E> {
+public class FramedTraversal<S, E> extends DefaultTraversal<S, E> implements GraphTraversal<S, E> {
 
     static {
         final DefaultTraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
@@ -87,6 +89,7 @@ public class FramedTraversal<S, E> extends DefaultTraversal<S, E> {
 
     @SuppressWarnings("unchecked")
     public FramedTraversal<S, E> has(String key, Object value) {
+
         return (FramedTraversal) this.addStep(new HasStep<>(this, new HasContainer(key, Compare.eq, value)));
     }
 
@@ -94,6 +97,18 @@ public class FramedTraversal<S, E> extends DefaultTraversal<S, E> {
     public List<E> toList() {
         addFrameStep(lastFrameClass);
         return super.toList();
+    }
+
+    @Override
+    public Set<E> toSet() {
+        addFrameStep(lastFrameClass);
+        return super.toSet();
+    }
+
+    @Override
+    public E next() {
+        addFrameStep(lastFrameClass);
+        return super.next();
     }
 
     @SuppressWarnings("unchecked")
