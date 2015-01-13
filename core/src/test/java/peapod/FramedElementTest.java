@@ -43,20 +43,47 @@
 
 package peapod;
 
-import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.process.T;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.junit.Before;
+import org.junit.Test;
+import peapod.model.Person;
 
-public interface FramedElement {
+import static org.junit.Assert.*;
 
-    Element element();
+public class FramedElementTest {
 
-    FramedGraph graph();
+    private FramedGraph graph = new FramedGraph(TinkerGraph.open());
+    private Graph g;
+    private Person person;
 
-    default Object id() {
-        return element().id();
+    @Before
+    public void init() {
+        g = TinkerGraph.open();
+        g.addVertex(T.id, 1, T.label, "person", "name", "alice");
+        graph = new FramedGraph(g);
+        person = graph.v(1, Person.class);
     }
 
-    default void remove() {
-        element().remove();
+    @Test
+    public void testElement() throws Exception {
+        assertEquals(g.v(1), person.element());
     }
 
+    @Test
+    public void testGraph() throws Exception {
+        assertEquals(graph, person.graph());
+    }
+
+    @Test
+    public void testId() throws Exception {
+        assertEquals(1, person.id());
+    }
+
+    @Test
+    public void testRemove() throws Exception {
+        person.remove();
+        assertTrue(!g.V().hasNext());
+    }
 }
