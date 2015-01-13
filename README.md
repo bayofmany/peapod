@@ -28,7 +28,7 @@ It's just a way to give typed context to your gremlin queries:
 
       public abstract List<Knows> getKnows();
       
-      public Knows addKnows(Person friend);
+      public abstract Knows addKnows(Person friend);
     }
     
     @Vertex
@@ -36,7 +36,7 @@ It's just a way to give typed context to your gremlin queries:
     
       public abstract void setYears(int years);
       
-      public int getYears();
+      public abstract int getYears();
     }
 
     
