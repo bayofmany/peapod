@@ -41,25 +41,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package peapod.annotations;
+package peapod;
 
-import peapod.Direction;
+import com.tinkerpop.gremlin.process.graph.VertexTraversal;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-/**
- * Created by Willem on 26/12/2014.
- */
-@Retention(RUNTIME)
-@Target(METHOD)
-public @interface LinkedVertex {
-
-    String label();
-
-    Direction direction() default Direction.OUT;
-
+public class FramedVertexTraversal implements VertexTraversal {
 }

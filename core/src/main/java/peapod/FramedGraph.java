@@ -104,8 +104,8 @@ public class FramedGraph implements AutoCloseable {
         return framer.frame(clazz, v);
     }
 
-    public <S, V> FramedTraversal<S, V> V(Class<V> clazz) {
-        return new FramedTraversal<S, V>(graph, framer).label(clazz);
+    public <S, V> FramedGraphTraversal<S, V> V(Class<V> clazz) {
+        return new FramedGraphTraversal<S, V>(graph, framer).label(clazz);
     }
 
     /**
