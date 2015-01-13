@@ -52,13 +52,12 @@ import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
 import com.tinkerpop.gremlin.process.util.DefaultTraversal;
 import com.tinkerpop.gremlin.process.util.DefaultTraversalStrategies;
-import com.tinkerpop.gremlin.structure.Compare;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.*;
 import com.tinkerpop.gremlin.structure.util.HasContainer;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiPredicate;
 
 /**
  * Extension of {@link com.tinkerpop.gremlin.process.Traversal} supporting framed vertices and edges.
@@ -88,10 +87,45 @@ public class FramedTraversal<S, E> extends DefaultTraversal<S, E> implements Gra
     }
 
     @SuppressWarnings("unchecked")
-    public FramedTraversal<S, E> has(String key, Object value) {
-
-        return (FramedTraversal) this.addStep(new HasStep<>(this, new HasContainer(key, Compare.eq, value)));
+    public FramedTraversal<S, E> has(final String key) {
+        return (FramedTraversal) this.addStep(new HasStep<>(this, new HasContainer(key, Contains.within)));
     }
+
+    @SuppressWarnings("unchecked")
+    public FramedTraversal<S, E> has(final String key, final Object value) {
+        return (FramedTraversal) this.has(key, Compare.eq, value);
+    }
+
+    @SuppressWarnings("unchecked")
+    public FramedTraversal<S, E> has(final T accessor, final Object value) {
+        return (FramedTraversal) this.has(accessor.getAccessor(), value);
+    }
+
+    @SuppressWarnings("unchecked")
+    public FramedTraversal<S, E> has(final String key, final BiPredicate predicate, final Object value) {
+        return (FramedTraversal) this.addStep(new HasStep<>(this, new HasContainer(key, predicate, value)));
+    }
+
+    @SuppressWarnings("unchecked")
+    public FramedTraversal<S, E> has(final T accessor, final BiPredicate predicate, final Object value) {
+        return (FramedTraversal) this.addStep(new HasStep<>(this, new HasContainer(accessor.getAccessor(), predicate, value)));
+    }
+
+    @SuppressWarnings("unchecked")
+    public FramedTraversal<S, E> has(final String label, final String key, final Object value) {
+        return (FramedTraversal) this.has(label, key, Compare.eq, value);
+    }
+
+    @SuppressWarnings("unchecked")
+    public FramedTraversal<S, E> has(final String label, final String key, final BiPredicate predicate, final Object value) {
+        return (FramedTraversal) this.has(T.label, label).addStep(new HasStep<>(this, new HasContainer(key, predicate, value)));
+    }
+
+    @SuppressWarnings("unchecked")
+    public FramedTraversal<S, E> hasNot(final String key) {
+        return (FramedTraversal) this.addStep(new HasStep<>(this, new HasContainer(key, Contains.without)));
+    }
+
 
     @Override
     public List<E> toList() {
