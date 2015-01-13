@@ -17,7 +17,7 @@ To integrate peapod in your project, include the following dependency. (Still wo
 
 <img src="http://www.tinkerpop.com/docs/3.0.0.M6/images/tinkerpop-classic.png" width="400" >
 
-It's just a way to give typed context to your gremlin queries:
+This way you define the framed vertices and edges:
 
     @Vertex
     public abstract class Person {
@@ -34,7 +34,7 @@ It's just a way to give typed context to your gremlin queries:
     }
 
     
-And here is how you interact with the framed elements:
+And this way you query for and interact with the framed objects:
     
     public void testClassic() {
         TinkerGraph classic = TinkerFactory.createClassic();
