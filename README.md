@@ -43,8 +43,7 @@ It's just a way to give typed context to your gremlin queries:
 And here is how you interact with the framed elements:
     
     public void testClassic() {
-    
-     TinkerGraph classic = TinkerFactory.createClassic();
+        TinkerGraph classic = TinkerFactory.createClassic();
         FramedGraph graph = new FramedGraph(classic);
         Person marko = graph.v(1, Person.class);
         assertEquals("marko", marko.getName());
