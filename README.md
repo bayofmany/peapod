@@ -5,7 +5,7 @@ An ORM / OGM for the Tinkerpop 3 graph stack. This project has been created as a
 
 This project is similar to the [Totorom](https://github.com/BrynCooke/totorom) library created by Bryn Cook and the [Ferma](https://github.com/Syncleus/Ferma) library created by Jeffrey Phillips Freeman. The main differences are:
 * Peapod is based upon Tinkerpop 3.
-* Like Tinkerpop Frames, Peapod uses code generation to implement the framed vertex and edge classes. It makes the integration with Tinkerpop 3 easier and minimizes code duplication. Unlike Tinkerpop Frames and Ferma, the code is generated at compile-time using  annotation processors. The generated code is completely transparent and readable by the developer. There is no startup cost of runtime code generation and the use of reflection is minimized in order to have minimal performance overhead.
+* Like Tinkerpop Frames, Peapod uses code generation to implement the framed vertex and edge classes. It makes the integration with Tinkerpop 3 easier and minimizes code duplication. Unlike Tinkerpop Frames and Ferma, the code is generated at compile-time using  annotation processors. The generated code is completely transparent and readable by the developer. There is no startup cost of runtime code generation and the use of reflection is limited in order to have minimal performance overhead.
 
 To integrate peapod in your project, include the following dependency. (Still working towards a first working release).
 
@@ -21,21 +21,15 @@ It's just a way to give typed context to your gremlin queries:
 
     @Vertex
     public abstract class Person {
-    
       public abstract String getName();
-      
       public abstract void setName(String name);
-
       public abstract List<Knows> getKnows();
-      
       public abstract Knows addKnows(Person friend);
     }
     
     @Vertex
     public abstract class Knows {
-    
       public abstract void setYears(int years);
-      
       public abstract int getYears();
     }
 
