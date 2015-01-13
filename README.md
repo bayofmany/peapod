@@ -1,5 +1,6 @@
 # peapod
-> The project's name refers to the java class encapsulation of graph vertices, like peapods are wrapping peas.
+> The project's name refers to the java class encapsulation of graph vertices, 
+> just like peapods are wrapping peas.
 
 An ORM / OGM for the Tinkerpop 3 graph stack. This project has been created as an alternative to the Frames module in Tinkerpop 2.
 
