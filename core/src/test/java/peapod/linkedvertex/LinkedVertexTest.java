@@ -1,17 +1,19 @@
 package peapod.linkedvertex;
 
 import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.process.graph.VertexTraversal;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
+import peapod.FramedGraphTraversal;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
@@ -75,14 +77,17 @@ public class LinkedVertexTest {
         assertThat(bob.getFriendsWithAnnotationBoth(), hasItems(alice));
         assertThat(steve.getFriendsWithAnnotationBoth(), hasItems(alice));
 
-        List<String> friendNames = ((VertexTraversal)alice).out("friend").<String>values("name").toList();
-        for (String name : friendNames) {
-            System.out.println("name = " + name);
-        }
+//        List<String> friendNames = ((FramedVertex) alice).out("friend", Person.class).values("name").toList();
+//        for (String name : friendNames) {
+//            System.out.println("name = " + name);
+//        }
 
-        /*friendNames = ((PersonTraversal2)alice).friend().name().toList();
-        for (String name : friendNames) {
-            System.out.println("name = " + name);
-        }*/
+
+        Set<Person> me = alice.out("friend", Person.class).in("friend", Person.class).toSet();
+        assertThat(me, containsInAnyOrder(alice));
+
+        FramedGraphTraversal friend = alice.out("friend", Person.class);
+        List<String> list = friend.values("name").toList();
+        System.out.println("list = " + list);
     }
 }

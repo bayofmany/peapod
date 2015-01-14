@@ -1,5 +1,6 @@
 package peapod.linkedvertex;
 
+import peapod.FramedVertex;
 import peapod.annotations.LinkedVertex;
 import peapod.annotations.Vertex;
 
@@ -12,7 +13,7 @@ import static peapod.Direction.*;
  * Created by Willem on 2/01/2015.
  */
 @Vertex
-public abstract class Person {
+public abstract class Person implements FramedVertex {
 
     public abstract String getName();
 

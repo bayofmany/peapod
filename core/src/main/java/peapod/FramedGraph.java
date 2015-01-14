@@ -82,6 +82,10 @@ public class FramedGraph implements AutoCloseable {
         this.graph = graph;
     }
 
+    protected Framer framer() {
+        return framer;
+    }
+
     /**
      * Add a linked vertex of type {@link V} to the graph. The label will be the lowercase value of the class.
      *
@@ -105,7 +109,7 @@ public class FramedGraph implements AutoCloseable {
     }
 
     public <S, V> FramedGraphTraversal<S, V> V(Class<V> clazz) {
-        return new FramedGraphTraversal<S, V>(graph, framer).label(clazz);
+        return new FramedGraphTraversal<S, V>(this).label(clazz);
     }
 
     /**
