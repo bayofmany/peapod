@@ -1,12 +1,15 @@
 package peapod.linkedvertex;
 
 import com.tinkerpop.gremlin.process.T;
+import com.tinkerpop.gremlin.process.graph.VertexTraversal;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
+
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.junit.Assert.assertEquals;
@@ -71,5 +74,15 @@ public class LinkedVertexTest {
         assertThat(alice.getFriendsWithAnnotationBoth(), hasItems(bob, steve));
         assertThat(bob.getFriendsWithAnnotationBoth(), hasItems(alice));
         assertThat(steve.getFriendsWithAnnotationBoth(), hasItems(alice));
+
+        List<String> friendNames = ((VertexTraversal)alice).out("friend").<String>values("name").toList();
+        for (String name : friendNames) {
+            System.out.println("name = " + name);
+        }
+
+        /*friendNames = ((PersonTraversal2)alice).friend().name().toList();
+        for (String name : friendNames) {
+            System.out.println("name = " + name);
+        }*/
     }
 }

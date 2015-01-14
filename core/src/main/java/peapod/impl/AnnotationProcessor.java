@@ -45,6 +45,7 @@ package peapod.impl;
 
 import com.google.common.base.Preconditions;
 import com.squareup.javawriter.JavaWriter;
+import com.tinkerpop.gremlin.process.Traversal;
 import peapod.Direction;
 import peapod.FramedEdge;
 import peapod.FramedGraph;
@@ -151,6 +152,17 @@ public final class AnnotationProcessor extends AbstractProcessor {
             e.printStackTrace();
         }
 
+        try (PrintWriter out = new PrintWriter(filer.createSourceFile(type.getQualifiedName() + "Traversal").openOutputStream())) {
+            JavaWriter writer = new JavaWriter(out);
+            PackageElement packageEl = (PackageElement) type.getEnclosingElement();
+            writer.emitPackage(packageEl.getQualifiedName().toString())
+                    .emitImports(Traversal.class)
+                    .emitEmptyLine()
+                    .beginType(type.getQualifiedName() + "Traversal<S, E>", "interface", EnumSet.of(PUBLIC), "Traversal<S, E>")
+                    .endType();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void implementAbstractMethods(TypeElement type, String fieldName, JavaWriter writer, boolean vertex) throws IOException {
@@ -246,6 +258,12 @@ public final class AnnotationProcessor extends AbstractProcessor {
             } else if (isSetter(method)) {
                 String property = getPropertyName(method, "set");
 
+                String edgeLabel = property;
+                LinkedVertex  linkedVertexAnnotation = method.getAnnotation(LinkedVertex.class);
+                if (linkedVertexAnnotation != null && linkedVertexAnnotation.label() != null) {
+                    edgeLabel = linkedVertexAnnotation.label();
+                }
+
                 TypeMirror propertyType = method.getParameters().get(0).asType();
                 Element propertyTypeElement = types.asElement(propertyType);
 
@@ -253,9 +271,9 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 Edge edgeAnnotation = propertyTypeElement == null ? null : propertyTypeElement.getAnnotation(Edge.class);
                 if (vertexAnnotation != null) {
                     writer.beginMethod("void", method.getSimpleName().toString(), modifiers, propertyTypeElement.toString(), property)
-                            .emitStatement("v.outE(\"%s\").remove()", property)
+                            .emitStatement("v.outE(\"%s\").remove()", edgeLabel)
                             .beginControlFlow("if (" + property + " != null)")
-                            .emitStatement("v.addEdge(\"%s\", ((FramedVertex)%s).vertex())", property, property)
+                            .emitStatement("v.addEdge(\"%s\", ((FramedVertex)%s).vertex())", edgeLabel, property)
                             .endControlFlow();
                     writer.endMethod();
                 } else if (edgeAnnotation != null) {

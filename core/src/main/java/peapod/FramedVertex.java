@@ -43,10 +43,20 @@
 
 package peapod;
 
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.VertexTraversal;
+import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Vertex;
 
-public interface FramedVertex extends FramedElement {
+public interface FramedVertex extends FramedElement, VertexTraversal {
 
     Vertex vertex();
+
+    @SuppressWarnings("unchecked")
+    public default GraphTraversal start() {
+        final GraphTraversal traversal = GraphTraversal.of();
+        return traversal.addStep(new StartStep<>(traversal, vertex()));
+    }
+
 
 }

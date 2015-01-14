@@ -3,12 +3,14 @@ package peapod.model;
 import peapod.FramedVertex;
 import peapod.annotations.Vertex;
 
-/**
- * Created by Willem on 2/01/2015.
- */
+import java.util.List;
+
 @Vertex
 public abstract class Person implements FramedVertex {
 
     public abstract String getName();
+
+    public abstract List<Person> getFriends();
+
 
 }

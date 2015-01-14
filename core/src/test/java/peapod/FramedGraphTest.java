@@ -2,15 +2,16 @@ package peapod;
 
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import peapod.model.Person;
 import org.junit.Before;
 import org.junit.Test;
+import peapod.model.Person;
 
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.junit.Assert.*;
 
 public class FramedGraphTest {
 
@@ -20,9 +21,11 @@ public class FramedGraphTest {
     @Before
     public void init() {
         g = TinkerGraph.open();
-        g.addVertex(T.id, 1, T.label, "person", "name", "alice");
-        g.addVertex(T.id, 2, T.label, "person", "name", " bob");
-        g.addVertex(T.id, 3, T.label, "person", "name", "steve");
+        Vertex a = g.addVertex(T.id, 1, T.label, "person", "name", "alice");
+        Vertex b = g.addVertex(T.id, 2, T.label, "person", "name", "bob");
+        Vertex c = g.addVertex(T.id, 3, T.label, "person", "name", "charlie");
+        a.addEdge("friend", b);
+        a.addEdge("friend", c);
         graph = new FramedGraph(g);
     }
 
@@ -63,6 +66,15 @@ public class FramedGraphTest {
         List<Person> result = graph.V(Person.class).has("name", "alice").toList();
         assertEquals(1, result.size());
         assertEquals("alice", result.get(0).getName());
+    }
+
+    @Test
+    public void testIn() throws Exception {
+        List<Person> result = graph.V(Person.class).has("name", "bob").in("friend", Person.class).toList();
+        assertEquals(1, result.size());
+        assertEquals("alice", result.get(0).getName());
+
+        assertThat(graph.v(1, Person.class).getFriends(), hasItem(graph.v(2, Person.class)));
     }
 
     @Test

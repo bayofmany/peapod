@@ -5,9 +5,7 @@ import peapod.annotations.Vertex;
 
 import java.util.List;
 
-import static peapod.Direction.BOTH;
-import static peapod.Direction.IN;
-import static peapod.Direction.OUT;
+import static peapod.Direction.*;
 
 /**
  * Test class to check @LinkedVertex constructs.
