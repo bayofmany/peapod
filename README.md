@@ -50,4 +50,4 @@ And this way you query for and interact with the framed objects:
         assertEquals("josh", result.get(0).getName());
     }
     
-This project uses code derived from the [Tinkerpop](http://www.tinkerpop.com/) project under the Apache license and or Tinkerpop license.
+This project uses code derived from the [Tinkerpop](http://www.tinkerpop.com/) project under the Apache license and/or Tinkerpop license.
