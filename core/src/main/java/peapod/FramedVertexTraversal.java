@@ -48,8 +48,8 @@ import com.tinkerpop.gremlin.process.graph.VertexTraversal;
 @SuppressWarnings("unchecked")
 public interface FramedVertexTraversal<S> extends VertexTraversal {
 
-    public default <E2> FramedGraphTraversal<S, E2> out(final String edgeLabel, Class<E2> clazz) {
-        FramedGraphTraversal traversal = (FramedGraphTraversal) this.out(edgeLabel);
+    public default <E2> FramedGraphTraversal2<S, E2> out(final String edgeLabel, Class<E2> clazz) {
+        FramedGraphTraversal2 traversal = (FramedGraphTraversal2) this.out(edgeLabel);
         return traversal.isType(clazz);
     }
 
