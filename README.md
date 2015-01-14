@@ -1,8 +1,10 @@
-# peapod
+# peapod <a href="https://bayofmany.ci.cloudbees.com/"><img src="https://www.cloudbees.com/sites/default/files/styles/large/public/Button-Built-on-CB-1.png" width="150" align="right"></a>
+
 > The project's name refers to the java class encapsulation of graph vertices, 
 > just like peapods are wrapping peas.
 
 An ORM / OGM for the Tinkerpop 3 graph stack. This project has been created as an alternative to the Frames module in Tinkerpop 2.
+
 
 This project is similar to the [Totorom](https://github.com/BrynCooke/totorom) library created by Bryn Cook and the [Ferma](https://github.com/Syncleus/Ferma) library created by Jeffrey Phillips Freeman. The main differences are:
 * Peapod is based upon Tinkerpop 3.
