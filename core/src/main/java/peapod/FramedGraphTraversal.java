@@ -65,72 +65,72 @@ import java.util.function.BiPredicate;
  * Extension of {@link com.tinkerpop.gremlin.process.Traversal} supporting framed vertices and edges.
  */
 @SuppressWarnings("unchecked")
-public class FramedGRaphTraversal<S, E> extends DefaultTraversal<S, E> implements GraphTraversal<S, E> {
+public class FramedGraphTraversal<S, E> extends DefaultTraversal<S, E> implements GraphTraversal<S, E> {
 
     static {
         final DefaultTraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
         traversalStrategies.addStrategy(TraverserSourceStrategy.instance());
-        TraversalStrategies.GlobalCache.registerStrategies(FramedGRaphTraversal.class, traversalStrategies);
+        TraversalStrategies.GlobalCache.registerStrategies(FramedGraphTraversal.class, traversalStrategies);
     }
 
     private final Framer framer;
 
     private Class<E> lastFrameClass;
 
-    public FramedGRaphTraversal(FramedGraph framedGraph) {
+    public FramedGraphTraversal(FramedGraph framedGraph) {
         super(framedGraph.graph());
         this.framer = framedGraph.framer();
     }
 
-    public FramedGRaphTraversal<S, E> label(Class<E> clazz) {
+    public FramedGraphTraversal<S, E> label(Class<E> clazz) {
         this.lastFrameClass = clazz;
-        return (FramedGRaphTraversal) this.addStep(new StartStep<>(this, this.sideEffects().getGraph().V().has(T.label, clazz.getSimpleName().toLowerCase())));
+        return (FramedGraphTraversal) this.addStep(new StartStep<>(this, this.sideEffects().getGraph().V().has(T.label, clazz.getSimpleName().toLowerCase())));
     }
 
-    protected FramedGRaphTraversal<S, E> isType(Class<E> clazz) {
+    protected FramedGraphTraversal<S, E> isType(Class<E> clazz) {
         this.lastFrameClass = clazz;
         return has(T.label, clazz.getSimpleName().toLowerCase());
     }
 
-    public FramedGRaphTraversal<S, E> has(final String key) {
-        return (FramedGRaphTraversal) this.addStep(new HasStep<>(this, new HasContainer(key, Contains.within)));
+    public FramedGraphTraversal<S, E> has(final String key) {
+        return (FramedGraphTraversal) this.addStep(new HasStep<>(this, new HasContainer(key, Contains.within)));
     }
 
-    public FramedGRaphTraversal<S, E> has(final String key, final Object value) {
-        return (FramedGRaphTraversal) this.has(key, Compare.eq, value);
+    public FramedGraphTraversal<S, E> has(final String key, final Object value) {
+        return (FramedGraphTraversal) this.has(key, Compare.eq, value);
     }
 
-    public FramedGRaphTraversal<S, E> has(final T accessor, final Object value) {
-        return (FramedGRaphTraversal) this.has(accessor.getAccessor(), value);
+    public FramedGraphTraversal<S, E> has(final T accessor, final Object value) {
+        return (FramedGraphTraversal) this.has(accessor.getAccessor(), value);
     }
 
-    public FramedGRaphTraversal<S, E> has(final String key, final BiPredicate predicate, final Object value) {
-        return (FramedGRaphTraversal) this.addStep(new HasStep<>(this, new HasContainer(key, predicate, value)));
+    public FramedGraphTraversal<S, E> has(final String key, final BiPredicate predicate, final Object value) {
+        return (FramedGraphTraversal) this.addStep(new HasStep<>(this, new HasContainer(key, predicate, value)));
     }
 
-    public FramedGRaphTraversal<S, E> has(final T accessor, final BiPredicate predicate, final Object value) {
-        return (FramedGRaphTraversal) this.addStep(new HasStep<>(this, new HasContainer(accessor.getAccessor(), predicate, value)));
+    public FramedGraphTraversal<S, E> has(final T accessor, final BiPredicate predicate, final Object value) {
+        return (FramedGraphTraversal) this.addStep(new HasStep<>(this, new HasContainer(accessor.getAccessor(), predicate, value)));
     }
 
-    public FramedGRaphTraversal<S, E> has(final String label, final String key, final Object value) {
-        return (FramedGRaphTraversal) this.has(label, key, Compare.eq, value);
+    public FramedGraphTraversal<S, E> has(final String label, final String key, final Object value) {
+        return (FramedGraphTraversal) this.has(label, key, Compare.eq, value);
     }
 
-    public FramedGRaphTraversal<S, E> has(final String label, final String key, final BiPredicate predicate, final Object value) {
-        return (FramedGRaphTraversal) this.has(T.label, label).addStep(new HasStep<>(this, new HasContainer(key, predicate, value)));
+    public FramedGraphTraversal<S, E> has(final String label, final String key, final BiPredicate predicate, final Object value) {
+        return (FramedGraphTraversal) this.has(T.label, label).addStep(new HasStep<>(this, new HasContainer(key, predicate, value)));
     }
 
-    public FramedGRaphTraversal<S, E> hasNot(final String key) {
-        return (FramedGRaphTraversal) this.addStep(new HasStep<>(this, new HasContainer(key, Contains.without)));
+    public FramedGraphTraversal<S, E> hasNot(final String key) {
+        return (FramedGraphTraversal) this.addStep(new HasStep<>(this, new HasContainer(key, Contains.without)));
     }
 
-    public FramedGRaphTraversal<S, E> values(final String... propertyKeys) {
+    public FramedGraphTraversal<S, E> values(final String... propertyKeys) {
         this.lastFrameClass = null;
-        return (FramedGRaphTraversal<S, E>) this.addStep(new PropertiesStep<>(this, PropertyType.VALUE, propertyKeys));
+        return (FramedGraphTraversal<S, E>) this.addStep(new PropertiesStep<>(this, PropertyType.VALUE, propertyKeys));
     }
 
-    public <E2> FramedGRaphTraversal<S, E2> in(final String edgeLabel, Class<E2> clazz) {
-        FramedGRaphTraversal traversal = (FramedGRaphTraversal) this.to(Direction.IN, edgeLabel);
+    public <E2> FramedGraphTraversal<S, E2> in(final String edgeLabel, Class<E2> clazz) {
+        FramedGraphTraversal traversal = (FramedGraphTraversal) this.to(Direction.IN, edgeLabel);
         return traversal.isType(clazz);
     }
 

@@ -53,7 +53,7 @@ public interface FramedVertex extends FramedElement, FramedVertexTraversal {
 
     @SuppressWarnings("unchecked")
     public default GraphTraversal start() {
-        final GraphTraversal traversal = new FramedGRaphTraversal<>(graph());
+        final GraphTraversal traversal = new FramedGraphTraversal<>(graph());
         return traversal.addStep(new StartStep<>(traversal, vertex()));
     }
 

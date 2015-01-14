@@ -7,7 +7,7 @@ import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
-import peapod.FramedGRaphTraversal;
+import peapod.FramedGraphTraversal;
 
 import java.util.List;
 import java.util.Set;
@@ -86,7 +86,7 @@ public class LinkedVertexTest {
         Set<Person> me = alice.out("friend", Person.class).in("friend", Person.class).toSet();
         assertThat(me, containsInAnyOrder(alice));
 
-        FramedGRaphTraversal friend = alice.out("friend", Person.class);
+        FramedGraphTraversal friend = alice.out("friend", Person.class);
         List<String> list = friend.values("name").toList();
         System.out.println("list = " + list);
     }
