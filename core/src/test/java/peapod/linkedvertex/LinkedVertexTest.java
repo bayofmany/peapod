@@ -1,6 +1,7 @@
 package peapod.linkedvertex;
 
 import com.tinkerpop.gremlin.process.T;
+import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -10,6 +11,7 @@ import peapod.FramedGraph;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -93,6 +95,20 @@ public class LinkedVertexTest {
 
         Set<Person> me = alice.out("friend", Person.class).in("friend", Person.class).toSet();
         assertThat(me, containsInAnyOrder(alice));
+    }
+
+    @Test
+    public void testVertexOutFilter() {
+        List<Person> friends = alice.out("friend", Person.class).as("X").filter(new Predicate<Traverser<Vertex>>() {
+            @Override
+            public boolean test(Traverser<Vertex> traverser) {
+                Vertex vertex = traverser.get();
+                return true;
+            }
+        }).toList();
+        assertThat(friends, containsInAnyOrder(bob, charlie));
+
+
     }
 
     @Test
