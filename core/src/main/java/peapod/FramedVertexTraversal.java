@@ -53,4 +53,9 @@ public interface FramedVertexTraversal<S> extends VertexTraversal {
         return traversal.isType(clazz);
     }
 
+    public default <E2> FramedGraphTraversal<S, E2> in(final String edgeLabel, Class<E2> clazz) {
+        FramedGraphTraversal traversal = (FramedGraphTraversal) this.in(edgeLabel);
+        return traversal.isType(clazz);
+    }
+
 }

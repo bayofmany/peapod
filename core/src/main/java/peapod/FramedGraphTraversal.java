@@ -89,7 +89,7 @@ public class FramedGraphTraversal<S, E> extends DefaultTraversal<S, E> implement
 
     protected FramedGraphTraversal<S, E> isType(Class<E> clazz) {
         this.lastFrameClass = clazz;
-        return has(T.label, clazz.getSimpleName().toLowerCase());
+        return this;//has(T.label, clazz.getSimpleName().toLowerCase());
     }
 
     public FramedGraphTraversal<S, E> has(final String key) {
@@ -131,6 +131,11 @@ public class FramedGraphTraversal<S, E> extends DefaultTraversal<S, E> implement
 
     public <E2> FramedGraphTraversal<S, E2> in(final String edgeLabel, Class<E2> clazz) {
         FramedGraphTraversal traversal = (FramedGraphTraversal) this.to(Direction.IN, edgeLabel);
+        return traversal.isType(clazz);
+    }
+
+    public <E2> FramedGraphTraversal<S, E2> out(final String edgeLabel, Class<E2> clazz) {
+        FramedGraphTraversal traversal = (FramedGraphTraversal) this.to(Direction.OUT, edgeLabel);
         return traversal.isType(clazz);
     }
 

@@ -7,7 +7,6 @@ import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
-import peapod.FramedGraphTraversal;
 
 import java.util.List;
 import java.util.Set;
@@ -24,6 +23,9 @@ import static org.junit.Assert.assertThat;
 public class LinkedVertexTest {
 
     private Person alice;
+    private Person bob;
+    private Person charlie;
+
     private FramedGraph graph;
 
     @Before
@@ -31,12 +33,15 @@ public class LinkedVertexTest {
         Graph g = TinkerGraph.open();
         Vertex alice = g.addVertex(T.id, 1, T.label, "person", "name", "alice");
         Vertex bob = g.addVertex(T.id, 2, T.label, "person", "name", "bob");
-        Vertex steve = g.addVertex(T.id, 3, T.label, "person", "name", "steve");
+        Vertex charlie = g.addVertex(T.id, 3, T.label, "person", "name", "charlie");
+
         alice.addEdge("friend", bob);
-        alice.addEdge("friend", steve);
+        alice.addEdge("friend", charlie);
 
         graph = new FramedGraph(g);
         this.alice = graph.v(1, Person.class);
+        this.bob = graph.v(2, Person.class);
+        this.charlie = graph.v(3, Person.class);
     }
 
     @Test
@@ -76,18 +81,30 @@ public class LinkedVertexTest {
         assertThat(alice.getFriendsWithAnnotationBoth(), hasItems(bob, steve));
         assertThat(bob.getFriendsWithAnnotationBoth(), hasItems(alice));
         assertThat(steve.getFriendsWithAnnotationBoth(), hasItems(alice));
+    }
 
-//        List<String> friendNames = ((FramedVertex) alice).out("friend", Person.class).values("name").toList();
-//        for (String name : friendNames) {
-//            System.out.println("name = " + name);
-//        }
+    @Test
+    public void testVertexOut() {
+        List<Person> friends = alice.out("friend", Person.class).toList();
+        assertThat(friends, containsInAnyOrder(bob, charlie));
 
+        List<String> names = alice.out("friend", Person.class).values("name").toList();
+        assertThat(names, containsInAnyOrder("bob", "charlie"));
 
         Set<Person> me = alice.out("friend", Person.class).in("friend", Person.class).toSet();
         assertThat(me, containsInAnyOrder(alice));
-
-        FramedGraphTraversal friend = alice.out("friend", Person.class);
-        List<String> list = friend.values("name").toList();
-        System.out.println("list = " + list);
     }
+
+    @Test
+    public void testVertexIn() {
+        List<Person> friends = bob.in("friend", Person.class).toList();
+        assertThat(friends, containsInAnyOrder(alice));
+
+        List<String> names = bob.in("friend", Person.class).values("name").toList();
+        assertThat(names, containsInAnyOrder("alice"));
+
+        Set<Person> me = bob.in("friend", Person.class).out("friend", Person.class).toSet();
+        assertThat(me, containsInAnyOrder(bob, charlie));
+    }
+
 }
