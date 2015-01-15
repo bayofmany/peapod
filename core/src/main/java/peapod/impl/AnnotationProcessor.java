@@ -52,7 +52,6 @@ import static peapod.Direction.OUT;
 
 /**
  * Annotation processor for all {link @Vertex} annotated classes that generates the concrete implementation classes.
- * Created by Willem on 26/12/2014.
  */
 @SupportedAnnotationTypes({"peapod.annotations.Vertex"})
 @SupportedSourceVersion(SourceVersion.RELEASE_8)

@@ -29,10 +29,6 @@ import java.util.List;
 
 import static peapod.Direction.*;
 
-/**
- * Test class to check @LinkedVertex constructs.
- * Created by Willem on 2/01/2015.
- */
 @Vertex
 public abstract class Person implements FramedVertex {
 

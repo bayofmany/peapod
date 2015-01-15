@@ -36,7 +36,6 @@ import static junit.framework.TestCase.*;
 
 /**
  * Test class to test primitive and object properties.
- * Created by Willem on 2/01/2015.
  */
 public class PropertyTest {
 

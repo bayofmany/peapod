@@ -38,9 +38,6 @@ import java.util.List;
 import static com.google.common.truth.Truth.assert_;
 import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
 
-/**
- * Created by Willem on 28/12/2014.
- */
 @RunWith(Parameterized.class)
 public class AnnotationProcessorTest {
 
