@@ -21,18 +21,14 @@
 
 package peapod;
 
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 public interface FramedVertex extends FramedElement, FramedVertexTraversal {
 
     Vertex vertex();
 
-    @SuppressWarnings("unchecked")
-    public default GraphTraversal start() {
-        final GraphTraversal traversal = new FramedGraphTraversal<>(graph());
-        return traversal.addStep(new StartStep<>(traversal, vertex()));
+    public default FramedGraphTraversal start() {
+        return new FramedGraphTraversal(vertex().start(), graph());
     }
 
 

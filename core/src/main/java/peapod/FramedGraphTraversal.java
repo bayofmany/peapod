@@ -22,12 +22,9 @@
 package peapod;
 
 import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.process.TraversalStrategies;
 import com.tinkerpop.gremlin.process.Traverser;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
-import com.tinkerpop.gremlin.process.graph.step.sideEffect.StartStep;
-import com.tinkerpop.gremlin.process.graph.strategy.TraverserSourceStrategy;
-import com.tinkerpop.gremlin.process.util.DefaultTraversalStrategies;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.HashMap;
@@ -41,13 +38,9 @@ import java.util.function.Predicate;
  * Extension of {@link com.tinkerpop.gremlin.process.Traversal} supporting framed vertices and edges.
  */
 @SuppressWarnings("unchecked")
-public class FramedGraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
+public class FramedGraphTraversal<S, E> {
 
-    static {
-        final DefaultTraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
-        traversalStrategies.addStrategy(TraverserSourceStrategy.instance());
-        TraversalStrategies.GlobalCache.registerStrategies(FramedGraphTraversal.class, traversalStrategies);
-    }
+    private GraphTraversal<S, E> traversal;
 
     private final Framer framer;
 
@@ -55,99 +48,105 @@ public class FramedGraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
 
     private Map<String, Class<E>> stepLabel2FrameClass = new HashMap<>();
 
-    public FramedGraphTraversal(FramedGraph framedGraph) {
-        super(framedGraph.graph());
+    public FramedGraphTraversal(GraphTraversal traversal, FramedGraph framedGraph) {
+        this.traversal = traversal;
         this.framer = framedGraph.framer();
     }
 
-    public FramedGraphTraversal<S, E> label(Class<E> clazz) {
+    protected FramedGraphTraversal<S, E> label(Class<E> clazz) {
         this.lastFrameClass = clazz;
-        return (FramedGraphTraversal) this.addStep(new StartStep<>(this, this.sideEffects().getGraph().V().has(T.label, clazz.getSimpleName().toLowerCase())));
-    }
-
-    protected FramedGraphTraversal<S, E> isType(Class<E> clazz) {
-        this.lastFrameClass = clazz;
-        return this;//has(T.label, clazz.getSimpleName().toLowerCase());
+        traversal.has(T.label, clazz.getSimpleName().toLowerCase());
+        return this;
     }
 
     public FramedGraphTraversal<S, E> has(final String key) {
-        return (FramedGraphTraversal) super.has(key);
+        traversal.has(key);
+        return this;
     }
 
     public FramedGraphTraversal<S, E> has(final String key, final Object value) {
-        return (FramedGraphTraversal) super.has(key, value);
+        traversal.has(key, value);
+        return this;
     }
 
     public FramedGraphTraversal<S, E> has(final T accessor, final Object value) {
-        return (FramedGraphTraversal) super.has(accessor, value);
+        traversal.has(accessor, value);
+        return this;
     }
 
     public FramedGraphTraversal<S, E> has(final String key, final BiPredicate predicate, final Object value) {
-        return (FramedGraphTraversal) super.has(key, predicate, value);
+        traversal.has(key, predicate, value);
+        return this;
     }
 
     public FramedGraphTraversal<S, E> has(final T accessor, final BiPredicate predicate, final Object value) {
-        return (FramedGraphTraversal) super.has(accessor, predicate, value);
+        traversal.has(accessor, predicate, value);
+        return this;
     }
 
     public FramedGraphTraversal<S, E> has(final String label, final String key, final Object value) {
-        return (FramedGraphTraversal) super.has(label, key, value);
+        traversal.has(label, key, value);
+        return this;
     }
 
     public FramedGraphTraversal<S, E> has(final String label, final String key, final BiPredicate predicate, final Object value) {
-        return (FramedGraphTraversal) super.has(label, key, predicate, value);
+        traversal.has(label, key, predicate, value);
+        return this;
     }
 
     public FramedGraphTraversal<S, E> hasNot(final String key) {
-        return (FramedGraphTraversal) super.hasNot(key);
+        traversal.hasNot(key);
+        return this;
     }
 
     public FramedGraphTraversal<S, E> values(final String... propertyKeys) {
         this.lastFrameClass = null;
-        return (FramedGraphTraversal<S, E>) super.values(propertyKeys);
+        traversal.values(propertyKeys);
+        return this;
     }
 
     public FramedGraphTraversal<S, E> filter(final Predicate<Traverser<E>> predicate) {
-        return (FramedGraphTraversal<S, E>) super.filter(predicate);
+        traversal.filter(predicate);
+        return this;
     }
 
     public <E2> FramedGraphTraversal<S, E2> in(final String edgeLabel, Class<E2> clazz) {
-        FramedGraphTraversal traversal = (FramedGraphTraversal) super.in(edgeLabel);
-        return traversal.isType(clazz);
+        traversal.in(edgeLabel);
+        this.lastFrameClass = (Class<E>) clazz;
+        return (FramedGraphTraversal<S, E2>) this;
     }
 
     public <E2> FramedGraphTraversal<S, E2> out(final String edgeLabel, Class<E2> clazz) {
-        FramedGraphTraversal traversal = (FramedGraphTraversal) super.out(edgeLabel);
-        return traversal.isType(clazz);
-
+        traversal.out(edgeLabel);
+        this.lastFrameClass = (Class<E>) clazz;
+        return (FramedGraphTraversal<S, E2>) this;
     }
 
     public FramedGraphTraversal<S, E> as(final String label) {
         stepLabel2FrameClass.put(label, lastFrameClass);
-        return (FramedGraphTraversal<S, E>) super.as(label);
+        traversal.as(label);
+        return this;
     }
 
     public FramedGraphTraversal<S, E> back(final String label) {
         lastFrameClass = stepLabel2FrameClass.get(label);
-        return (FramedGraphTraversal<S, E>) super.back(label);
+        traversal.back(label);
+        return this;
     }
 
-    @Override
     public List<E> toList() {
         addFrameStep(lastFrameClass);
-        return super.toList();
+        return traversal.toList();
     }
 
-    @Override
     public Set<E> toSet() {
         addFrameStep(lastFrameClass);
-        return super.toSet();
+        return traversal.toSet();
     }
 
-    @Override
     public E next() {
         addFrameStep(lastFrameClass);
-        return super.next();
+        return traversal.next();
     }
 
     private void addFrameStep(Class<E> clazz) {
@@ -155,9 +154,9 @@ public class FramedGraphTraversal<S, E> extends DefaultGraphTraversal<S, E> {
             return;
         }
 
-        MapStep<Vertex, E> mapStep = new MapStep<>(this);
+        MapStep<Vertex, E> mapStep = new MapStep<>(traversal);
         mapStep.setFunction(v -> framer.frame(clazz, v.get()));
-        this.addStep(mapStep);
+        traversal.addStep(mapStep);
     }
 
 }

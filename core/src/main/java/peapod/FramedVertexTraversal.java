@@ -21,19 +21,17 @@
 
 package peapod;
 
-import com.tinkerpop.gremlin.process.graph.VertexTraversal;
-
 @SuppressWarnings("unchecked")
-public interface FramedVertexTraversal<S> extends VertexTraversal {
+public interface FramedVertexTraversal<S> {
+
+    public FramedGraphTraversal start();
 
     public default <E2> FramedGraphTraversal<S, E2> out(final String edgeLabel, Class<E2> clazz) {
-        FramedGraphTraversal traversal = (FramedGraphTraversal) this.out(edgeLabel);
-        return traversal.isType(clazz);
+        return start().out(edgeLabel, clazz);
     }
 
     public default <E2> FramedGraphTraversal<S, E2> in(final String edgeLabel, Class<E2> clazz) {
-        FramedGraphTraversal traversal = (FramedGraphTraversal) this.in(edgeLabel);
-        return traversal.isType(clazz);
+        return start().in(edgeLabel, clazz);
     }
 
 }
