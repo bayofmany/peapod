@@ -27,10 +27,7 @@ import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
 import com.tinkerpop.gremlin.structure.Vertex;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
@@ -133,6 +130,27 @@ public class FramedGraphTraversal<S, E> {
         traversal.back(label);
         return this;
     }
+
+    public FramedGraphTraversal<S, E> dedup() {
+        traversal.dedup();
+        return this;
+    }
+
+    public FramedGraphTraversal<S, E> out(String... edgeLabel) {
+        traversal.out(edgeLabel);
+        return this;
+    }
+
+    public FramedGraphTraversal<S, E> in(String... edgeLabel) {
+        traversal.in(edgeLabel);
+        return this;
+    }
+
+    public FramedGraphTraversal<S, E> except(final Collection<E> exceptionCollection) {
+        traversal.except(exceptionCollection);
+        return this;
+    }
+
 
     public List<E> toList() {
         addFrameStep(lastFrameClass);

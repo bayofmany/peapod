@@ -34,4 +34,11 @@ public interface FramedVertexTraversal<S> {
         return start().in(edgeLabel, clazz);
     }
 
+    public default <E2> FramedGraphTraversal<S, E2> out(final String... edgeLabel) {
+        return start().out(edgeLabel);
+    }
+
+    public default <E2> FramedGraphTraversal<S, E2> in(final String... edgeLabel) {
+        return start().in(edgeLabel);
+    }
 }
