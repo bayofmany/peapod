@@ -69,7 +69,7 @@ public class FramedGraphTest {
     }
 
     @Test
-    public void testLoad() throws Exception {
+    public void testV() throws Exception {
         Person p = graph.v(1, Person.class);
         assertEquals(1, p.vertex().id());
         assertEquals("alice", p.getName());
@@ -122,4 +122,11 @@ public class FramedGraphTest {
     public void testClose() throws Exception {
         graph.close();
     }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testTx() throws Exception {
+        // just verifying if it delegates to Tinkerpop Graph.tx() method
+        graph.tx();
+    }
+
 }
