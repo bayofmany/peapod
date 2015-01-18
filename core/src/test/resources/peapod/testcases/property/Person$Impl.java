@@ -2,9 +2,14 @@ package peapod.testcases.property;
 
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import peapod.FramedEdge;
+import peapod.FramedElement;
 import peapod.FramedGraph;
 import peapod.FramedVertex;
+import peapod.Framer;
 
 public final class Person$Impl extends Person
         implements FramedVertex {
@@ -33,9 +38,27 @@ public final class Person$Impl extends Person
         return v.hashCode();
     }
     public boolean equals(Object other) {
-        return (other instanceof FramedVertex) ? v.equals(((FramedVertex) other).vertex()) : false;
+        return (other instanceof FramedElement) ? v.equals(((FramedElement) other).element()) : false;
     }
     public String toString() {
         return v.label() + "[" + v.id() + "]";
+    }
+    private static final class PersonFramer
+            implements Framer<Person, Vertex> {
+        private static final PersonFramer instance = new PersonFramer();
+        private static final String label = "person";
+        private static final Collection<String> subLabels = Collections.unmodifiableCollection(Arrays.asList(label));
+        public String label() {
+            return label;
+        }
+        public Collection<String> subLabels() {
+            return subLabels;
+        }
+        public Person frame(Vertex v, FramedGraph graph) {
+            return new Person$Impl(v, graph);
+        }
+    }
+    public static Framer<Person, Vertex> framer() {
+        return PersonFramer.instance;
     }
 }

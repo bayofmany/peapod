@@ -2,10 +2,16 @@ package peapod.testcases.outedge;
 
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import peapod.FramedEdge;
+import peapod.FramedElement;
 import peapod.FramedGraph;
+import peapod.Framer;
 
-public final class Knows$Impl extends Knows implements FramedEdge {
+public final class Knows$Impl extends Knows
+        implements FramedEdge {
     private FramedGraph graph;
     private Edge e;
     public Knows$Impl(Edge e, FramedGraph graph) {
@@ -31,9 +37,27 @@ public final class Knows$Impl extends Knows implements FramedEdge {
         return e.hashCode();
     }
     public boolean equals(Object other) {
-        return (other instanceof FramedEdge) ? e.equals(((FramedEdge) other).edge()) : false;
+        return (other instanceof FramedElement) ? e.equals(((FramedElement) other).element()) : false;
     }
     public String toString() {
         return e.label() + "[" + e.id() + "]";
+    }
+    private static final class KnowsFramer
+            implements Framer<Knows, Edge> {
+        private static final KnowsFramer instance = new KnowsFramer();
+        private static final String label = "knows";
+        private static final Collection<String> subLabels = Collections.unmodifiableCollection(Arrays.asList(label));
+        public String label() {
+            return label;
+        }
+        public Collection<String> subLabels() {
+            return subLabels;
+        }
+        public Knows frame(Edge e, FramedGraph graph) {
+            return new Knows$Impl(e, graph);
+        }
+    }
+    public static Framer<Knows, Edge> framer() {
+        return KnowsFramer.instance;
     }
 }

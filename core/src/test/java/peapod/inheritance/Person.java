@@ -19,20 +19,14 @@
  *    http://www.apache.org/licenses/LICENSE-2.0
  */
 
-package peapod;
+package peapod.inheritance;
 
-import com.tinkerpop.gremlin.structure.Element;
+import peapod.annotations.Vertex;
 
-import java.util.Collection;
+@Vertex
+public abstract class Person {
 
-/**
- * A Framer implementation converts Tinkerpop {@link com.tinkerpop.gremlin.structure.Element} instance to framed objects.
- */
-public interface Framer<S, E extends Element> {
+    public abstract String getName();
 
-    String label();
 
-    Collection<String> subLabels();
-
-    public S frame(E element, FramedGraph framedGraph);
 }

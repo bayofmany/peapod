@@ -30,8 +30,6 @@ import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.NoSuchElementException;
 
 /**
@@ -41,26 +39,8 @@ public class FramedGraph implements AutoCloseable {
 
     private final Graph graph;
 
-    private final Framer framer = new Framer() {
-        @Override
-        @SuppressWarnings("unchecked")
-        public <S> S frame(Class<S> clazz, Element element) {
-            try {
-                Class<?> framingClass = clazz.getClassLoader().loadClass(clazz.getName() + "$Impl");
-                Constructor<?> constructor = framingClass.getConstructor(Vertex.class, FramedGraph.class);
-                return (S) constructor.newInstance(element, FramedGraph.this);
-            } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    };
-
     public FramedGraph(Graph graph) {
         this.graph = graph;
-    }
-
-    protected Framer framer() {
-        return framer;
     }
 
     /**
@@ -70,8 +50,9 @@ public class FramedGraph implements AutoCloseable {
      * @return The newly created labeled linked vertex
      */
     public <V> V addVertex(Class<V> clazz) {
-        Vertex v = graph.addVertex(toLabel(clazz));
-        return framer.frame(clazz, v);
+        Framer<V, Element> framer = FramerRegistry.instance.get(clazz);
+        Vertex v = graph.addVertex(framer.label());
+        return framer.frame(v, this);
     }
 
     /**
@@ -81,8 +62,9 @@ public class FramedGraph implements AutoCloseable {
      * @return The newly created labeled linked vertex
      */
     public <V> V addVertex(Class<V> clazz, Object id) {
-        Vertex v = graph.addVertex(T.id, id, T.label, toLabel(clazz));
-        return framer.frame(clazz, v);
+        Framer<V, Element> framer = FramerRegistry.instance.get(clazz);
+        Vertex v = graph.addVertex(T.id, id, T.label, framer.label());
+        return framer.frame(v, this);
     }
 
     @SuppressWarnings("unchecked")
@@ -97,12 +79,8 @@ public class FramedGraph implements AutoCloseable {
      * @throws NoSuchElementException if the linked vertex is not found.
      */
     @SuppressWarnings("unchecked")
-    public <V> V v(Object id, Class<V> clazz)  throws NoSuchElementException {
-        return framer.frame(clazz, graph.v(id));
-    }
-
-    private <V> String toLabel(Class<V> clazz) {
-        return clazz.getSimpleName().toLowerCase();
+    public <V> V v(Object id, Class<V> clazz) throws NoSuchElementException {
+        return FramerRegistry.instance.get(clazz).frame(graph.v(id), this);
     }
 
     /**

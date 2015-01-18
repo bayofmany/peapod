@@ -87,7 +87,7 @@ public class ClassDescription extends BaseDescription {
     }
 
     public void addImport(String anImport) {
-        if (!anImport.startsWith("java.lang.") && !anImport.startsWith(packageName)) {
+        if (anImport != null && !anImport.startsWith("java.lang.") && !anImport.startsWith(packageName)) {
             imports.add(anImport);
         }
     }

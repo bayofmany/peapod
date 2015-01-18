@@ -31,6 +31,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Target(TYPE)
 public @interface Vertex {
 
-    String label() default com.tinkerpop.gremlin.structure.Vertex.DEFAULT_LABEL;
+    String label() default "";
 
 }

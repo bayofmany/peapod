@@ -25,6 +25,8 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
+import com.tinkerpop.gremlin.structure.Contains;
+import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.*;
@@ -39,21 +41,20 @@ import java.util.function.Predicate;
 public class FramedGraphTraversal<S, E> {
 
     private GraphTraversal<S, E> traversal;
+    private FramedGraph graph;
 
-    private final Framer framer;
-
-    private Class<E> lastFrameClass;
+    private Class<E> lastFramingClass;
 
     private Map<String, Class<E>> stepLabel2FrameClass = new HashMap<>();
 
-    public FramedGraphTraversal(GraphTraversal traversal, FramedGraph framedGraph) {
+    public FramedGraphTraversal(GraphTraversal traversal, FramedGraph graph) {
         this.traversal = traversal;
-        this.framer = framedGraph.framer();
+        this.graph = graph;
     }
 
     protected FramedGraphTraversal<S, E> label(Class<E> clazz) {
-        this.lastFrameClass = clazz;
-        traversal.has(T.label, clazz.getSimpleName().toLowerCase());
+        this.lastFramingClass = clazz;
+        traversal.has(T.label, Contains.within, FramerRegistry.instance.get(clazz).subLabels());
         return this;
     }
 
@@ -98,7 +99,7 @@ public class FramedGraphTraversal<S, E> {
     }
 
     public FramedGraphTraversal<S, E> values(final String... propertyKeys) {
-        this.lastFrameClass = null;
+        this.lastFramingClass = null;
         traversal.values(propertyKeys);
         return this;
     }
@@ -110,13 +111,13 @@ public class FramedGraphTraversal<S, E> {
 
     public <E2> FramedGraphTraversal<S, E2> in(final String edgeLabel, Class<E2> clazz) {
         traversal.in(edgeLabel);
-        this.lastFrameClass = (Class<E>) clazz;
+        this.lastFramingClass = (Class<E>) clazz;
         return (FramedGraphTraversal<S, E2>) this;
     }
 
     public <E2> FramedGraphTraversal<S, E2> out(final String edgeLabel, Class<E2> clazz) {
         traversal.out(edgeLabel);
-        this.lastFrameClass = (Class<E>) clazz;
+        this.lastFramingClass = (Class<E>) clazz;
         return (FramedGraphTraversal<S, E2>) this;
     }
 
@@ -131,13 +132,13 @@ public class FramedGraphTraversal<S, E> {
     }
 
     public FramedGraphTraversal<S, E> as(final String label) {
-        stepLabel2FrameClass.put(label, lastFrameClass);
+        stepLabel2FrameClass.put(label, lastFramingClass);
         traversal.as(label);
         return this;
     }
 
     public FramedGraphTraversal<S, E> back(final String label) {
-        lastFrameClass = stepLabel2FrameClass.get(label);
+        lastFramingClass = stepLabel2FrameClass.get(label);
         traversal.back(label);
         return this;
     }
@@ -168,27 +169,29 @@ public class FramedGraphTraversal<S, E> {
     }
 
     public List<E> toList() {
-        addFrameStep(lastFrameClass);
+        addFrameStep(lastFramingClass);
         return traversal.toList();
     }
 
     public Set<E> toSet() {
-        addFrameStep(lastFrameClass);
+        addFrameStep(lastFramingClass);
         return traversal.toSet();
     }
 
     public E next() {
-        addFrameStep(lastFrameClass);
+        addFrameStep(lastFramingClass);
         return traversal.next();
     }
 
-    private void addFrameStep(Class<E> clazz) {
-        if (clazz == null) {
+    private <F> void addFrameStep(Class<F> framingClass) {
+        if (framingClass == null) {
             return;
         }
 
-        MapStep<Vertex, E> mapStep = new MapStep<>(traversal);
-        mapStep.setFunction(v -> framer.frame(clazz, v.get()));
+        Framer<F, Element> framer = FramerRegistry.instance.get(framingClass);
+
+        MapStep<Vertex, F> mapStep = new MapStep<>(traversal);
+        mapStep.setFunction(v -> framer.frame(v.get(), graph));
         traversal.addStep(mapStep);
     }
 
