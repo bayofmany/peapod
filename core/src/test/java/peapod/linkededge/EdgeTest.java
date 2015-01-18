@@ -19,7 +19,7 @@
  *    http://www.apache.org/licenses/LICENSE-2.0
  */
 
-package peapod.edge;
+package peapod.linkededge;
 
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Graph;
@@ -42,7 +42,6 @@ public class EdgeTest {
     private Person alice;
     private Person bob;
     private Person steve;
-    private FramedGraph graph;
 
     @Before
     public void init() {
@@ -53,7 +52,7 @@ public class EdgeTest {
         alice.addEdge("friend", bob, "startYear", 2004);
         alice.addEdge("friend", steve, "startYear", 2012);
 
-        graph = new FramedGraph(g);
+        FramedGraph graph = new FramedGraph(g);
         this.alice = graph.v(1, Person.class);
         this.bob = graph.v(2, Person.class);
         this.steve = graph.v(3, Person.class);
@@ -61,14 +60,14 @@ public class EdgeTest {
 
     @Test
     public void testLinkedEdgeDefault() {
-        assertEquals(2, alice.getFriends().size());
+        assertEquals(2, alice.getFriendsWithAnnotationDefault().size());
 
-        Optional<Friend> friendBob = alice.getFriends().stream().filter(f -> f.getFriend().equals(bob)).findFirst();
+        Optional<Friend> friendBob = alice.getFriendsWithAnnotationDefault().stream().filter(f -> f.getFriend().equals(bob)).findFirst();
         assertTrue(friendBob.isPresent());
         assertEquals(2004, friendBob.get().getStartYear());
 
         assertEquals(bob, friendBob.get().getFriend());
-        assertEquals(0, bob.getFriends().size());
+        assertEquals(0, bob.getFriendsWithAnnotationDefault().size());
     }
 
     @Test

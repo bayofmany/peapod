@@ -332,7 +332,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
                     LinkedVertex linked = method.getAnnotation(LinkedVertex.class);
 
                     Direction direction = linked == null ? OUT : linked.direction();
-                    String statement = String.format("%s.%s(\"%s\").map(v -> (%s) new %s$Impl(%s.get(), graph)", fieldName, direction.toMethod(), e.getName(), element, element, fieldName);
+                    String statement = String.format("%s.%s(\"%s\").map(v -> (%s) new %s$Impl(%s.get(), graph)", fieldName, direction.toMethod(), e.getName(), element.getSimpleName(), element.getSimpleName(), fieldName);
 
                     writer.beginMethod(returnType.toString(), method.getSimpleName().toString(), modifiers)
                             .emitStatement("return " + collectionType.wrap(statement))
@@ -341,7 +341,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
                     LinkedEdge linked = method.getAnnotation(LinkedEdge.class);
                     Direction direction = linked == null ? OUT : linked.direction();
 
-                    String statement = String.format("%s.%sE(\"%s\").map(%s -> (%s) new %s$Impl(%s.get(), graph)", fieldName, direction.toMethod(), e.getName(), fieldName, element, element, fieldName);
+                    String statement = String.format("%s.%sE(\"%s\").map(%s -> (%s) new %s$Impl(%s.get(), graph)", fieldName, direction.toMethod(), e.getName(), fieldName, element.getSimpleName(), element.getSimpleName(), fieldName);
 
                     writer.beginMethod(returnType.toString(), method.getSimpleName().toString(), modifiers)
                             .emitStatement("return " + collectionType.wrap(statement))

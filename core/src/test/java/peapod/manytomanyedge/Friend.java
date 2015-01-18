@@ -28,8 +28,6 @@ import peapod.annotations.Out;
 @Edge
 public abstract class Friend {
 
-    public abstract int getStartYear();
-
     @Out
     public abstract Person getPerson();
 

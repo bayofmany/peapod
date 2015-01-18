@@ -19,21 +19,31 @@
  *    http://www.apache.org/licenses/LICENSE-2.0
  */
 
-package peapod.edge;
+package peapod.linkededge;
 
-import peapod.annotations.Edge;
-import peapod.annotations.In;
-import peapod.annotations.Out;
+import peapod.annotations.LinkedEdge;
+import peapod.annotations.Vertex;
 
-@Edge(label = "friend")
-public abstract class Friend {
+import java.util.List;
 
-    public abstract int getStartYear();
+import static peapod.Direction.*;
 
-    @Out
-    public abstract Person getPerson();
+@Vertex
+public abstract class Person {
 
-    @In
-    public abstract Person getFriend();
+    public abstract String getName();
+
+    @LinkedEdge
+    public abstract List<Friend> getFriendsWithAnnotationDefault();
+
+    @LinkedEdge(direction = OUT)
+    public abstract List<Friend> getFriendsWithAnnotationOut();
+
+    @LinkedEdge(direction = IN)
+    public abstract List<Friend> getFriendsWithAnnotationIn();
+
+    @LinkedEdge(direction = BOTH)
+    public abstract List<Friend> getFriendsWithAnnotationBoth();
+
 
 }
