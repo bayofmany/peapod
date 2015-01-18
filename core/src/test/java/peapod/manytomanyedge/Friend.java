@@ -19,13 +19,13 @@
  *    http://www.apache.org/licenses/LICENSE-2.0
  */
 
-package peapod.edge;
+package peapod.manytomanyedge;
 
 import peapod.annotations.Edge;
 import peapod.annotations.In;
 import peapod.annotations.Out;
 
-@Edge(label = "friend")
+@Edge
 public abstract class Friend {
 
     public abstract int getStartYear();

@@ -39,10 +39,6 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
-/**
- * Tests direct links between vertices using @LinkedVertex.
- * Created by wisa on 07/01/2015.
- */
 public class LinkedVertexTest {
 
     private Person alice;
@@ -116,20 +112,6 @@ public class LinkedVertexTest {
 
         Set<Person> me = alice.out("friend", Person.class).in("friend", Person.class).toSet();
         assertThat(me, containsInAnyOrder(alice));
-    }
-
-    @Test
-    public void testVertexOutFilter() {
-        List<Person> friends = alice.out("friend", Person.class).as("X").filter(new Predicate<Traverser<Vertex>>() {
-            @Override
-            public boolean test(Traverser<Vertex> traverser) {
-                Vertex vertex = traverser.get();
-                return true;
-            }
-        }).toList();
-        assertThat(friends, containsInAnyOrder(bob, charlie));
-
-
     }
 
     @Test

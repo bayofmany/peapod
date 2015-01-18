@@ -2,6 +2,7 @@ package peapod.testcases.outedge;
 
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
+import peapod.FramedEdge;
 import peapod.FramedGraph;
 import peapod.FramedVertex;
 

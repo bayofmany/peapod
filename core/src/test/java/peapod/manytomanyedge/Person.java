@@ -19,21 +19,22 @@
  *    http://www.apache.org/licenses/LICENSE-2.0
  */
 
-package peapod.edge;
+package peapod.manytomanyedge;
 
-import peapod.annotations.Edge;
-import peapod.annotations.In;
-import peapod.annotations.Out;
+import peapod.FramedVertex;
+import peapod.annotations.Vertex;
 
-@Edge(label = "friend")
-public abstract class Friend {
+import java.util.List;
 
-    public abstract int getStartYear();
+@Vertex
+public abstract class Person implements FramedVertex {
 
-    @Out
-    public abstract Person getPerson();
+    public abstract String getName();
 
-    @In
-    public abstract Person getFriend();
+    public abstract List<Friend> getFriends();
+
+    public abstract Friend addFriend(Person person);
+
+    public abstract void removeFriend(Friend friend);
 
 }

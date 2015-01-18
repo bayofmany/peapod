@@ -98,7 +98,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
             JavaWriter writer = new JavaWriter(out);
             PackageElement packageEl = (PackageElement) type.getEnclosingElement();
             writer.emitPackage(packageEl.getQualifiedName().toString())
-                    .emitImports(com.tinkerpop.gremlin.structure.Vertex.class, com.tinkerpop.gremlin.structure.Element.class, FramedVertex.class, FramedGraph.class)
+                    .emitImports(com.tinkerpop.gremlin.structure.Vertex.class, com.tinkerpop.gremlin.structure.Element.class, FramedVertex.class, FramedEdge.class, FramedGraph.class)
                     .emitImports(description.getImports())
                     .emitEmptyLine()
                     .beginType(type.getQualifiedName() + "$Impl", "class", EnumSet.of(PUBLIC, Modifier.FINAL), type.getQualifiedName().toString(), FramedVertex.class.getName())
@@ -183,7 +183,6 @@ public final class AnnotationProcessor extends AbstractProcessor {
             singularType = getSingularizedType(method.getReturnType());
         }
 
-
         boolean isVertex = hasAnnotation(singularType, Vertex.class);
         boolean isEdge = hasAnnotation(singularType, Edge.class);
 
@@ -191,12 +190,13 @@ public final class AnnotationProcessor extends AbstractProcessor {
             EdgeDescription descr = (EdgeDescription) description.getDescription(property);
             if (descr == null) {
                 descr = new EdgeDescription();
-                descr.setName(property);
             }
             descr.setType(singularType);
 
             CollectionType collectionType = getCollectionType(method.getReturnType());
-            if (collectionType != null) {
+            if (collectionType == null) {
+                descr.setName(property);
+            } else {
                 description.addImport(collectionType.getImport());
                 property = Inflector.getInstance().singularize(property);
                 descr.setName(property);
@@ -211,9 +211,12 @@ public final class AnnotationProcessor extends AbstractProcessor {
                     descr.setDirection(linkedVertex.direction());
                 }
             } else {
-                Edge edgeAnnotation = types.asElement(singularType).getAnnotation(Edge.class);
+                Element edgeClass = types.asElement(singularType);
+                Edge edgeAnnotation = edgeClass.getAnnotation(Edge.class);
                 if (!edgeAnnotation.label().isEmpty()) {
                     descr.setName(edgeAnnotation.label());
+                } else {
+                    descr.setName(edgeClass.getSimpleName().toString().toLowerCase());
                 }
                 descr.setEdgeClass(singularType);
                 LinkedEdge linked = method.getAnnotation(LinkedEdge.class);
@@ -305,6 +308,10 @@ public final class AnnotationProcessor extends AbstractProcessor {
         Set<Modifier> modifiers = new HashSet<>(method.getModifiers());
         modifiers.remove(ABSTRACT);
 
+        Element parameterClass = method.getParameters().isEmpty() ? null : types.asElement(method.getParameters().get(0).asType());
+        String parameterName = method.getParameters().isEmpty() ? null : method.getParameters().get(0).getSimpleName().toString();
+        Element returnClass = method.getReturnType().getKind() == VOID ? null : types.asElement(method.getReturnType());
+
         if (methodType == MethodType.GETTER) {
 
             CollectionType collectionType = getCollectionType(method.getReturnType());
@@ -334,12 +341,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
                     LinkedEdge linked = method.getAnnotation(LinkedEdge.class);
                     Direction direction = linked == null ? OUT : linked.direction();
 
-                    String edgeLabel = edgeAnnotation.label();
-                    if ("edge".equals(edgeLabel)) {
-                        edgeLabel = element.getSimpleName().toString().toLowerCase();
-                    }
-
-                    String statement = String.format("%s.%sE(\"%s\").map(%s -> (%s) new %s$Impl(%s.get(), graph)", fieldName, direction.toMethod(), edgeLabel, fieldName, element, element, fieldName);
+                    String statement = String.format("%s.%sE(\"%s\").map(%s -> (%s) new %s$Impl(%s.get(), graph)", fieldName, direction.toMethod(), e.getName(), fieldName, element, element, fieldName);
 
                     writer.beginMethod(returnType.toString(), method.getSimpleName().toString(), modifiers)
                             .emitStatement("return " + collectionType.wrap(statement))
@@ -373,30 +375,26 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 generateNotSupportedMethod("004", method, writer);
             }
         } else if (methodType == MethodType.ADDER) {
-
-            VariableElement parameter = method.getParameters().get(0);
-            Element propertyType = types.asElement(parameter.asType());
-
-            if (hasAnnotation(parameter.asType(), Vertex.class)) {
-                String statement = String.format("v.addEdge(\"%s\", ((FramedVertex) %s).vertex())", e.getName(), parameter.getSimpleName().toString());
+            if (parameterClass != null && parameterClass.getAnnotation(Vertex.class) != null) {
+                String statement = String.format("v.addEdge(\"%s\", ((FramedVertex) %s).vertex())", e.getName(), parameterName);
                 if (hasAnnotation(method.getReturnType(), Edge.class)) {
                     statement = String.format("return new %s$Impl(%s, graph)", method.getReturnType().toString(), statement);
-                } else if (method.getReturnType().getKind() != VOID) {
-                    generateNotSupportedMethod("005", method, writer);
-                    return;
                 }
 
-                writer.beginMethod(method.getReturnType().toString(), method.getSimpleName().toString(), modifiers, propertyType.toString(), parameter.getSimpleName().toString());
+                writer.beginMethod(method.getReturnType().toString(), method.getSimpleName().toString(), modifiers, parameterClass.toString(), parameterName);
                 writer.emitStatement(statement);
                 writer.endMethod();
             } else {
                 generateNotSupportedMethod("002", method, writer);
             }
-        } else {
-            //                            .emitStatement("v.outE(\"%s\").as(\"X\").inV().retain(((FramedVertex)%s).vertex()).back(\"X\").remove()",
-//                                    property, property)
-
-            generateNotSupportedMethod("003", method, writer);
+        } else if (methodType == MethodType.REMOVER && parameterClass != null) {
+            writer.beginMethod(method.getReturnType().toString(), method.getSimpleName().toString(), modifiers, parameterClass.toString(), parameterName);
+            if (parameterClass.getAnnotation(Vertex.class) != null) {
+                writer.emitStatement("v.outE(\"%s\").as(\"X\").inV().retain(((FramedVertex)%s).vertex()).back(\"X\").remove()", e.getName(), parameterName);
+            } else if (parameterClass.getAnnotation(Edge.class) != null) {
+                writer.emitStatement("((FramedEdge)%s).remove()", parameterName);
+            }
+            writer.endMethod();
         }
 
     }
@@ -481,7 +479,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
             writer.emitPackage(packageEl.getQualifiedName().toString())
                     .emitImports(com.tinkerpop.gremlin.structure.Edge.class, com.tinkerpop.gremlin.structure.Element.class, FramedEdge.class, FramedGraph.class)
                     .emitEmptyLine()
-                    .beginType(type.getQualifiedName() + "$Impl", "class", EnumSet.of(PUBLIC, Modifier.FINAL), type.getQualifiedName().toString())
+                    .beginType(type.getQualifiedName() + "$Impl", "class", EnumSet.of(PUBLIC, Modifier.FINAL), type.getQualifiedName().toString(), FramedEdge.class.getSimpleName())
                     .emitField(peapod.FramedGraph.class.getSimpleName(), "graph", EnumSet.of(PRIVATE))
                     .emitField(com.tinkerpop.gremlin.structure.Edge.class.getName(), "e", EnumSet.of(PRIVATE))
                     .beginConstructor(EnumSet.of(PUBLIC), "Edge", "e", FramedGraph.class.getSimpleName(), "graph")

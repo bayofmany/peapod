@@ -5,7 +5,7 @@ import com.tinkerpop.gremlin.structure.Element;
 import peapod.FramedEdge;
 import peapod.FramedGraph;
 
-public final class Knows$Impl extends Knows {
+public final class Knows$Impl extends Knows implements FramedEdge {
     private FramedGraph graph;
     private Edge e;
     public Knows$Impl(Edge e, FramedGraph graph) {
