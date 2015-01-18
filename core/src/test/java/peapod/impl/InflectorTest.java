@@ -25,10 +25,12 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class NounHelperTest {
+public class InflectorTest {
 
     @Test
     public void testSingularize() throws Exception {
-        assertEquals("friend", NounHelper.singularize("friends"));
+        assertEquals("friend", Inflector.getInstance().singularize("friends"));
+        assertEquals("potato", Inflector.getInstance().singularize("potatoes"));
+        assertEquals("child", Inflector.getInstance().singularize("children"));
     }
 }

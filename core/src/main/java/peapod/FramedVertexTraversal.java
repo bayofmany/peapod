@@ -21,13 +21,21 @@
 
 package peapod;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "unused"})
 public interface FramedVertexTraversal<S> {
 
     public FramedGraphTraversal start();
 
+    public default <E2> FramedGraphTraversal<S, E2> out(final String edgeLabel) {
+        return start().out(edgeLabel);
+    }
+
     public default <E2> FramedGraphTraversal<S, E2> out(final String edgeLabel, Class<E2> clazz) {
         return start().out(edgeLabel, clazz);
+    }
+
+    public default <E2> FramedGraphTraversal<S, E2> in(final String edgeLabel) {
+        return start().in(edgeLabel);
     }
 
     public default <E2> FramedGraphTraversal<S, E2> in(final String edgeLabel, Class<E2> clazz) {

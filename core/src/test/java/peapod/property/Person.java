@@ -24,12 +24,18 @@ package peapod.property;
 import peapod.annotations.Property;
 import peapod.annotations.Vertex;
 
+import java.util.Date;
+
 @Vertex
 public abstract class Person {
 
     public abstract String getS();
 
     public abstract void setS(String s);
+
+    public abstract Date getDate();
+
+    public abstract void setDate(Date date);
 
     @Property(hidden = true)
     public abstract String getHidden();

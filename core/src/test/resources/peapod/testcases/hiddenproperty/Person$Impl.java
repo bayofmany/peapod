@@ -23,7 +23,7 @@ public final class Person$Impl extends Person
         return v;
     }
     public String getAcl() {
-        return v.<java.lang.String>property(com.tinkerpop.gremlin.structure.Graph.Key.hide("acl")).orElse(null);
+        return v.<String>property(com.tinkerpop.gremlin.structure.Graph.Key.hide("acl")).orElse(null);
     }
     public int hashCode() {
         return v.hashCode();

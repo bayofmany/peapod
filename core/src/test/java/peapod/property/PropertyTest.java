@@ -30,6 +30,8 @@ import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedVertex;
 
+import java.util.Date;
+
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static junit.framework.TestCase.*;
@@ -46,7 +48,8 @@ public class PropertyTest {
     public void init() {
         Graph g = TinkerGraph.open();
         g.addVertex(T.id, 1, T.label, "person",
-                "s", "hello", Graph.Key.hide("hidden"), "secret",
+                "s", "hello", "date", new Date(1000),
+                Graph.Key.hide("hidden"), "secret",
                 "b1", true, "b2", true,
                 "s1", (short) 42, "s2", (short) 43,
                 "i1", 42, "i2", 43,
@@ -77,6 +80,25 @@ public class PropertyTest {
         p.setS(null);
         assertEquals(null, p.getS());
         assertFalse(v.property("s").isPresent());
+    }
+
+    @Test
+    public void testGetDate() {
+        assertEquals(new Date(1000), p.getDate());
+    }
+
+    @Test
+    public void testSetDate() {
+        p.setDate(new Date(2000));
+        assertEquals(new Date(2000), p.getDate());
+        assertEquals(new Date(2000), v.value("date"));
+    }
+
+    @Test
+    public void testSetDateNull() {
+        p.setDate(null);
+        assertEquals(null, p.getDate());
+        assertFalse(v.property("date").isPresent());
     }
 
     @Test

@@ -29,12 +29,13 @@ import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.*;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
  * Extension of {@link com.tinkerpop.gremlin.process.Traversal} supporting framed vertices and edges.
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "unused"})
 public class FramedGraphTraversal<S, E> {
 
     private GraphTraversal<S, E> traversal;
@@ -119,6 +120,16 @@ public class FramedGraphTraversal<S, E> {
         return (FramedGraphTraversal<S, E2>) this;
     }
 
+    public FramedGraphTraversal<S, E> out(String... edgeLabels) {
+        traversal.out(edgeLabels);
+        return this;
+    }
+
+    public FramedGraphTraversal<S, E> in(String... edgeLabels) {
+        traversal.in(edgeLabels);
+        return this;
+    }
+
     public FramedGraphTraversal<S, E> as(final String label) {
         stepLabel2FrameClass.put(label, lastFrameClass);
         traversal.as(label);
@@ -136,21 +147,25 @@ public class FramedGraphTraversal<S, E> {
         return this;
     }
 
-    public FramedGraphTraversal<S, E> out(String... edgeLabel) {
-        traversal.out(edgeLabel);
+    public FramedGraphTraversal<S, E> dedup(Function<Traverser<E>, ?> uniqueFunction) {
+        traversal.dedup(uniqueFunction);
         return this;
     }
 
-    public FramedGraphTraversal<S, E> in(String... edgeLabel) {
-        traversal.in(edgeLabel);
+    public FramedGraphTraversal<S, E> except(String variable) {
+        traversal.except(variable);
         return this;
     }
 
-    public FramedGraphTraversal<S, E> except(final Collection<E> exceptionCollection) {
+    public FramedGraphTraversal<S, E> except(E exceptionObject) {
+        traversal.except(exceptionObject);
+        return this;
+    }
+
+    public FramedGraphTraversal<S, E> except(Collection<E> exceptionCollection) {
         traversal.except(exceptionCollection);
         return this;
     }
-
 
     public List<E> toList() {
         addFrameStep(lastFrameClass);

@@ -23,10 +23,10 @@ public final class Person$Impl extends Person
         return v;
     }
     public String getName() {
-        return v.<java.lang.String>property("name").orElse(null);
+        return v.<String>property("name").orElse(null);
     }
     public Integer getAge() {
-        return v.<java.lang.Integer>property("age").orElse(null);
+        return v.<Integer>property("age").orElse(null);
     }
     public int hashCode() {
         return v.hashCode();

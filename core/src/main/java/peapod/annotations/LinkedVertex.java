@@ -33,7 +33,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Target(METHOD)
 public @interface LinkedVertex {
 
-    String label();
+    String label() default "";
 
     Direction direction() default Direction.OUT;
 
