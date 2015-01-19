@@ -53,6 +53,6 @@ public abstract class Person implements FramedVertex {
 
     public abstract Hometown setHometown(City city);
 
-   public abstract Hometown getHometown();
+    public abstract Hometown getHometown();
 
 }

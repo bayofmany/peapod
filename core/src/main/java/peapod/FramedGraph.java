@@ -31,6 +31,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 /**
  * A framed instance of a tinkerpop graph.
@@ -80,7 +81,8 @@ public class FramedGraph implements AutoCloseable {
      */
     @SuppressWarnings("unchecked")
     public <V> V v(Object id, Class<V> clazz) throws NoSuchElementException {
-        return FramerRegistry.instance.get(clazz).frame(graph.v(id), this);
+        Optional<Vertex> vertex = graph.V(id).tryNext();
+        return vertex.isPresent() ? FramerRegistry.instance.get(clazz).frame(vertex.get(), this) : null;
     }
 
     /**

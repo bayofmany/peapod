@@ -19,21 +19,20 @@
  *    http://www.apache.org/licenses/LICENSE-2.0
  */
 
-package peapod.demo.classic;
+package peapod.demo.crew;
 
 import peapod.annotations.Edge;
 import peapod.annotations.In;
 import peapod.annotations.Out;
 
-@Edge(label = "knows")
-public abstract class Knows {
+@Edge
+public abstract class Develops {
 
-    public abstract Float getWeight();
+    public abstract int getSince();
 
     @Out
-    public abstract Person getPerson();
+    public abstract Person getDeveloper();
 
     @In
-    public abstract Person getOtherPerson();
-
+    public abstract Software getSoftware();
 }

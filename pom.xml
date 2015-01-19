@@ -15,7 +15,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <tinkerpop.version>3.0.0.M6</tinkerpop.version>
+        <tinkerpop.version>3.0.0.M7</tinkerpop.version>
     </properties>
 
     <build>

@@ -22,19 +22,20 @@
 package peapod.demo.crew;
 
 import peapod.FramedVertex;
-import peapod.annotations.Property;
+import peapod.annotations.LinkedVertex;
 import peapod.annotations.Vertex;
 
-/**
- * Created by Willem on 26/12/2014.
- */
+import java.util.List;
+
 @Vertex
 public abstract class Person implements FramedVertex {
 
     public abstract String getName();
 
-    @Property(hidden = true)
-    public abstract boolean getVisible();
+    @LinkedVertex(label = "develops")
+    public abstract List<Software> getDevelopedSoftware();
+
+    //public abstract Develops getDevelops(Software software);
 
 }
 

@@ -27,10 +27,6 @@ import peapod.annotations.Vertex;
 
 import java.util.List;
 
-/**
- * Represents a person in the classic tinkergraph.
- * Created by Willem on 26/12/2014.
- */
 @Vertex
 public abstract class Person implements FramedVertex {
 

@@ -25,9 +25,6 @@ import peapod.annotations.Edge;
 import peapod.annotations.In;
 import peapod.annotations.Out;
 
-/**
- * Created by Willem on 1/01/2015.
- */
 @Edge(label = "created")
 public abstract class Created {
 

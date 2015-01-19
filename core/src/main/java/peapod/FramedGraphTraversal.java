@@ -31,7 +31,6 @@ import com.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.*;
 import java.util.function.BiPredicate;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
@@ -148,11 +147,6 @@ public class FramedGraphTraversal<S, E> {
         return this;
     }
 
-    public FramedGraphTraversal<S, E> dedup(Function<Traverser<E>, ?> uniqueFunction) {
-        traversal.dedup(uniqueFunction);
-        return this;
-    }
-
     public FramedGraphTraversal<S, E> except(String variable) {
         traversal.except(variable);
         return this;
@@ -192,7 +186,7 @@ public class FramedGraphTraversal<S, E> {
 
         MapStep<Vertex, F> mapStep = new MapStep<>(traversal);
         mapStep.setFunction(v -> framer.frame(v.get(), graph));
-        traversal.addStep(mapStep);
+        traversal.asAdmin().addStep(mapStep);
     }
 
 }

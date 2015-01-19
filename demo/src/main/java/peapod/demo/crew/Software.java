@@ -24,9 +24,6 @@ package peapod.demo.crew;
 import peapod.FramedVertex;
 import peapod.annotations.Vertex;
 
-/**
- * Created by Willem on 26/12/2014.
- */
 @Vertex
 public abstract class Software implements FramedVertex {
 

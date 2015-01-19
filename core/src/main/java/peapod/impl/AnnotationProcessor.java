@@ -240,10 +240,6 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 descr.setType(singularType);
             }
 
-            Property annotation = method.getAnnotation(Property.class);
-            if (annotation != null) {
-                descr.setHidden(annotation.hidden());
-            }
             description.setDescription(property, method, descr);
         }
     }
@@ -281,7 +277,6 @@ public final class AnnotationProcessor extends AbstractProcessor {
         Set<Modifier> modifiers = new HashSet<>(method.getModifiers());
         modifiers.remove(ABSTRACT);
 
-        String propertyName = p.isHidden() ? "com.tinkerpop.gremlin.structure.Graph.Key.hide(\"" + p.getName() + "\")" : "\"" + p.getName() + "\"";
         if (methodType == MethodType.GETTER) {
             String className;
             if (method.getReturnType().getKind().isPrimitive()) {
@@ -291,18 +286,18 @@ public final class AnnotationProcessor extends AbstractProcessor {
             }
 
             writer.beginMethod(method.getReturnType().toString(), method.getSimpleName().toString(), modifiers)
-                    .emitStatement("return %s.<%s>property(%s).orElse(%s)", fieldName, className, propertyName, getDefaultValue(p.getType()))
+                    .emitStatement("return %s.<%s>property(\"%s\").orElse(%s)", fieldName, className, p.getName(), getDefaultValue(p.getType()))
                     .endMethod();
 
         } else if (methodType == MethodType.SETTER) {
             writer.beginMethod(method.getReturnType().toString(), method.getSimpleName().toString(), modifiers, p.getType().toString(), p.getName());
             if (p.isPrimitive()) {
-                writer.emitStatement(fieldName + ".%s(%s, %s)", vertex ? "singleProperty" : "property", propertyName, p.getName());
+                writer.emitStatement(fieldName + ".%s(\"%s\", %s)", vertex ? "singleProperty" : "property", p.getName(), p.getName());
             } else {
                 writer.beginControlFlow("if (" + p.getName() + " == null)")
-                        .emitStatement(fieldName + ".property(%s).remove()", propertyName)
+                        .emitStatement(fieldName + ".property(\"%s\").remove()", p.getName())
                         .nextControlFlow("else")
-                        .emitStatement(fieldName + ".%s(%s, %s)", vertex ? "singleProperty" : "property", propertyName, p.getName())
+                        .emitStatement(fieldName + ".%s(\"%s\", %s)", vertex ? "singleProperty" : "property", p.getName(), p.getName())
                         .endControlFlow();
             }
             writer.endMethod();

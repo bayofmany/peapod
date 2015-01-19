@@ -49,7 +49,6 @@ public class PropertyTest {
         Graph g = TinkerGraph.open();
         g.addVertex(T.id, 1, T.label, "person",
                 "s", "hello", "date", new Date(1000),
-                Graph.Key.hide("hidden"), "secret",
                 "b1", true, "b2", true,
                 "s1", (short) 42, "s2", (short) 43,
                 "i1", 42, "i2", 43,
@@ -58,6 +57,7 @@ public class PropertyTest {
                 "d1", 42.0d, "d2", 43.0d,
                 "c1", 'a', "c2", 'b',
                 "by1", (byte) 0x11, "by2", (byte) 0x21);
+
         FramedGraph graph = new FramedGraph(g);
         p = graph.v(1, Person.class);
         v = ((FramedVertex) p).vertex();
@@ -99,25 +99,6 @@ public class PropertyTest {
         p.setDate(null);
         assertEquals(null, p.getDate());
         assertFalse(v.property("date").isPresent());
-    }
-
-    @Test
-    public void testGetHidden() {
-        assertEquals("secret", p.getHidden());
-    }
-
-    @Test
-    public void testSetHidden() {
-        p.setHidden("exposed");
-        assertEquals("exposed", p.getHidden());
-        assertEquals("exposed", v.value(Graph.Key.hide("hidden")));
-    }
-
-    @Test
-    public void testSetHiddenNull() {
-        p.setHidden(null);
-        assertEquals(null, p.getHidden());
-        assertFalse(v.property(Graph.Key.hide("hidden")).isPresent());
     }
 
     @Test

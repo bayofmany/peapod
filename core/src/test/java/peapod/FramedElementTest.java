@@ -46,7 +46,7 @@ public class FramedElementTest {
 
     @Test
     public void testElement() throws Exception {
-        assertEquals(g.v(1), person.element());
+        assertEquals(g.V(1).next(), person.element());
     }
 
     @Test
