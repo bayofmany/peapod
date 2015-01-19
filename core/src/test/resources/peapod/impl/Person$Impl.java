@@ -1,4 +1,4 @@
-package peapod.testcases.outedge;
+package peapod.impl;
 
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -24,19 +24,23 @@ public final class Person$Impl extends Person
     public Element element() {
         return v;
     }
-    public java.util.List<Knows> getKnowsEdge() {
-        return Collections.unmodifiableList(v.outE("knows").map(v -> Knows$Impl.framer().frame(v.get(), graph)).toList());
+    public String getName() {
+        return v.<String>property("name").orElse(null);
+    }
+    public java.util.List<Knows> getKnows() {
+        return Collections.unmodifiableList(v.outE("knows").map(v -> (peapod.impl.Knows) new peapod.impl.Knows$Impl(v.get(), graph)).toList());
     }
     public int hashCode() {
         return v.hashCode();
     }
+
     public boolean equals(Object other) {
-        return (other instanceof FramedElement) ? v.equals(((FramedElement) other).element()) : false;
+        return (other instanceof FramedElement) && v.equals(((FramedElement) other).element());
     }
+
     public String toString() {
         return v.label() + "[" + v.id() + "]";
     }
-
 
     private static final class Framer
             implements peapod.Framer<Vertex, Person> {
@@ -48,13 +52,16 @@ public final class Person$Impl extends Person
         public String label() {
             return label;
         }
+
         public Collection<String> subLabels() {
             return subLabels;
         }
+
         public Person frame(Vertex v, FramedGraph graph) {
             return new Person$Impl(v, graph);
         }
     }
+
     public static peapod.Framer<Vertex, Person> framer() {
         return Framer.instance;
     }

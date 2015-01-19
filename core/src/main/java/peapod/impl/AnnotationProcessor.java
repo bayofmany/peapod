@@ -545,7 +545,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 .endMethod()
                 .emitEmptyLine();
         writer.beginMethod("boolean", "equals", EnumSet.of(PUBLIC), Arrays.asList("Object", "other"), Collections.<String>emptyList())
-                .emitStatement("return (other instanceof FramedElement) ? %s.equals(((FramedElement) other).element()) : false", fieldName)
+                .emitStatement("return (other instanceof FramedElement) && %s.equals(((FramedElement) other).element())", fieldName)
                 .endMethod()
                 .emitEmptyLine();
         writer.beginMethod("String", "toString", EnumSet.of(PUBLIC))

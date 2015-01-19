@@ -1,4 +1,4 @@
-package peapod.testcases.outedge;
+package peapod.impl;
 
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
@@ -34,7 +34,7 @@ public final class Knows$Impl extends Knows
     }
 
     public boolean equals(Object other) {
-        return (other instanceof FramedElement) ? e.equals(((FramedElement) other).element()) : false;
+        return (other instanceof FramedElement) && e.equals(((FramedElement) other).element());
     }
 
     public String toString() {

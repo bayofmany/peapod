@@ -1,4 +1,4 @@
-package peapod.testcases.outedge;
+package peapod.impl;
 
 import peapod.annotations.Edge;
 import peapod.annotations.In;

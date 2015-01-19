@@ -1,12 +1,13 @@
-package peapod.testcases.property;
+package peapod.impl;
 
 import peapod.annotations.Vertex;
+import java.util.List;
 
 @Vertex
 public abstract class Person {
 
     public abstract String getName();
 
-    public abstract Integer getAge();
+    public abstract List<Knows> getKnows();
 
 }
