@@ -41,79 +41,75 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package peapod.impl;
+package peapod.manytooneedge;
 
-import peapod.annotations.Edge;
-import peapod.annotations.Vertex;
+import com.tinkerpop.gremlin.process.T;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.junit.Before;
+import org.junit.Test;
+import peapod.FramedGraph;
 
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
-import java.util.*;
+import static org.junit.Assert.*;
 
-public class ClassDescription extends BaseDescription {
+public class ManyToOneEdgeTest {
 
-    enum ElementType {
-        VERTEX, EDGE
+    private Person alice;
+    private Person bob;
+    private City london;
+    private City madrid;
+
+    @Before
+    public void init() {
+        Graph g = TinkerGraph.open();
+        Vertex alice = g.addVertex(T.id, 1, T.label, "person", "name", "alice");
+        Vertex bob = g.addVertex(T.id, 2, T.label, "person", "name", "bob");
+        Vertex london = g.addVertex(T.id, 3, T.label, "city", "name", "london");
+        Vertex madrid = g.addVertex(T.id, 4, T.label, "city", "name", "madrid");
+
+        alice.addEdge("hometown", london);
+
+        FramedGraph graph = new FramedGraph(g);
+        this.alice = graph.v(alice.id(), Person.class);
+        this.bob = graph.v(bob.id(), Person.class);
+        this.london = graph.v(london.id(), City.class);
+        this.madrid = graph.v(madrid.id(), City.class);
     }
 
-    private ElementType elementType;
-
-    private String packageName;
-
-    private Map<ExecutableElement, BaseDescription> method2Description = new LinkedHashMap<>();
-
-    private Map<String, BaseDescription> name2Description = new HashMap<>();
-
-    private Set<String> imports = new HashSet<>();
-
-    public ClassDescription(TypeElement t) {
-        packageName = ((PackageElement) t.getEnclosingElement()).getQualifiedName().toString();
-        if (t.getAnnotation(Vertex.class) != null) {
-            elementType = ElementType.VERTEX;
-        } else if (t.getAnnotation(Edge.class) != null) {
-            elementType = ElementType.EDGE;
-        } else {
-            throw new IllegalArgumentException("Type is not @Vertex or @Edge: " + t);
-        }
+    @Test
+    public void testGetExisting() {
+        assertEquals(london, alice.getHometown().getCity());
+        assertEquals(alice, alice.getHometown().getPerson());
     }
 
-    public ElementType getElementType() {
-        return elementType;
+    @Test
+    public void testGetNonExisting() {
+        assertNull(bob.getHometown());
     }
 
-    public BaseDescription getDescription(String name) {
-        return name2Description.get(name);
+    @Test
+    public void testSet() {
+        Hometown hometown = bob.setHometown(madrid);
+        assertNotNull(hometown);
+
+        hometown.setFromYear(2012);
+
+        assertTrue(bob.vertex().out("hometown").has(T.id, 4).hasNext());
+        assertTrue(bob.vertex().outE("hometown").has("fromYear", 2012).hasNext());
     }
 
-    public void setDescription(String property, ExecutableElement element, BaseDescription descr) {
-        name2Description.put(property, descr);
-        method2Description.put(element, descr);
-        addImport(descr.getType());
+    @Test
+    public void testSetDifferent() {
+        alice.setHometown(madrid);
+        assertTrue(alice.vertex().out("hometown").has(T.id, 4).hasNext());
+        assertTrue(london.vertex().in("hometown").toList().isEmpty());
     }
 
-    public Set<ExecutableElement> getMethods() {
-        return method2Description.keySet();
-    }
-
-    public BaseDescription getDescription(ExecutableElement method) {
-        return method2Description.get(method);
-    }
-
-    public Set<String> getImports() {
-        return imports;
-    }
-
-    public void addImport(String anImport) {
-        if (anImport != null && !anImport.startsWith("java.lang.") && !anImport.startsWith(packageName)) {
-            imports.add(anImport);
-        }
-    }
-
-    public void addImport(TypeMirror type) {
-        if (type != null && !type.getKind().isPrimitive()) {
-            addImport(type.toString());
-        }
+    @Test
+    public void testSetNull() {
+        alice.setHometown(null);
+        assertTrue(alice.vertex().out("hometown").toList().isEmpty());
+        assertTrue(london.vertex().in("hometown").toList().isEmpty());
     }
 }

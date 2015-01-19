@@ -41,79 +41,18 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package peapod.impl;
+package peapod.manytoone;
 
-import peapod.annotations.Edge;
+import peapod.FramedVertex;
 import peapod.annotations.Vertex;
 
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
-import java.util.*;
+@Vertex
+public abstract class Person implements FramedVertex {
 
-public class ClassDescription extends BaseDescription {
+    public abstract String getName();
 
-    enum ElementType {
-        VERTEX, EDGE
-    }
+    public abstract void setHometown(City city);
 
-    private ElementType elementType;
+    public abstract City getHometown();
 
-    private String packageName;
-
-    private Map<ExecutableElement, BaseDescription> method2Description = new LinkedHashMap<>();
-
-    private Map<String, BaseDescription> name2Description = new HashMap<>();
-
-    private Set<String> imports = new HashSet<>();
-
-    public ClassDescription(TypeElement t) {
-        packageName = ((PackageElement) t.getEnclosingElement()).getQualifiedName().toString();
-        if (t.getAnnotation(Vertex.class) != null) {
-            elementType = ElementType.VERTEX;
-        } else if (t.getAnnotation(Edge.class) != null) {
-            elementType = ElementType.EDGE;
-        } else {
-            throw new IllegalArgumentException("Type is not @Vertex or @Edge: " + t);
-        }
-    }
-
-    public ElementType getElementType() {
-        return elementType;
-    }
-
-    public BaseDescription getDescription(String name) {
-        return name2Description.get(name);
-    }
-
-    public void setDescription(String property, ExecutableElement element, BaseDescription descr) {
-        name2Description.put(property, descr);
-        method2Description.put(element, descr);
-        addImport(descr.getType());
-    }
-
-    public Set<ExecutableElement> getMethods() {
-        return method2Description.keySet();
-    }
-
-    public BaseDescription getDescription(ExecutableElement method) {
-        return method2Description.get(method);
-    }
-
-    public Set<String> getImports() {
-        return imports;
-    }
-
-    public void addImport(String anImport) {
-        if (anImport != null && !anImport.startsWith("java.lang.") && !anImport.startsWith(packageName)) {
-            imports.add(anImport);
-        }
-    }
-
-    public void addImport(TypeMirror type) {
-        if (type != null && !type.getKind().isPrimitive()) {
-            addImport(type.toString());
-        }
-    }
 }

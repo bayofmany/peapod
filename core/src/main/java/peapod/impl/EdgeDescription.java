@@ -43,33 +43,6 @@
 
 package peapod.impl;
 
-import peapod.Direction;
-
-import javax.lang.model.type.TypeMirror;
-
 public class EdgeDescription extends BaseDescription {
 
-    private TypeMirror edgeClass;
-
-    private Direction direction = Direction.OUT;
-
-    public boolean isEdgeClass() {
-        return edgeClass != null;
-    }
-
-    public TypeMirror getEdgeClass() {
-        return edgeClass;
-    }
-
-    public void setEdgeClass(TypeMirror edgeClass) {
-        this.edgeClass = edgeClass;
-    }
-
-    public Direction getDirection() {
-        return direction;
-    }
-
-    public void setDirection(Direction direction) {
-        this.direction = direction;
-    }
 }
