@@ -28,11 +28,11 @@ import java.util.Collection;
 /**
  * A Framer implementation converts Tinkerpop {@link com.tinkerpop.gremlin.structure.Element} instance to framed objects.
  */
-public interface Framer<S, E extends Element> {
+public interface Framer<E extends Element, F> {
 
     String label();
 
     Collection<String> subLabels();
 
-    public S frame(E element, FramedGraph framedGraph);
+    public F frame(E element, FramedGraph framedGraph);
 }

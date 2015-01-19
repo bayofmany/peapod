@@ -9,7 +9,6 @@ import peapod.FramedEdge;
 import peapod.FramedElement;
 import peapod.FramedGraph;
 import peapod.FramedVertex;
-import peapod.Framer;
 
 public final class Person$Impl extends Person
         implements FramedVertex {
@@ -25,11 +24,8 @@ public final class Person$Impl extends Person
     public Element element() {
         return v;
     }
-    public Vertex vertex() {
-        return v;
-    }
     public java.util.List<Knows> getKnowsEdge() {
-        return Collections.unmodifiableList(v.outE("knows").map(v -> (Knows) new Knows$Impl(v.get(), graph)).toList());
+        return Collections.unmodifiableList(v.outE("knows").map(v -> Knows$Impl.framer().frame(v.get(), graph)).toList());
     }
     public int hashCode() {
         return v.hashCode();
@@ -40,11 +36,15 @@ public final class Person$Impl extends Person
     public String toString() {
         return v.label() + "[" + v.id() + "]";
     }
-    private static final class PersonFramer
-            implements Framer<Person, Vertex> {
-        private static final PersonFramer instance = new PersonFramer();
+
+
+    private static final class Framer
+            implements peapod.Framer<Vertex, Person> {
+
+        private static final Framer instance = new Framer();
         private static final String label = "person";
         private static final Collection<String> subLabels = Collections.unmodifiableCollection(Arrays.asList(label));
+
         public String label() {
             return label;
         }
@@ -55,7 +55,7 @@ public final class Person$Impl extends Person
             return new Person$Impl(v, graph);
         }
     }
-    public static Framer<Person, Vertex> framer() {
-        return PersonFramer.instance;
+    public static peapod.Framer<Vertex, Person> framer() {
+        return Framer.instance;
     }
 }

@@ -25,5 +25,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 
 public interface FramedEdge extends FramedElement {
 
-    Edge edge();
+    default Edge edge() {
+        return (Edge) element();
+    }
 }

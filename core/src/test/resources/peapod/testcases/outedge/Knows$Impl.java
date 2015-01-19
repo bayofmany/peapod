@@ -8,7 +8,6 @@ import java.util.Collections;
 import peapod.FramedEdge;
 import peapod.FramedElement;
 import peapod.FramedGraph;
-import peapod.Framer;
 
 public final class Knows$Impl extends Knows
         implements FramedEdge {
@@ -24,9 +23,6 @@ public final class Knows$Impl extends Knows
     public Element element() {
         return e;
     }
-    public Edge edge() {
-        return e;
-    }
     public Person getPerson() {
         return e.outV().map(v -> new Person$Impl(v.get(), graph)).next();
     }
@@ -36,28 +32,36 @@ public final class Knows$Impl extends Knows
     public int hashCode() {
         return e.hashCode();
     }
+
     public boolean equals(Object other) {
         return (other instanceof FramedElement) ? e.equals(((FramedElement) other).element()) : false;
     }
+
     public String toString() {
         return e.label() + "[" + e.id() + "]";
     }
-    private static final class KnowsFramer
-            implements Framer<Knows, Edge> {
-        private static final KnowsFramer instance = new KnowsFramer();
+
+    private static final class Framer
+            implements peapod.Framer<Edge, Knows> {
+
+        private static final Framer instance = new Framer();
         private static final String label = "knows";
         private static final Collection<String> subLabels = Collections.unmodifiableCollection(Arrays.asList(label));
+
         public String label() {
             return label;
         }
+
         public Collection<String> subLabels() {
             return subLabels;
         }
+
         public Knows frame(Edge e, FramedGraph graph) {
             return new Knows$Impl(e, graph);
         }
     }
-    public static Framer<Knows, Edge> framer() {
-        return KnowsFramer.instance;
+
+    public static peapod.Framer<Edge, Knows> framer() {
+        return Framer.instance;
     }
 }

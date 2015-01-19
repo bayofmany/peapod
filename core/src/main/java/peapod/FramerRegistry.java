@@ -33,10 +33,10 @@ public class FramerRegistry {
 
     private Map<Class<?>, Framer<?, ?>> framers = new HashMap<>();
 
-    private <F, E extends Element> Framer<F, E> register(Class<F> framed) {
+    private <E extends Element, F> Framer<E, F> register(Class<F> framed) {
         try {
             Class<?> framingClass = framed.getClassLoader().loadClass(framed.getName() + "$Impl");
-            Framer<F, E> framer = (Framer<F, E>) framingClass.getMethod("framer").invoke(null);
+            Framer<E, F> framer = (Framer<E, F>) framingClass.getMethod("framer").invoke(null);
             framers.put(framed, framer);
             return framer;
         } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
@@ -44,8 +44,8 @@ public class FramerRegistry {
         }
     }
 
-    protected <F, E extends Element> Framer<F, E> get(Class<F> framed) {
-        return (Framer<F, E>) framers.getOrDefault(framed, register(framed));
+    protected <E extends Element, F> Framer<E, F> get(Class<F> framed) {
+        return (Framer<E, F>) framers.getOrDefault(framed, register(framed));
     }
 
 }

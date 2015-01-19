@@ -9,7 +9,6 @@ import peapod.FramedEdge;
 import peapod.FramedElement;
 import peapod.FramedGraph;
 import peapod.FramedVertex;
-import peapod.Framer;
 
 public final class Person$Impl extends Person
         implements FramedVertex {
@@ -25,9 +24,6 @@ public final class Person$Impl extends Person
     public Element element() {
         return v;
     }
-    public Vertex vertex() {
-        return v;
-    }
     public String getAcl() {
         return v.<String>property(com.tinkerpop.gremlin.structure.Graph.Key.hide("acl")).orElse(null);
     }
@@ -40,9 +36,11 @@ public final class Person$Impl extends Person
     public String toString() {
         return v.label() + "[" + v.id() + "]";
     }
-    private static final class PersonFramer
-            implements Framer<Person, Vertex> {
-        private static final PersonFramer instance = new PersonFramer();
+
+
+    private static final class Framer
+            implements peapod.Framer<Vertex, Person> {
+        private static final Framer instance = new Framer();
         private static final String label = "person";
         private static final Collection<String> subLabels = Collections.unmodifiableCollection(Arrays.asList(label));
         public String label() {
@@ -54,8 +52,8 @@ public final class Person$Impl extends Person
         public Person frame(Vertex v, FramedGraph graph) {
             return new Person$Impl(v, graph);
         }
-    }
-    public static Framer<Person, Vertex> framer() {
-        return PersonFramer.instance;
+    }a
+    public static peapod.Framer<Vertex, Person> framer() {
+        return Framer.instance;
     }
 }

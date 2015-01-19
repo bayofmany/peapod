@@ -25,9 +25,11 @@ import com.tinkerpop.gremlin.structure.Vertex;
 
 public interface FramedVertex extends FramedElement, FramedVertexTraversal {
 
-    Vertex vertex();
+    default Vertex vertex() {
+        return (Vertex) element();
+    }
 
-    public default FramedGraphTraversal start() {
+    default FramedGraphTraversal start() {
         return new FramedGraphTraversal(vertex().start(), graph());
     }
 

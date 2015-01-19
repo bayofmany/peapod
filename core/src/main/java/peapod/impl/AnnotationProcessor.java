@@ -118,7 +118,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
             JavaWriter writer = new JavaWriter(out);
             PackageElement packageEl = (PackageElement) type.getEnclosingElement();
             writer.emitPackage(packageEl.getQualifiedName().toString())
-                    .emitImports(com.tinkerpop.gremlin.structure.Vertex.class, com.tinkerpop.gremlin.structure.Element.class, FramedVertex.class, FramedEdge.class, FramedElement.class, FramedGraph.class, Framer.class, Collection.class, Arrays.class, Collections.class)
+                    .emitImports(com.tinkerpop.gremlin.structure.Vertex.class, com.tinkerpop.gremlin.structure.Element.class, FramedVertex.class, FramedEdge.class, FramedElement.class, FramedGraph.class, Collection.class, Arrays.class, Collections.class)
                     .emitImports(description.getImports())
                     .emitEmptyLine()
                     .beginType(type.getQualifiedName() + "$Impl", "class", EnumSet.of(PUBLIC, Modifier.FINAL), type.getQualifiedName().toString(), FramedVertex.class.getName())
@@ -132,9 +132,6 @@ public final class AnnotationProcessor extends AbstractProcessor {
                     .emitStatement("return graph")
                     .endMethod()
                     .beginMethod("Element", "element", EnumSet.of(PUBLIC))
-                    .emitStatement("return v")
-                    .endMethod()
-                    .beginMethod("Vertex", "vertex", EnumSet.of(PUBLIC))
                     .emitStatement("return v")
                     .endMethod();
 
@@ -514,7 +511,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
             JavaWriter writer = new JavaWriter(out);
             PackageElement packageEl = (PackageElement) type.getEnclosingElement();
             writer.emitPackage(packageEl.getQualifiedName().toString())
-                    .emitImports(com.tinkerpop.gremlin.structure.Edge.class, com.tinkerpop.gremlin.structure.Element.class, FramedEdge.class, FramedElement.class, FramedGraph.class, Framer.class, Collection.class, Arrays.class, Collections.class)
+                    .emitImports(com.tinkerpop.gremlin.structure.Edge.class, com.tinkerpop.gremlin.structure.Element.class, FramedEdge.class, FramedElement.class, FramedGraph.class, Collection.class, Arrays.class, Collections.class)
                     .emitEmptyLine()
                     .beginType(type.getQualifiedName() + "$Impl", "class", EnumSet.of(PUBLIC, Modifier.FINAL), type.getQualifiedName().toString(), FramedEdge.class.getSimpleName())
                     .emitField(peapod.FramedGraph.class.getSimpleName(), "graph", EnumSet.of(PRIVATE))
@@ -527,9 +524,6 @@ public final class AnnotationProcessor extends AbstractProcessor {
                     .emitStatement("return graph")
                     .endMethod()
                     .beginMethod("Element", "element", EnumSet.of(PUBLIC))
-                    .emitStatement("return e")
-                    .endMethod()
-                    .beginMethod("Edge", "edge", EnumSet.of(PUBLIC))
                     .emitStatement("return e")
                     .endMethod();
 
@@ -548,13 +542,16 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
         writer.beginMethod("int", "hashCode", EnumSet.of(PUBLIC))
                 .emitStatement("return %s.hashCode()", fieldName)
-                .endMethod();
+                .endMethod()
+                .emitEmptyLine();
         writer.beginMethod("boolean", "equals", EnumSet.of(PUBLIC), Arrays.asList("Object", "other"), Collections.<String>emptyList())
                 .emitStatement("return (other instanceof FramedElement) ? %s.equals(((FramedElement) other).element()) : false", fieldName)
-                .endMethod();
+                .endMethod()
+                .emitEmptyLine();
         writer.beginMethod("String", "toString", EnumSet.of(PUBLIC))
                 .emitStatement("return %s.label() + \"[\" + %s.id() + \"]\"", fieldName, fieldName)
-                .endMethod();
+                .endMethod()
+                .emitEmptyLine();
 
         Set<Modifier> modifiers = new HashSet<>(Arrays.asList(Modifier.PRIVATE, Modifier.STATIC, FINAL));
 
@@ -569,25 +566,30 @@ public final class AnnotationProcessor extends AbstractProcessor {
             initializer = "Arrays.asList(label, " + collect + ")";
         }
 
-        String framer = "Framer<" + type + ", " + (vertex ? "Vertex" : "Edge") + ">";
-        writer.beginType(type + "Framer", "class", modifiers, null, framer)
-                .emitField(type + "Framer", "instance", modifiers, "new " + type.getSimpleName() + "Framer()")
+        String framer = "peapod.Framer<" + (vertex ? "Vertex" : "Edge") + ", " + type + ">";
+        writer.beginType("Framer", "class", modifiers, null, framer)
+                .emitEmptyLine()
+                .emitField("Framer", "instance", modifiers, "new Framer()")
                 .emitField("String", "label", modifiers, "\"" + label + "\"")
                 .emitField("Collection<String>", "subLabels", modifiers, "Collections.unmodifiableCollection(" + initializer + ")")
+                .emitEmptyLine()
                 .beginMethod("String", "label", Collections.singleton(PUBLIC))
                 .emitStatement("return label")
                 .endMethod()
+                .emitEmptyLine()
                 .beginMethod("Collection<String>", "subLabels", Collections.singleton(PUBLIC))
                 .emitStatement("return subLabels")
                 .endMethod()
+                .emitEmptyLine()
                 .beginMethod(type.toString(), "frame", Collections.singleton(PUBLIC), vertex ? "Vertex" : "Edge", fieldName, "FramedGraph", "graph")
                 .emitStatement("return new %s$Impl(%s, graph)", type.getSimpleName(), fieldName)
                 .endMethod()
-                .endType();
+                .endType()
+                .emitEmptyLine();
 
         modifiers = new HashSet<>(Arrays.asList(Modifier.PUBLIC, Modifier.STATIC));
         writer.beginMethod(framer, "framer", modifiers)
-                .emitStatement("return %sFramer.instance", type.getSimpleName())
+                .emitStatement("return Framer.instance")
                 .endMethod();
 
     }

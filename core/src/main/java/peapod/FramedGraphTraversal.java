@@ -188,7 +188,7 @@ public class FramedGraphTraversal<S, E> {
             return;
         }
 
-        Framer<F, Element> framer = FramerRegistry.instance.get(framingClass);
+        Framer<Element, F> framer = FramerRegistry.instance.get(framingClass);
 
         MapStep<Vertex, F> mapStep = new MapStep<>(traversal);
         mapStep.setFunction(v -> framer.frame(v.get(), graph));
