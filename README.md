@@ -43,8 +43,8 @@ This way you define the framed vertices and edges:
 And this way you query for and interact with the framed objects:
     
     public void testClassic() {
-        TinkerGraph classic = TinkerFactory.createClassic();
-        FramedGraph graph = new FramedGraph(classic);
+        Graph g = TinkerFactory.createClassic();
+        FramedGraph graph = new FramedGraph(g);
         Person marko = graph.v(1, Person.class);
         assertEquals("marko", marko.getName());
 
