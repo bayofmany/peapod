@@ -11,7 +11,8 @@ This project is similar to the [Totorom](https://github.com/BrynCooke/totorom) l
 * Like Tinkerpop 2 Frames, Peapod uses code generation to implement the framed vertex and edge classes. Unlike Frames and Ferma, the code is generated at compile-time using annotation processors. The generated java source code is completely transparent. There is no code generation at runtime, so no additional startup cost, and the use of reflection is limited in order to have minimal performance overhead.
 * In a next iteration, the peapod generator will generate a full DSL to traverse your domain model using the [Traversal API in Tinkerpop 3](http://www.tinkerpop.com/docs/3.0.0.M7/#_domain_specific_languages)
 
-To integrate peapod in your project, include the following dependency. (Still working towards a first working release).
+To integrate peapod in your project, include the following dependency. <br /> 
+(Still working towards a first working release, for now use the [CloudBees snapshot repository](http://repository-bayofmany.forge.cloudbees.com/snapshot)).
 
     <dependency>
         <groupId>org.bayofmany.peapod</groupId>
