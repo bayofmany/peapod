@@ -3,7 +3,7 @@
 > The project's name refers to the java class encapsulation of graph vertices, 
 > just like peapods are wrapping peas.
 
-An ORM / OGM for the Tinkerpop 3 graph stack. This project has been created as an alternative to the Frames module in Tinkerpop 2.
+An Object-Graph Wrapper (OGW) for the Tinkerpop 3 graph stack. This project has been created as an alternative to the Frames module in Tinkerpop 2.
 
 
 This project is similar to the [Totorom](https://github.com/BrynCooke/totorom) library created by Bryn Cook and the [Ferma](https://github.com/Syncleus/Ferma) library created by Jeffrey Phillips Freeman. The main differences are:
@@ -26,8 +26,11 @@ This way you define the framed vertices and edges:
     public abstract class Person {
       public abstract String getName();
       public abstract void setName(String name);
+
       public abstract List<Knows> getKnows();
-      public abstract Knows addKnows(Person friend);
+      public abstract Knows getKnows(Person person);
+      public abstract Knows addKnows(Person person);
+      public abstract Knows removeKnows(Person person);
     }
     
     @Vertex
