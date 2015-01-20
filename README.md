@@ -18,7 +18,7 @@ To integrate peapod in your project, include the following dependency. (Still wo
         <version>0.1.0-SNAPSHOT</version>
     </dependency>
 
-<img src="http://www.tinkerpop.com/docs/3.0.0.M6/images/tinkerpop-classic.png" width="400" >
+<img src="http://www.tinkerpop.com/docs/3.0.0.M7/images/tinkerpop-classic.png" width="400" >
 
 This way you define the framed vertices and edges:
 
@@ -45,12 +45,17 @@ And this way you query for and interact with the framed objects:
     public void testClassic() {
         Graph g = TinkerFactory.createClassic();
         FramedGraph graph = new FramedGraph(g);
+
         Person marko = graph.v(1, Person.class);
         assertEquals("marko", marko.getName());
 
+        Person vadas = graph.v(2, Person.class);
+        Person josh = graph.v(4, Person.class);
+
         List<Person> result = graph.V(Person.class).has("name", "josh").toList();
-        assertEquals(1, result.size());
-        assertEquals("josh", result.get(0).getName());
+        assertThat(result, contains(josh));
+
+        assertThat(marko.getKnows(), containsInAnyOrder(vadas, josh));
     }
     
 This project uses code derived from the [Tinkerpop](http://www.tinkerpop.com/) project under the Apache license and/or Tinkerpop license.
