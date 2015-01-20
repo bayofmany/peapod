@@ -33,7 +33,7 @@ This way you define the framed vertices and edges:
       public abstract Knows removeKnows(Person person);
     }
     
-    @Vertex
+    @Edge
     public abstract class Knows {
       public abstract void setYears(int years);
       public abstract int getYears();
