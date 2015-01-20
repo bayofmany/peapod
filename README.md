@@ -3,12 +3,13 @@
 > The project's name refers to the java class encapsulation of graph vertices. <br />
 > It's a just like peapods wrapping peas.
 
-An Object-Graph Wrapper (OGW) for the Tinkerpop 3 graph stack. This project has been created as an alternative to the Frames module in Tinkerpop 2.
+An object-graph wrapper (OGW) for the Tinkerpop 3 graph stack. This project has been created as an alternative to the Frames module in Tinkerpop 2.
 
 
 This project is similar to the [Totorom](https://github.com/BrynCooke/totorom) library created by Bryn Cook and the [Ferma](https://github.com/Syncleus/Ferma) library created by Jeffrey Phillips Freeman. The main differences are:
 * Peapod is based upon Tinkerpop 3.
-* Like Tinkerpop Frames, Peapod uses code generation to implement the framed vertex and edge classes. It makes the integration with Tinkerpop 3 easier and minimizes code duplication. Unlike Tinkerpop Frames and Ferma, the code is generated at compile-time using  annotation processors. The generated code is completely transparent and readable by the developer. There is no startup cost of runtime code generation and the use of reflection is limited in order to have minimal performance overhead.
+* Like Tinkerpop 2 Frames, Peapod uses code generation to implement the framed vertex and edge classes. It allows to create a rich application domain model based on the underlying Tinkerpop graph. Unlike Frames and Ferma, the code is generated at compile-time using annotation processors. The generated java source code is completely transparent and readable by the developer. There is no startup cost of runtime code generation and the use of reflection is limited in order to have minimal performance overhead.
+* In a next iteration, the peapod generator will generate a full DSL to traverse your domain model using the [Traversal API in Tinkerpop 3](http://www.tinkerpop.com/docs/3.0.0.M7/#_domain_specific_languages)
 
 To integrate peapod in your project, include the following dependency. (Still working towards a first working release).
 
