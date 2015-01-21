@@ -32,6 +32,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Extension of {@link com.tinkerpop.gremlin.process.Traversal} supporting framed vertices and edges.
@@ -153,12 +154,12 @@ public class FramedGraphTraversal<S, E> {
     }
 
     public FramedGraphTraversal<S, E> except(E exceptionObject) {
-        traversal.except(exceptionObject);
+        traversal.except(exceptionObject instanceof FramedElement ? (E) ((FramedElement)exceptionObject).element() : exceptionObject);
         return this;
     }
 
     public FramedGraphTraversal<S, E> except(Collection<E> exceptionCollection) {
-        traversal.except(exceptionCollection);
+        traversal.except(exceptionCollection.stream().map(e -> e instanceof FramedElement ? (E) ((FramedElement)e).element() : e).collect(Collectors.toList()));
         return this;
     }
 
