@@ -63,7 +63,7 @@ public class ManyToManyTest {
     @Test
     public void testAdd() {
         alice.addFriend(charlie);
-        List<Vertex> f = alice.out("friend").toList();
+        List<Vertex> f = alice.vertex().out("friend").toList();
         assertThat(f, containsInAnyOrder(bob.vertex(), charlie.vertex()));
     }
 

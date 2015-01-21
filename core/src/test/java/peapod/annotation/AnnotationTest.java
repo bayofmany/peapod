@@ -85,7 +85,7 @@ public class AnnotationTest {
     @Test
     public void testAdd() {
         alice.addFriend(charlie);
-        List<Vertex> f = alice.out("e-friend").toList();
+        List<Vertex> f = alice.vertex().out("e-friend").toList();
         assertThat(f, containsInAnyOrder(bob.vertex(), charlie.vertex()));
     }
 

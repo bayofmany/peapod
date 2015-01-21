@@ -97,10 +97,10 @@ public class FramedGraphTraversal<S, E> {
         return this;
     }
 
-    public FramedGraphTraversal<S, E> values(final String... propertyKeys) {
+    public <E2> FramedGraphTraversal<S, E2> values(final String... propertyKeys) {
         this.lastFramingClass = null;
         traversal.values(propertyKeys);
-        return this;
+        return (FramedGraphTraversal<S, E2>) this;
     }
 
     public FramedGraphTraversal<S, E> filter(final Predicate<Traverser<E>> predicate) {
@@ -120,14 +120,14 @@ public class FramedGraphTraversal<S, E> {
         return (FramedGraphTraversal<S, E2>) this;
     }
 
-    public FramedGraphTraversal<S, E> out(String... edgeLabels) {
+    public FramedGraphTraversal<S, Vertex> out(String... edgeLabels) {
         traversal.out(edgeLabels);
-        return this;
+        return (FramedGraphTraversal<S, Vertex>) this;
     }
 
-    public FramedGraphTraversal<S, E> in(String... edgeLabels) {
+    public FramedGraphTraversal<S, Vertex> in(String... edgeLabels) {
         traversal.in(edgeLabels);
-        return this;
+        return (FramedGraphTraversal<S, Vertex>) this;
     }
 
     public FramedGraphTraversal<S, E> as(final String label) {
@@ -136,10 +136,10 @@ public class FramedGraphTraversal<S, E> {
         return this;
     }
 
-    public FramedGraphTraversal<S, E> back(final String label) {
+    public <E2> FramedGraphTraversal<S, E2> back(final String label) {
         lastFramingClass = stepLabel2FrameClass.get(label);
         traversal.back(label);
-        return this;
+        return (FramedGraphTraversal<S, E2>) this;
     }
 
     public FramedGraphTraversal<S, E> dedup() {

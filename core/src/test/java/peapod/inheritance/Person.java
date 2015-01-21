@@ -21,10 +21,11 @@
 
 package peapod.inheritance;
 
+import peapod.FramedVertex;
 import peapod.annotations.Vertex;
 
 @Vertex
-public abstract class Person {
+public abstract class Person implements FramedVertex<Person> {
 
     public abstract String getName();
 

@@ -102,10 +102,9 @@ public class LinkedVertexTest {
 
     @Test
     public void testVertexOut() {
-        List<Person> friends = alice.out("friend", Person.class).toList();
-        assertThat(friends, containsInAnyOrder(bob, charlie));
+        assertThat(alice.out("friend", Person.class).toList(), containsInAnyOrder(bob, charlie));
 
-        List<String> names = alice.out("friend", Person.class).values("name").toList();
+        List<String> names = alice.out("friend", Person.class).<String>values("name").toList();
         assertThat(names, containsInAnyOrder("bob", "charlie"));
 
         Set<Person> me = alice.out("friend", Person.class).in("friend", Person.class).toSet();
@@ -117,7 +116,7 @@ public class LinkedVertexTest {
         List<Person> friends = bob.in("friend", Person.class).toList();
         assertThat(friends, containsInAnyOrder(alice));
 
-        List<String> names = bob.in("friend", Person.class).values("name").toList();
+        List<String> names = bob.in("friend", Person.class).<String>values("name").toList();
         assertThat(names, containsInAnyOrder("alice"));
 
         Set<Person> me = bob.in("friend", Person.class).out("friend", Person.class).toSet();

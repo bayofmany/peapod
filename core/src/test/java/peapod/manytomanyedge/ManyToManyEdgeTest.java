@@ -76,7 +76,7 @@ public class ManyToManyEdgeTest {
         assertEquals(alice, friend.getPerson());
         assertEquals(charlie, friend.getFriend());
 
-        List<Vertex> f = alice.out("friend").toList();
+        List<Vertex> f = alice.vertex().out("friend").toList();
         assertThat(f, containsInAnyOrder(bob.vertex(), charlie.vertex()));
     }
 

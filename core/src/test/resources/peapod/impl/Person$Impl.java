@@ -13,7 +13,7 @@ import peapod.FramedGraph;
 import peapod.FramedVertex;
 
 public final class Person$Impl extends Person
-        implements FramedVertex {
+        implements FramedVertex<Person> {
     private FramedGraph graph;
     private Vertex v;
     public Person$Impl(Vertex v, FramedGraph graph) {

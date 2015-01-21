@@ -47,7 +47,7 @@ import peapod.FramedVertex;
 import peapod.annotations.Vertex;
 
 @Vertex
-public abstract class City implements FramedVertex {
+public abstract class City implements FramedVertex<City> {
 
     public abstract String getName();
 

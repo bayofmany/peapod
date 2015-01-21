@@ -23,13 +23,13 @@ package peapod;
 
 import com.tinkerpop.gremlin.structure.Vertex;
 
-public interface FramedVertex extends FramedElement, FramedVertexTraversal {
+public interface FramedVertex<V> extends FramedElement, FramedVertexTraversal<V> {
 
     default Vertex vertex() {
         return (Vertex) element();
     }
 
-    default FramedGraphTraversal start() {
+    default FramedGraphTraversal<V, V> start() {
         return new FramedGraphTraversal(vertex().start(), graph());
     }
 

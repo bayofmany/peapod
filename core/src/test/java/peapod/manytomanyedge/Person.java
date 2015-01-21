@@ -27,7 +27,7 @@ import peapod.annotations.Vertex;
 import java.util.List;
 
 @Vertex
-public abstract class Person implements FramedVertex {
+public abstract class Person implements FramedVertex<Person> {
 
     public abstract String getName();
 

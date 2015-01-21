@@ -121,7 +121,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
                     .emitImports(com.tinkerpop.gremlin.structure.Vertex.class, com.tinkerpop.gremlin.structure.Element.class, FramedVertex.class, FramedEdge.class, FramedElement.class, FramedGraph.class, Collection.class, Arrays.class, Collections.class, GraphTraversal.class, com.tinkerpop.gremlin.structure.Edge.class)
                     .emitImports(description.getImports())
                     .emitEmptyLine()
-                    .beginType(type.getQualifiedName() + "$Impl", "class", EnumSet.of(PUBLIC, Modifier.FINAL), type.getQualifiedName().toString(), FramedVertex.class.getName())
+                    .beginType(type.getQualifiedName() + "$Impl", "class", EnumSet.of(PUBLIC, Modifier.FINAL), type.getQualifiedName().toString(), "FramedVertex<" + getBaseType(type).getSimpleName() + ">")
                     .emitField(peapod.FramedGraph.class.getName(), "graph", EnumSet.of(PRIVATE))
                     .emitField(com.tinkerpop.gremlin.structure.Vertex.class.getName(), "v", EnumSet.of(PRIVATE))
                     .beginConstructor(EnumSet.of(PUBLIC), "Vertex", "v", FramedGraph.class.getSimpleName(), "graph")
@@ -153,6 +153,15 @@ public final class AnnotationProcessor extends AbstractProcessor {
                     .endType();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private TypeElement getBaseType(TypeElement type) {
+        TypeMirror superclass = type.getSuperclass();
+        if (hasAnnotation(superclass, Vertex.class)) {
+            return getBaseType((TypeElement) types.asElement(superclass));
+        } else {
+            return type;
         }
     }
 

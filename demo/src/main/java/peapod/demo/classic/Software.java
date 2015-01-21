@@ -27,7 +27,7 @@ import peapod.annotations.Out;
 import peapod.annotations.Vertex;
 
 @Vertex
-public abstract class Software implements FramedVertex {
+public abstract class Software implements FramedVertex<Software> {
 
     public abstract String getName();
 
