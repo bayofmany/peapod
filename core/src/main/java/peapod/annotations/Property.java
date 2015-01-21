@@ -33,5 +33,4 @@ public @interface Property {
 
     String name() default "";
 
-    boolean hidden() default false;
 }

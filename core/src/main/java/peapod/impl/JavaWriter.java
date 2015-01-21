@@ -43,26 +43,35 @@
 
 package peapod.impl;
 
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Set;
 
-public abstract class BaseDescription {
+public class JavaWriter extends com.squareup.javawriter.JavaWriter {
 
-    private TypeMirror type;
-    private String name;
-
-    public String getName() {
-        return name;
+    /**
+     * @param out the stream to which Java source will be written. This should be a buffered stream.
+     */
+    public JavaWriter(Writer out) {
+        super(out);
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public JavaWriter beginMethod(ExecutableElement method, Set<Modifier> modifiers) throws IOException {
+        String[] params = new String[method.getParameters().size() * 2];
+        int i = 0;
+
+        for (VariableElement var : method.getParameters()) {
+            params[i++] = var.asType().toString();
+            params[i++] = var.getSimpleName().toString();
+        }
+        return (JavaWriter) super.beginMethod(method.getReturnType().toString(), method.getSimpleName().toString(), modifiers, params);
     }
 
-    public TypeMirror getType() {
-        return type;
-    }
-
-    public void setType(TypeMirror type) {
-        this.type = type;
+    public String compressType(TypeMirror type) {
+        return super.compressType(type.toString());
     }
 }

@@ -21,8 +21,8 @@
 
 package peapod.impl;
 
-import com.squareup.javawriter.JavaWriter;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import peapod.*;
 import peapod.annotations.*;
 
@@ -118,7 +118,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
             JavaWriter writer = new JavaWriter(out);
             PackageElement packageEl = (PackageElement) type.getEnclosingElement();
             writer.emitPackage(packageEl.getQualifiedName().toString())
-                    .emitImports(com.tinkerpop.gremlin.structure.Vertex.class, com.tinkerpop.gremlin.structure.Element.class, FramedVertex.class, FramedEdge.class, FramedElement.class, FramedGraph.class, Collection.class, Arrays.class, Collections.class)
+                    .emitImports(com.tinkerpop.gremlin.structure.Vertex.class, com.tinkerpop.gremlin.structure.Element.class, FramedVertex.class, FramedEdge.class, FramedElement.class, FramedGraph.class, Collection.class, Arrays.class, Collections.class, GraphTraversal.class, com.tinkerpop.gremlin.structure.Edge.class)
                     .emitImports(description.getImports())
                     .emitEmptyLine()
                     .beginType(type.getQualifiedName() + "$Impl", "class", EnumSet.of(PUBLIC, Modifier.FINAL), type.getQualifiedName().toString(), FramedVertex.class.getName())
@@ -157,11 +157,11 @@ public final class AnnotationProcessor extends AbstractProcessor {
     }
 
     private ClassDescription parse(TypeElement type) {
-        List<Element> elements = new ArrayList<>();
+        List<ExecutableElement> elements = new ArrayList<>();
 
         TypeElement t = type;
         do {
-            t.getEnclosedElements().stream().filter(e -> e.getKind() == METHOD && e.getModifiers().contains(Modifier.ABSTRACT)).forEach(elements::add);
+            t.getEnclosedElements().stream().filter(e -> e.getKind() == METHOD && e.getModifiers().contains(Modifier.ABSTRACT)).forEach(e -> elements.add((ExecutableElement) e));
             if (t.getSuperclass().getKind() == DECLARED) {
                 t = (TypeElement) types.asElement(t.getSuperclass());
             } else {
@@ -170,78 +170,74 @@ public final class AnnotationProcessor extends AbstractProcessor {
         }
         while (t != null);
 
-        ClassDescription description = new ClassDescription(type);
-        elements.stream().forEach(e -> parse((ExecutableElement) e, description));
+        ClassDescription description = new ClassDescription(type, elements);
+
+        Map<String, List<ExecutableElement>> property2Methods = elements.stream().collect(Collectors.groupingBy(this::extractProperty));
+        property2Methods.forEach((p, l) -> parse(description, p, l));
+
         return description;
     }
 
-    private void parse(ExecutableElement method, ClassDescription description) {
+    private String extractProperty(ExecutableElement method) {
         MethodType type = MethodType.getType(method);
         if (type == null) {
-            messager.printMessage(ERROR, "Unsupported abstract method: " + method);
-            return;
+            messager.printMessage(ERROR, "Unsupported abstract method: " + method.getEnclosingElement() + "::" + method);
+            return null;
         }
 
         String property = type.getPropertyName(method);
-
-        TypeMirror singularType;
-        if (type == MethodType.SETTER || type == MethodType.REMOVER || (type == MethodType.ADDER && method.getReturnType().getKind() == VOID)) {
-            singularType = getSingularizedType(method.getParameters().get(0).asType());
-        } else {
-            singularType = getSingularizedType(method.getReturnType());
+        if (getCollectionType(method.getReturnType()) != null) {
+            property = Inflector.getInstance().singularize(property);
         }
+        return property;
+    }
 
-        boolean isVertex = hasAnnotation(singularType, Vertex.class);
-        boolean isEdge = hasAnnotation(singularType, Edge.class);
+    private void parse(ClassDescription description, String property, List<ExecutableElement> methods) {
+        String label = null;
 
-        if (isVertex || isEdge) {
-            if (description.getElementType() == EDGE && type != MethodType.GETTER) {
-                messager.printMessage(ERROR, "@Edge classes cannot have linked vertex update methods: " + method);
-                return;
-            }
+        boolean isProperty = true;
 
-            EdgeDescription descr = (EdgeDescription) description.getDescription(property);
-            if (descr == null) {
-                descr = new EdgeDescription();
-            }
-            descr.setType(singularType);
+        for (ExecutableElement method : methods) {
+            TypeMirror singularType;
 
-            CollectionType collectionType = getCollectionType(method.getReturnType());
-            if (collectionType == null) {
-                descr.setName(property);
+            MethodType type = MethodType.getType(method);
+            if (type == MethodType.SETTER || type == MethodType.REMOVER || (type == MethodType.ADDER && method.getReturnType().getKind() == VOID)) {
+                singularType = getSingularizedType(method.getParameters().get(0).asType());
             } else {
-                description.addImport(collectionType.getImport());
-                property = Inflector.getInstance().singularize(property);
-                descr.setName(property);
+                singularType = getSingularizedType(method.getReturnType());
             }
 
-            if (isVertex) {
-                LinkedVertex linkedVertex = method.getAnnotation(LinkedVertex.class);
-                if (linkedVertex != null) {
-                    if (!linkedVertex.label().isEmpty()) {
-                        descr.setName(linkedVertex.label());
+            boolean isVertex = hasAnnotation(singularType, Vertex.class);
+            boolean isEdge = hasAnnotation(singularType, Edge.class);
+
+            if (isVertex || isEdge) {
+                if (description.getElementType() == EDGE && type != MethodType.GETTER) {
+                    messager.printMessage(ERROR, "@Edge classes cannot have linked vertex update methods: " + method);
+                    continue;
+                }
+
+                if (isVertex) {
+                    LinkedVertex linkedVertex = method.getAnnotation(LinkedVertex.class);
+                    if (linkedVertex != null && !linkedVertex.label().isEmpty()) {
+                        label = linkedVertex.label();
                     }
-                }
-            } else {
-                Element edgeClass = types.asElement(singularType);
-                Edge edgeAnnotation = edgeClass.getAnnotation(Edge.class);
-                if (!edgeAnnotation.label().isEmpty()) {
-                    descr.setName(edgeAnnotation.label());
                 } else {
-                    descr.setName(edgeClass.getSimpleName().toString().toLowerCase());
+                    TypeElement edgeClass = (TypeElement) types.asElement(singularType);
+                    label = getLabel(edgeClass);
                 }
-            }
-            description.setDescription(property, method, descr);
-        } else {
-            PropertyDescription descr = (PropertyDescription) description.getDescription(property);
-            if (descr == null) {
-                descr = new PropertyDescription();
-                descr.setName(property);
-                descr.setType(singularType);
-            }
 
-            description.setDescription(property, method, descr);
+                isProperty = false;
+            }
         }
+
+        if (label == null) {
+            label = property;
+        }
+
+        String finalLabel = label;
+        boolean finalIsProperty = isProperty;
+        methods.forEach(m -> description.setLabel(m, finalLabel, finalIsProperty));
+
     }
 
     private TypeMirror getSingularizedType(TypeMirror type) {
@@ -262,16 +258,15 @@ public final class AnnotationProcessor extends AbstractProcessor {
     private void implementAbstractMethods(ClassDescription description, JavaWriter writer, boolean vertex) throws IOException {
         for (ExecutableElement method : description.getMethods()) {
             MethodType methodType = MethodType.getType(method);
-            BaseDescription descr = description.getDescription(method);
-            if (descr instanceof PropertyDescription) {
-                implementAbstractPropertyMethod(method, methodType, (PropertyDescription) descr, writer, vertex);
+            if (description.isProperty(method)) {
+                implementAbstractPropertyMethod(method, methodType, description.getLabel(method), writer, vertex);
             } else {
-                implementAbstractEdgeMethod(method, methodType, (EdgeDescription) descr, writer, vertex);
+                implementAbstractEdgeMethod(method, methodType, description.getLabel(method), writer, vertex);
             }
         }
     }
 
-    private void implementAbstractPropertyMethod(ExecutableElement method, MethodType methodType, PropertyDescription p, JavaWriter writer, boolean vertex) throws IOException {
+    private void implementAbstractPropertyMethod(ExecutableElement method, MethodType methodType, String label, JavaWriter writer, boolean vertex) throws IOException {
         String fieldName = vertex ? "v" : "e";
 
         Set<Modifier> modifiers = new HashSet<>(method.getModifiers());
@@ -280,31 +275,33 @@ public final class AnnotationProcessor extends AbstractProcessor {
         if (methodType == MethodType.GETTER) {
             String className;
             if (method.getReturnType().getKind().isPrimitive()) {
-                className = primitiveToClass(p.getType());
+                className = primitiveToClass(method.getReturnType());
             } else {
-                className = types.asElement(p.getType()).getSimpleName().toString();
+                className = types.asElement(method.getReturnType()).getSimpleName().toString();
             }
 
             writer.beginMethod(method.getReturnType().toString(), method.getSimpleName().toString(), modifiers)
-                    .emitStatement("return %s.<%s>property(\"%s\").orElse(%s)", fieldName, className, p.getName(), getDefaultValue(p.getType()))
+                    .emitStatement("return %s.<%s>property(\"%s\").orElse(%s)", fieldName, className, label, getDefaultValue(method.getReturnType()))
                     .endMethod();
 
         } else if (methodType == MethodType.SETTER) {
-            writer.beginMethod(method.getReturnType().toString(), method.getSimpleName().toString(), modifiers, p.getType().toString(), p.getName());
-            if (p.isPrimitive()) {
-                writer.emitStatement(fieldName + ".%s(\"%s\", %s)", vertex ? "singleProperty" : "property", p.getName(), p.getName());
+            String parameterName = method.getParameters().isEmpty() ? null : method.getParameters().get(0).getSimpleName().toString();
+
+            writer.beginMethod(method, modifiers);
+            if (method.getParameters().get(0).asType().getKind().isPrimitive()) {
+                writer.emitStatement(fieldName + ".%s(\"%s\", %s)", vertex ? "singleProperty" : "property", label, parameterName);
             } else {
-                writer.beginControlFlow("if (" + p.getName() + " == null)")
-                        .emitStatement(fieldName + ".property(\"%s\").remove()", p.getName())
+                writer.beginControlFlow("if (%s == null)", parameterName)
+                        .emitStatement(fieldName + ".property(\"%s\").remove()", label)
                         .nextControlFlow("else")
-                        .emitStatement(fieldName + ".%s(\"%s\", %s)", vertex ? "singleProperty" : "property", p.getName(), p.getName())
+                        .emitStatement(fieldName + ".%s(\"%s\", %s)", vertex ? "singleProperty" : "property", label, parameterName)
                         .endControlFlow();
             }
             writer.endMethod();
         }
     }
 
-    private void implementAbstractEdgeMethod(ExecutableElement method, MethodType methodType, EdgeDescription e, JavaWriter writer, boolean vertex) throws IOException {
+    private void implementAbstractEdgeMethod(ExecutableElement method, MethodType methodType, String label, JavaWriter writer, boolean vertex) throws IOException {
         String fieldName = vertex ? "v" : "e";
 
         Set<Modifier> modifiers = new HashSet<>(method.getModifiers());
@@ -316,7 +313,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
         Direction direction = getDirection(method, methodType);
 
-        if (methodType == MethodType.GETTER) {
+        if (methodType == MethodType.GETTER || methodType == MethodType.FILTERED_GETTER) {
 
             CollectionType collectionType = getCollectionType(method.getReturnType());
             if (collectionType != null) {
@@ -333,30 +330,35 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 Edge edgeAnnotation = element.getAnnotation(Edge.class);
 
                 if (vertexAnnotation != null) {
-                    String statement = String.format("%s.%s(\"%s\").map(v -> (%s) new %s$Impl(%s.get(), graph)", fieldName, direction.toMethod(), e.getName(), element.toString(), element.toString(), fieldName);
+                    String statement = String.format("%s.%s(\"%s\").map(v -> (%s) new %s$Impl(%s.get(), graph)", fieldName, direction.toMethod(), label, element.toString(), element.toString(), fieldName);
 
-                    writer.beginMethod(returnType.toString(), method.getSimpleName().toString(), modifiers)
+                    writer.beginMethod(method, modifiers)
                             .emitStatement("return " + collectionType.wrap(statement))
                             .endMethod();
                 } else if (edgeAnnotation != null) {
-                    String statement = String.format("%s.%sE(\"%s\").map(%s -> (%s) new %s$Impl(%s.get(), graph)", fieldName, direction.toMethod(), e.getName(), fieldName, element.toString(), element.toString(), fieldName);
+                    String statement = String.format("%s.%sE(\"%s\").map(%s -> (%s) new %s$Impl(%s.get(), graph)", fieldName, direction.toMethod(), label, fieldName, element.toString(), element.toString(), fieldName);
 
-                    writer.beginMethod(returnType.toString(), method.getSimpleName().toString(), modifiers)
+                    writer.beginMethod(method, modifiers)
                             .emitStatement("return " + collectionType.wrap(statement))
                             .endMethod();
                 } else {
                     generateNotSupportedMethod("001", method, writer);
                 }
             } else if (isVertex(method.getReturnType()) && vertex) {
-                writer.beginMethod(method.getReturnType().toString(), method.getSimpleName().toString(), modifiers)
-                        .emitStatement("com.tinkerpop.gremlin.process.graph.GraphTraversal<Vertex, %s> traversal = %s.%s(\"%s\").map(v -> new %s$Impl(v.get(), graph))",
-                                method.getReturnType().toString(), fieldName, direction.toMethod(), e.getName(), e.getType())
+                writer.beginMethod(method, modifiers)
+                        .emitStatement("GraphTraversal<Vertex, %s> traversal = %s.%s(\"%s\").map(v -> new %s$Impl(v.get(), graph))",
+                                method.getReturnType().toString(), fieldName, direction.toMethod(), label, returnClass)
                         .emitStatement("return traversal.hasNext()? traversal.next() : null")
                         .endMethod();
             } else if (isEdge(method.getReturnType()) && vertex) {
-                writer.beginMethod(method.getReturnType().toString(), method.getSimpleName().toString(), modifiers)
-                        .emitStatement("com.tinkerpop.gremlin.process.graph.GraphTraversal<Vertex, %s> traversal = %s.%sE(\"%s\").map(v -> new %s$Impl(v.get(), graph))",
-                                method.getReturnType().toString(), fieldName, direction.toMethod(), e.getName(), e.getType())
+                String filter = "";
+                if (parameterName != null) {
+                    filter = ".as(\"X\").inV().retain(((FramedVertex) " + parameterName + ").vertex()).<Edge>back(\"X\")";
+                }
+
+                writer.beginMethod(method, modifiers)
+                        .emitStatement("GraphTraversal<Vertex, %s> traversal = %s.%sE(\"%s\")%s.map(v -> new %s$Impl(v.get(), graph))",
+                                writer.compressType(method.getReturnType()), fieldName, direction.toMethod(), label, filter, returnClass)
                         .emitStatement("return traversal.hasNext()? traversal.next() : null")
                         .endMethod();
             } else if (isVertex(method.getReturnType()) && !vertex) {
@@ -370,14 +372,14 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 generateNotSupportedMethod("003", method, writer);
             }
         } else if (methodType == MethodType.SETTER) {
-            String statement = String.format("v.addEdge(\"%s\", ((FramedVertex)%s).vertex())", e.getName(), e.getName());
+            String statement = String.format("v.addEdge(\"%s\", ((FramedVertex)%s).vertex())", label, label);
             if (returnClass != null && returnClass.getAnnotation(Edge.class) != null) {
                 statement = String.format("return new %s$Impl(%s, graph)", returnClass.getSimpleName(), statement);
             }
 
-            writer.beginMethod(method.getReturnType().toString(), method.getSimpleName().toString(), modifiers, method.getParameters().get(0).asType().toString(), e.getName())
-                    .emitStatement("v.outE(\"%s\").remove()", e.getName())
-                    .beginControlFlow("if (%s != null)", e.getName())
+            writer.beginMethod(method.getReturnType().toString(), method.getSimpleName().toString(), modifiers, method.getParameters().get(0).asType().toString(), label)
+                    .emitStatement("v.outE(\"%s\").remove()", label)
+                    .beginControlFlow("if (%s != null)", label)
                     .emitStatement(statement);
             if (method.getReturnType().getKind() != VOID) {
                 writer.nextControlFlow("else")
@@ -388,7 +390,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
         } else if (methodType == MethodType.ADDER) {
             if (parameterClass != null && parameterClass.getAnnotation(Vertex.class) != null) {
-                String statement = String.format("v.addEdge(\"%s\", ((FramedVertex) %s).vertex())", e.getName(), parameterName);
+                String statement = String.format("v.addEdge(\"%s\", ((FramedVertex) %s).vertex())", label, parameterName);
                 if (returnClass != null && returnClass.getAnnotation(Edge.class) != null) {
                     statement = String.format("return new %s$Impl(%s, graph)", method.getReturnType().toString(), statement);
                 }
@@ -402,7 +404,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
         } else if (methodType == MethodType.REMOVER && parameterClass != null) {
             writer.beginMethod(method.getReturnType().toString(), method.getSimpleName().toString(), modifiers, parameterClass.toString(), parameterName);
             if (parameterClass.getAnnotation(Vertex.class) != null) {
-                writer.emitStatement("v.outE(\"%s\").as(\"X\").inV().retain(((FramedVertex)%s).vertex()).back(\"X\").remove()", e.getName(), parameterName);
+                writer.emitStatement("v.outE(\"%s\").as(\"X\").inV().retain(((FramedVertex)%s).vertex()).back(\"X\").remove()", label, parameterName);
             } else if (parameterClass.getAnnotation(Edge.class) != null) {
                 writer.emitStatement("((FramedEdge)%s).remove()", parameterName);
             }
@@ -652,6 +654,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
     private enum MethodType {
         GETTER("get", 0),
+        FILTERED_GETTER("get", 1),
         SETTER("set", 1),
         ADDER("add", 1),
         REMOVER("remove", 1);

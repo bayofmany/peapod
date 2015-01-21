@@ -33,6 +33,8 @@ public abstract class Person implements FramedVertex {
 
     public abstract List<Friend> getFriends();
 
+    public abstract Friend getFriend(Person person);
+
     public abstract Friend addFriend(Person person);
 
     public abstract void removeFriend(Friend friend);

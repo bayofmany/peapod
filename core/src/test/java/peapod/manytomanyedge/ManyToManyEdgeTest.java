@@ -61,6 +61,14 @@ public class ManyToManyEdgeTest {
     }
 
     @Test
+    public void testGetFiltered() {
+        Friend friend = alice.getFriend(bob);
+        assertNotNull(friend);
+        assertEquals(bob, friend.getFriend());
+    }
+
+
+    @Test
     public void testAdd() {
         Friend friend = alice.addFriend(charlie);
         assertNotNull(friend);

@@ -49,10 +49,13 @@ import peapod.annotations.Vertex;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import java.util.*;
 
-public class ClassDescription extends BaseDescription {
+public class ClassDescription {
+
+    private List<ExecutableElement> methods;
 
     enum ElementType {
         VERTEX, EDGE
@@ -62,13 +65,15 @@ public class ClassDescription extends BaseDescription {
 
     private String packageName;
 
-    private Map<ExecutableElement, BaseDescription> method2Description = new LinkedHashMap<>();
+    private Map<ExecutableElement, String> method2Label = new LinkedHashMap<>();
 
-    private Map<String, BaseDescription> name2Description = new HashMap<>();
+    private Set<ExecutableElement> properties = new HashSet<>();
 
     private Set<String> imports = new HashSet<>();
 
-    public ClassDescription(TypeElement t) {
+    public ClassDescription(TypeElement t, List<ExecutableElement> elements) {
+        methods = elements;
+
         packageName = ((PackageElement) t.getEnclosingElement()).getQualifiedName().toString();
         if (t.getAnnotation(Vertex.class) != null) {
             elementType = ElementType.VERTEX;
@@ -83,22 +88,29 @@ public class ClassDescription extends BaseDescription {
         return elementType;
     }
 
-    public BaseDescription getDescription(String name) {
-        return name2Description.get(name);
+    public void setLabel(ExecutableElement element, String label, boolean isProperty) {
+        method2Label.put(element, label);
+
+        if (isProperty) {
+            properties.add(element);
+        }
+
+   //     addImport(element.getReturnType());
+        for (VariableElement param : element.getParameters()) {
+            addImport(param.asType());
+        }
     }
 
-    public void setDescription(String property, ExecutableElement element, BaseDescription descr) {
-        name2Description.put(property, descr);
-        method2Description.put(element, descr);
-        addImport(descr.getType());
+    public List<ExecutableElement> getMethods() {
+        return methods;
     }
 
-    public Set<ExecutableElement> getMethods() {
-        return method2Description.keySet();
+    public String getLabel(ExecutableElement method) {
+        return method2Label.get(method);
     }
 
-    public BaseDescription getDescription(ExecutableElement method) {
-        return method2Description.get(method);
+    public boolean isProperty(ExecutableElement method) {
+        return properties.contains(method);
     }
 
     public Set<String> getImports() {

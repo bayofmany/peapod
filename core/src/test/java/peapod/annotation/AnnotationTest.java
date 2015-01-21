@@ -41,12 +41,57 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package peapod.impl;
+package peapod.annotation;
 
-public class PropertyDescription extends BaseDescription {
+import com.tinkerpop.gremlin.process.T;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.junit.Before;
+import org.junit.Test;
+import peapod.FramedGraph;
 
-    public boolean isPrimitive() {
-        return getType().getKind().isPrimitive();
+import java.util.List;
+
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.junit.Assert.*;
+
+public class AnnotationTest {
+
+    private Person alice;
+    private Person bob;
+    private Person charlie;
+
+    @Before
+    public void init() {
+        Graph g = TinkerGraph.open();
+        Vertex alice = g.addVertex(T.id, 1, T.label, "person", "name", "alice");
+        Vertex bob = g.addVertex(T.id, 2, T.label, "person", "name", "bob");
+        Vertex charlie = g.addVertex(T.id, 3, T.label, "person", "name", "charlie");
+
+        alice.addEdge("e-friend", bob);
+
+        FramedGraph graph = new FramedGraph(g);
+        this.alice = graph.v(alice.id(), Person.class);
+        this.bob = graph.v(bob.id(), Person.class);
+        this.charlie = graph.v(charlie.id(), Person.class);
     }
 
+    @Test
+    public void testGetList() {
+        assertEquals(1, alice.getFriends().size());
+    }
+
+    @Test
+    public void testAdd() {
+        alice.addFriend(charlie);
+        List<Vertex> f = alice.out("e-friend").toList();
+        assertThat(f, containsInAnyOrder(bob.vertex(), charlie.vertex()));
+    }
+
+    @Test
+    public void testRemove() {
+        alice.removeFriend(bob);
+        assertTrue(alice.out("e-friend").toList().isEmpty());
+    }
 }

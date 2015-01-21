@@ -41,8 +41,24 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package peapod.impl;
+package peapod.annotation;
 
-public class EdgeDescription extends BaseDescription {
+import peapod.FramedVertex;
+import peapod.annotations.LinkedVertex;
+import peapod.annotations.Vertex;
+
+import java.util.List;
+
+@Vertex
+public abstract class Person implements FramedVertex {
+
+    public abstract String getName();
+
+    @LinkedVertex(label = "e-friend")
+    public abstract void addFriend(Person person);
+
+    public abstract void removeFriend(Person person);
+
+    public abstract List<Person> getFriends();
 
 }

@@ -21,7 +21,6 @@
 
 package peapod.property;
 
-import peapod.annotations.Property;
 import peapod.annotations.Vertex;
 
 import java.util.Date;
@@ -36,12 +35,6 @@ public abstract class Person {
     public abstract Date getDate();
 
     public abstract void setDate(Date date);
-
-    @Property(hidden = true)
-    public abstract String getHidden();
-
-    @Property(hidden = true)
-    public abstract void setHidden(String s);
 
     public abstract Boolean getB1();
 
