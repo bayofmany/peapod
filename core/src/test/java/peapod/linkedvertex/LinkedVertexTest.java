@@ -22,7 +22,6 @@
 package peapod.linkedvertex;
 
 import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -32,7 +31,6 @@ import peapod.FramedGraph;
 
 import java.util.List;
 import java.util.Set;
-import java.util.function.Predicate;
 
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.Matchers.containsInAnyOrder;

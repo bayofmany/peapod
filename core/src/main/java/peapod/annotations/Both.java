@@ -41,24 +41,19 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package peapod.annotation;
+package peapod.annotations;
 
-import peapod.FramedVertex;
-import peapod.annotations.Edge;
-import peapod.annotations.Vertex;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-import java.util.List;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.SOURCE;
 
-@Vertex
-public abstract class Person implements FramedVertex {
-
-    public abstract String getName();
-
-    @Edge(label = "e-friend")
-    public abstract void addFriend(Person person);
-
-    public abstract void removeFriend(Person person);
-
-    public abstract List<Person> getFriends();
+/**
+ * Annotation to mark the vertex at the incoming side of the edge.
+ */
+@Retention(SOURCE)
+@Target(METHOD)
+public @interface Both {
 
 }

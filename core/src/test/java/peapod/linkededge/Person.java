@@ -21,28 +21,24 @@
 
 package peapod.linkededge;
 
-import peapod.annotations.LinkedEdge;
-import peapod.annotations.Vertex;
+import peapod.annotations.*;
 
 import java.util.List;
-
-import static peapod.Direction.*;
 
 @Vertex
 public abstract class Person {
 
     public abstract String getName();
 
-    @LinkedEdge
     public abstract List<Friend> getFriendsWithAnnotationDefault();
 
-    @LinkedEdge(direction = OUT)
+    @Out
     public abstract List<Friend> getFriendsWithAnnotationOut();
 
-    @LinkedEdge(direction = IN)
+    @In
     public abstract List<Friend> getFriendsWithAnnotationIn();
 
-    @LinkedEdge(direction = BOTH)
+    @Both
     public abstract List<Friend> getFriendsWithAnnotationBoth();
 
 

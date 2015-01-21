@@ -22,12 +22,9 @@
 package peapod.linkedvertex;
 
 import peapod.FramedVertex;
-import peapod.annotations.LinkedVertex;
-import peapod.annotations.Vertex;
+import peapod.annotations.*;
 
 import java.util.List;
-
-import static peapod.Direction.*;
 
 @Vertex
 public abstract class Person implements FramedVertex {
@@ -36,16 +33,19 @@ public abstract class Person implements FramedVertex {
 
     public abstract List<Person> getFriends();
 
-    @LinkedVertex(label = "friend")
+    @Edge(label = "friend")
     public abstract List<Person> getFriendsWithAnnotationDefault();
 
-    @LinkedVertex(label = "friend", direction = OUT)
+    @Out
+    @Edge(label = "friend")
     public abstract List<Person> getFriendsWithAnnotationOut();
 
-    @LinkedVertex(label = "friend", direction = IN)
+    @In
+    @Edge(label = "friend")
     public abstract List<Person> getFriendsWithAnnotationIn();
 
-    @LinkedVertex(label = "friend", direction = BOTH)
+    @Both
+    @Edge(label = "friend")
     public abstract List<Person> getFriendsWithAnnotationBoth();
 
 }

@@ -25,7 +25,7 @@ import peapod.annotations.Edge;
 import peapod.annotations.In;
 import peapod.annotations.Out;
 
-@Edge(label = "created")
+@Edge
 public abstract class Created {
 
     public abstract Float getWeight();

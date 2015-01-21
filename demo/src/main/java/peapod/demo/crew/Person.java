@@ -22,7 +22,7 @@
 package peapod.demo.crew;
 
 import peapod.FramedVertex;
-import peapod.annotations.LinkedVertex;
+import peapod.annotations.Edge;
 import peapod.annotations.Vertex;
 
 import java.util.List;
@@ -32,7 +32,7 @@ public abstract class Person implements FramedVertex {
 
     public abstract String getName();
 
-    @LinkedVertex(label = "develops")
+    @Edge(label = "develops")
     public abstract List<Software> getDevelopedSoftware();
 
     //public abstract Develops getDevelops(Software software);

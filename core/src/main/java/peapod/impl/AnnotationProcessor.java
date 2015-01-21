@@ -44,7 +44,7 @@ import static javax.lang.model.type.TypeKind.DECLARED;
 import static javax.lang.model.type.TypeKind.VOID;
 import static javax.tools.Diagnostic.Kind.*;
 import static javax.tools.Diagnostic.Kind.OTHER;
-import static peapod.Direction.OUT;
+import static peapod.Direction.*;
 import static peapod.impl.ClassDescription.ElementType.EDGE;
 
 /**
@@ -82,7 +82,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
             elements = roundEnv.getElementsAnnotatedWith(Edge.class);
             messager.printMessage(OTHER, elements.size() + " elements with annotation @Edge");
-            elements.stream().forEach(e -> generateEdgeImplementationClass((TypeElement) e));
+            elements.stream().filter(e -> e.getKind().isClass()).forEach(e -> generateEdgeImplementationClass((TypeElement) e));
 
             return true;
         } catch (Exception e) {
@@ -217,9 +217,9 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 }
 
                 if (isVertex) {
-                    LinkedVertex linkedVertex = method.getAnnotation(LinkedVertex.class);
-                    if (linkedVertex != null && !linkedVertex.label().isEmpty()) {
-                        label = linkedVertex.label();
+                    Edge edge = method.getAnnotation(Edge.class);
+                    if (edge != null && !edge.label().isEmpty()) {
+                        label = edge.label();
                     }
                 } else {
                     TypeElement edgeClass = (TypeElement) types.asElement(singularType);
@@ -414,14 +414,13 @@ public final class AnnotationProcessor extends AbstractProcessor {
     }
 
     private Direction getDirection(ExecutableElement method, MethodType type) {
-        Direction direction = OUT;
-        LinkedVertex linkedVertex = method.getAnnotation(LinkedVertex.class);
-        if (linkedVertex != null) {
-            direction = linkedVertex.direction();
-        }
-        LinkedEdge linkedEdge = method.getAnnotation(LinkedEdge.class);
-        if (linkedEdge != null) {
-            direction = linkedEdge.direction();
+        Direction direction;
+        if (method.getAnnotation(In.class) != null) {
+            direction = IN;
+        } else if (method.getAnnotation(Both.class) != null) {
+            direction = BOTH;
+        } else {
+            direction = OUT;
         }
         if (type != MethodType.GETTER && direction != OUT) {
             messager.printMessage(ERROR, "Direction " + direction + " only supported for getter methods currently");
