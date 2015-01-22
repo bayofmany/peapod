@@ -244,7 +244,7 @@ public class Inflector {
      * Examples:
      * <p/>
      * <pre>
-     *   inflector.upperCamelCase(&quot;active_record&quot;)       #=&gt; &quot;SctiveRecord&quot;
+     *   inflector.upperCamelCase(&quot;active_record&quot;)       #=&gt; &quot;ActiveRecord&quot;
      *   inflector.upperCamelCase(&quot;first_name&quot;)          #=&gt; &quot;FirstName&quot;
      *   inflector.upperCamelCase(&quot;name&quot;)                #=&gt; &quot;Name&quot;
      *   inflector.lowerCamelCase(&quot;the-first_name&quot;,'-')  #=&gt; &quot;TheFirstName&quot;

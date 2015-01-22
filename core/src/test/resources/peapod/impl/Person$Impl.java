@@ -8,6 +8,7 @@ import java.util.Collections;
 import peapod.FramedElement;
 import peapod.FramedGraph;
 import peapod.FramedVertex;
+import java.util.List;
 
 public final class Person$Impl extends Person
         implements FramedVertex<Person> {
@@ -26,7 +27,7 @@ public final class Person$Impl extends Person
     public String getName() {
         return v.<String>property("name").orElse(null);
     }
-    public java.util.List<Knows> getKnows() {
+    public List<Knows> getKnows() {
         return Collections.unmodifiableList(v.outE("knows").map(v -> (peapod.impl.Knows) new peapod.impl.Knows$Impl(v.get(), graph)).toList());
     }
     public int hashCode() {

@@ -55,7 +55,7 @@ import java.util.*;
 
 public class ClassDescription {
 
-    private List<ExecutableElement> methods;
+    private final List<ExecutableElement> methods;
 
     enum ElementType {
         VERTEX, EDGE
@@ -63,13 +63,13 @@ public class ClassDescription {
 
     private ElementType elementType;
 
-    private String packageName;
+    private final String packageName;
 
-    private Map<ExecutableElement, String> method2Label = new LinkedHashMap<>();
+    private final Map<ExecutableElement, String> method2Label = new LinkedHashMap<>();
 
-    private Set<ExecutableElement> properties = new HashSet<>();
+    private final Set<ExecutableElement> properties = new HashSet<>();
 
-    private Set<String> imports = new HashSet<>();
+    private final Set<String> imports = new HashSet<>();
 
     public ClassDescription(TypeElement t, List<ExecutableElement> elements) {
         methods = elements;
@@ -121,13 +121,13 @@ public class ClassDescription {
         addImport(clazz.getName());
     }
 
-    public void addImport(String anImport) {
+    void addImport(String anImport) {
         if (anImport != null && !anImport.startsWith("java.lang.") && !anImport.startsWith(packageName)) {
             imports.add(anImport);
         }
     }
 
-    public void addImport(TypeMirror type) {
+    void addImport(TypeMirror type) {
         if (type != null && !type.getKind().isPrimitive()) {
             addImport(type.toString());
         }

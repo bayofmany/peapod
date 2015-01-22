@@ -63,7 +63,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
     private Types types;
 
-    private Map<TypeElement, List<String>> subTypes = new HashMap<>();
+    private final Map<TypeElement, List<String>> subTypes = new HashMap<>();
 
     @Override
     public void init(final ProcessingEnvironment environment) {
@@ -217,6 +217,11 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 singularType = getSingularizedType(method.getParameters().get(0).asType());
             } else {
                 singularType = getSingularizedType(method.getReturnType());
+            }
+
+            CollectionType collectionType = getCollectionType(method.getReturnType());
+            if (collectionType != null) {
+                description.addImport(collectionType.getImport());
             }
 
             boolean isVertex = hasAnnotation(singularType, Vertex.class);
@@ -705,16 +710,16 @@ public final class AnnotationProcessor extends AbstractProcessor {
     }
 
     private enum CollectionType {
-        LIST("Collections.unmodifiableList(", ").toList())", null),
-        COLLECTION("Collections.unmodifiableCollection(", ").toList())", null),
-        SET("Collections.unmodifiableSet(", ").toSet())", null),
-        ITERABLE("new DefaultIterable(", ").iterate())", "peapod.impl.DefaultIterable");
+        LIST("Collections.unmodifiableList(", ").toList())", List.class),
+        COLLECTION("Collections.unmodifiableCollection(", ").toList())", Collection.class),
+        SET("Collections.unmodifiableSet(", ").toSet())", Set.class),
+        ITERABLE("new DefaultIterable(", ").iterate())", DefaultIterable.class);
 
         private final String prefix;
         private final String suffix;
-        private String importClass;
+        private final Class<? extends Iterable> importClass;
 
-        CollectionType(String prefix, String suffix, String importClass) {
+        CollectionType(String prefix, String suffix, Class<? extends Iterable> importClass) {
             this.prefix = prefix;
             this.suffix = suffix;
             this.importClass = importClass;
@@ -724,7 +729,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
             return prefix + variable + suffix;
         }
 
-        public String getImport() {
+        public Class<? extends Iterable> getImport() {
             return importClass;
         }
     }

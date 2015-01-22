@@ -27,12 +27,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FramerRegistry {
+class FramerRegistry {
 
-    protected static final FramerRegistry instance = new FramerRegistry();
+    static final FramerRegistry instance = new FramerRegistry();
 
-    private Map<Class<?>, Framer<?, ?>> framers = new HashMap<>();
+    private final Map<Class<?>, Framer<?, ?>> framers = new HashMap<>();
 
+    @SuppressWarnings("unchecked")
     private <E extends Element, F> Framer<E, F> register(Class<F> framed) {
         try {
             Class<?> framingClass = framed.getClassLoader().loadClass(framed.getName() + "$Impl");
@@ -44,7 +45,8 @@ public class FramerRegistry {
         }
     }
 
-    protected <E extends Element, F> Framer<E, F> get(Class<F> framed) {
+    @SuppressWarnings("unchecked")
+    <E extends Element, F> Framer<E, F> get(Class<F> framed) {
         return (Framer<E, F>) framers.getOrDefault(framed, register(framed));
     }
 
