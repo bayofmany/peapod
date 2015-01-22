@@ -24,7 +24,10 @@ package peapod.impl;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import peapod.*;
-import peapod.annotations.*;
+import peapod.annotations.Both;
+import peapod.annotations.Edge;
+import peapod.annotations.In;
+import peapod.annotations.Vertex;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -118,7 +121,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
             JavaWriter writer = new JavaWriter(out);
             PackageElement packageEl = (PackageElement) type.getEnclosingElement();
             writer.emitPackage(packageEl.getQualifiedName().toString())
-                    .emitImports(com.tinkerpop.gremlin.structure.Vertex.class, com.tinkerpop.gremlin.structure.Element.class, FramedVertex.class, FramedEdge.class, FramedElement.class, FramedGraph.class, Collection.class, Arrays.class, Collections.class, GraphTraversal.class, com.tinkerpop.gremlin.structure.Edge.class)
+                    .emitImports(com.tinkerpop.gremlin.structure.Vertex.class, com.tinkerpop.gremlin.structure.Element.class, FramedVertex.class, FramedElement.class, FramedGraph.class, Collection.class, Arrays.class, Collections.class)
                     .emitImports(description.getImports())
                     .emitEmptyLine()
                     .beginType(type.getQualifiedName() + "$Impl", "class", EnumSet.of(PUBLIC, Modifier.FINAL), type.getQualifiedName().toString(), "FramedVertex<" + getBaseType(type).getSimpleName() + ">")
@@ -223,6 +226,13 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 if (description.getElementType() == EDGE && type != MethodType.GETTER) {
                     messager.printMessage(ERROR, "@Edge classes cannot have linked vertex update methods: " + method);
                     continue;
+                }
+
+                if (type == MethodType.GETTER && isVertex) {
+                    description.addImport(GraphTraversal.class);
+                    if (!method.getParameters().isEmpty()) {
+                        description.addImport(com.tinkerpop.gremlin.structure.Edge.class);
+                    }
                 }
 
                 if (isVertex) {
@@ -355,19 +365,19 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 }
             } else if (isVertex(method.getReturnType()) && vertex) {
                 writer.beginMethod(method, modifiers)
-                        .emitStatement("GraphTraversal<Vertex, %s> traversal = %s.%s(\"%s\").map(v -> new %s$Impl(v.get(), graph))",
-                                method.getReturnType().toString(), fieldName, direction.toMethod(), label, returnClass)
+                        .emitStatement("%s<Vertex, %s> traversal = %s.%s(\"%s\").map(v -> new %s$Impl(v.get(), graph))",
+                                writer.compressType(GraphTraversal.class), writer.compressType(method.getReturnType()), fieldName, direction.toMethod(), label, returnClass)
                         .emitStatement("return traversal.hasNext()? traversal.next() : null")
                         .endMethod();
             } else if (isEdge(method.getReturnType()) && vertex) {
                 String filter = "";
                 if (parameterName != null) {
-                    filter = ".as(\"X\").inV().retain(((FramedVertex) " + parameterName + ").vertex()).<Edge>back(\"X\")";
+                    filter = String.format(".as(\"X\").inV().retain(((FramedVertex) " + parameterName + ").vertex()).<%s>back(\"X\")", writer.compressType(com.tinkerpop.gremlin.structure.Edge.class));
                 }
 
                 writer.beginMethod(method, modifiers)
-                        .emitStatement("GraphTraversal<Vertex, %s> traversal = %s.%sE(\"%s\")%s.map(v -> new %s$Impl(v.get(), graph))",
-                                writer.compressType(method.getReturnType()), fieldName, direction.toMethod(), label, filter, returnClass)
+                        .emitStatement("%s<Vertex, %s> traversal = %s.%sE(\"%s\")%s.map(v -> new %s$Impl(v.get(), graph))",
+                                writer.compressType(GraphTraversal.class), writer.compressType(method.getReturnType()), fieldName, direction.toMethod(), label, filter, returnClass)
                         .emitStatement("return traversal.hasNext()? traversal.next() : null")
                         .endMethod();
             } else if (isVertex(method.getReturnType()) && !vertex) {
@@ -415,7 +425,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
             if (parameterClass.getAnnotation(Vertex.class) != null) {
                 writer.emitStatement("v.outE(\"%s\").as(\"X\").inV().retain(((FramedVertex)%s).vertex()).back(\"X\").remove()", label, parameterName);
             } else if (parameterClass.getAnnotation(Edge.class) != null) {
-                writer.emitStatement("((FramedEdge)%s).remove()", parameterName);
+                writer.emitStatement("((FramedElement)%s).remove()", parameterName);
             }
             writer.endMethod();
         }
@@ -602,7 +612,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
     private String getLabel(TypeElement type) {
         Vertex v = type.getAnnotation(Vertex.class);
         if (v != null) {
-            return v.label().isEmpty() ? type.getSimpleName().toString().toLowerCase() : v.label();
+            return v.label().isEmpty() ? type.getSimpleName().toString() : v.label();
         }
 
         Edge e = type.getAnnotation(Edge.class);

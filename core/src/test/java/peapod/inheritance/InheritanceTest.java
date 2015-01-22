@@ -39,8 +39,8 @@ public class InheritanceTest {
     @Before
     public void init() {
         Graph g = TinkerGraph.open();
-        g.addVertex(T.id, 1, T.label, "person", "name", "alice");
-        g.addVertex(T.id, 2, T.label, "programmer", "name", "bob", "yearsExperience", 10);
+        g.addVertex(T.id, 1, T.label, "Person", "name", "alice");
+        g.addVertex(T.id, 2, T.label, "Programmer", "name", "bob", "yearsExperience", 10);
 
         graph = new FramedGraph(g);
     }

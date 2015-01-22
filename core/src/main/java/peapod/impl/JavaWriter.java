@@ -74,4 +74,8 @@ public class JavaWriter extends com.squareup.javawriter.JavaWriter {
     public String compressType(TypeMirror type) {
         return super.compressType(type.toString());
     }
+
+    public String compressType(Class<?> clazz) {
+        return super.compressType(clazz.getName());
+    }
 }

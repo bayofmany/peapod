@@ -39,7 +39,7 @@ public class FramedElementTest {
     @Before
     public void init() {
         g = TinkerGraph.open();
-        g.addVertex(T.id, 1, T.label, "person", "name", "alice");
+        g.addVertex(T.id, 1, T.label, "Person", "name", "alice");
         graph = new FramedGraph(g);
         person = graph.v(1, Person.class);
     }

@@ -63,10 +63,10 @@ public class ManyToOneEdgeTest {
     @Before
     public void init() {
         Graph g = TinkerGraph.open();
-        Vertex alice = g.addVertex(T.id, 1, T.label, "person", "name", "alice");
-        Vertex bob = g.addVertex(T.id, 2, T.label, "person", "name", "bob");
-        Vertex london = g.addVertex(T.id, 3, T.label, "city", "name", "london");
-        Vertex madrid = g.addVertex(T.id, 4, T.label, "city", "name", "madrid");
+        Vertex alice = g.addVertex(T.id, 1, T.label, "Person", "name", "alice");
+        Vertex bob = g.addVertex(T.id, 2, T.label, "Person", "name", "bob");
+        Vertex london = g.addVertex(T.id, 3, T.label, "City", "name", "london");
+        Vertex madrid = g.addVertex(T.id, 4, T.label, "City", "name", "madrid");
 
         alice.addEdge("hometown", london);
 

@@ -42,9 +42,9 @@ public class FramedGraphTest {
     @Before
     public void init() {
         g = TinkerGraph.open();
-        Vertex a = g.addVertex(T.id, 1, T.label, "person", "name", "alice");
-        Vertex b = g.addVertex(T.id, 2, T.label, "person", "name", "bob");
-        Vertex c = g.addVertex(T.id, 3, T.label, "person", "name", "charlie");
+        Vertex a = g.addVertex(T.id, 1, T.label, "Person", "name", "alice");
+        Vertex b = g.addVertex(T.id, 2, T.label, "Person", "name", "bob");
+        Vertex c = g.addVertex(T.id, 3, T.label, "Person", "name", "charlie");
         a.addEdge("friend", b);
         a.addEdge("friend", c);
         graph = new FramedGraph(g);
@@ -56,7 +56,7 @@ public class FramedGraphTest {
         assertNotNull(person);
         assertNotNull(person.vertex());
         assertNotNull(person.vertex().id());
-        assertEquals("person", person.vertex().label());
+        assertEquals("Person", person.vertex().label());
     }
 
     @Test
@@ -65,7 +65,7 @@ public class FramedGraphTest {
         assertNotNull(person);
         assertNotNull(person.vertex());
         assertEquals(456, person.vertex().id());
-        assertEquals("person", person.vertex().label());
+        assertEquals("Person", person.vertex().label());
     }
 
     @Test

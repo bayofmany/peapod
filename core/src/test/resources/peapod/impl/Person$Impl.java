@@ -1,13 +1,10 @@
 package peapod.impl;
 
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import peapod.FramedEdge;
 import peapod.FramedElement;
 import peapod.FramedGraph;
 import peapod.FramedVertex;
@@ -48,7 +45,7 @@ public final class Person$Impl extends Person
             implements peapod.Framer<Vertex, Person> {
 
         private static final Framer instance = new Framer();
-        private static final String label = "person";
+        private static final String label = "Person";
         private static final Collection<String> subLabels = Collections.unmodifiableCollection(Arrays.asList(label));
 
         public String label() {

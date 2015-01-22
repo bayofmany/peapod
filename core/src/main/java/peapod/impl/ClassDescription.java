@@ -95,7 +95,7 @@ public class ClassDescription {
             properties.add(element);
         }
 
-   //     addImport(element.getReturnType());
+        //     addImport(element.getReturnType());
         for (VariableElement param : element.getParameters()) {
             addImport(param.asType());
         }
@@ -115,6 +115,10 @@ public class ClassDescription {
 
     public Set<String> getImports() {
         return imports;
+    }
+
+    public void addImport(Class<?> clazz) {
+        addImport(clazz.getName());
     }
 
     public void addImport(String anImport) {

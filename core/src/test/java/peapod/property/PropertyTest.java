@@ -47,7 +47,7 @@ public class PropertyTest {
     @Before
     public void init() {
         Graph g = TinkerGraph.open();
-        g.addVertex(T.id, 1, T.label, "person",
+        g.addVertex(T.id, 1, T.label, "Person",
                 "s", "hello", "date", new Date(1000),
                 "b1", true, "b2", true,
                 "s1", (short) 42, "s2", (short) 43,
