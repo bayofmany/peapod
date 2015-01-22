@@ -65,9 +65,9 @@ public class AnnotationTest {
     @Before
     public void init() {
         Graph g = TinkerGraph.open();
-        Vertex alice = g.addVertex(T.id, 1, T.label, "Person", "name", "alice");
-        Vertex bob = g.addVertex(T.id, 2, T.label, "Person", "name", "bob");
-        Vertex charlie = g.addVertex(T.id, 3, T.label, "Person", "name", "charlie");
+        Vertex alice = g.addVertex(T.id, 1, T.label, "Person", "p-name", "alice");
+        Vertex bob = g.addVertex(T.id, 2, T.label, "Person", "p-name", "bob");
+        Vertex charlie = g.addVertex(T.id, 3, T.label, "Person", "p-name", "charlie");
 
         alice.addEdge("e-friend", bob);
 
@@ -75,6 +75,17 @@ public class AnnotationTest {
         this.alice = graph.v(alice.id(), Person.class);
         this.bob = graph.v(bob.id(), Person.class);
         this.charlie = graph.v(charlie.id(), Person.class);
+    }
+
+    @Test
+    public void testGetProperty() {
+        assertEquals("alice", alice.getName());
+    }
+
+    @Test
+    public void testSetProperty() {
+        alice.setName("diane");
+        assertEquals("diane", alice.vertex().value("p-name"));
     }
 
     @Test

@@ -24,10 +24,7 @@ package peapod.impl;
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import peapod.*;
-import peapod.annotations.Both;
-import peapod.annotations.Edge;
-import peapod.annotations.In;
-import peapod.annotations.Vertex;
+import peapod.annotations.*;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -251,6 +248,11 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 }
 
                 isProperty = false;
+            } else {
+                Property p = method.getAnnotation(Property.class);
+                if (p != null && !p.value().isEmpty()) {
+                    label = p.value();
+                }
             }
         }
 

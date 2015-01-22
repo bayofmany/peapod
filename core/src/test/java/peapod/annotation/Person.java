@@ -45,6 +45,7 @@ package peapod.annotation;
 
 import peapod.FramedVertex;
 import peapod.annotations.Edge;
+import peapod.annotations.Property;
 import peapod.annotations.Vertex;
 
 import java.util.List;
@@ -52,7 +53,10 @@ import java.util.List;
 @Vertex
 public abstract class Person implements FramedVertex<Person> {
 
+    @Property("p-name")
     public abstract String getName();
+
+    public abstract void setName(String name);
 
     @Edge("e-friend")
     public abstract void addFriend(Person person);
