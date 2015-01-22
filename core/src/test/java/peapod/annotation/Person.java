@@ -54,7 +54,7 @@ public abstract class Person implements FramedVertex<Person> {
 
     public abstract String getName();
 
-    @Edge(label = "e-friend")
+    @Edge("e-friend")
     public abstract void addFriend(Person person);
 
     public abstract void removeFriend(Person person);

@@ -31,6 +31,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Target(TYPE)
 public @interface Vertex {
 
-    String label() default "";
+    String value() default "";
 
 }

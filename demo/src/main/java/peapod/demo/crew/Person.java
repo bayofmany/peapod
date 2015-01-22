@@ -32,7 +32,7 @@ public abstract class Person implements FramedVertex<Person> {
 
     public abstract String getName();
 
-    @Edge(label = "develops")
+    @Edge("develops")
     public abstract List<Software> getDevelopedSoftware();
 
     //public abstract Develops getDevelops(Software software);

@@ -242,8 +242,8 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
                 if (isVertex) {
                     Edge edge = method.getAnnotation(Edge.class);
-                    if (edge != null && !edge.label().isEmpty()) {
-                        label = edge.label();
+                    if (edge != null && !edge.value().isEmpty()) {
+                        label = edge.value();
                     }
                 } else {
                     TypeElement edgeClass = (TypeElement) types.asElement(singularType);
@@ -617,12 +617,12 @@ public final class AnnotationProcessor extends AbstractProcessor {
     private String getLabel(TypeElement type) {
         Vertex v = type.getAnnotation(Vertex.class);
         if (v != null) {
-            return v.label().isEmpty() ? type.getSimpleName().toString() : v.label();
+            return v.value().isEmpty() ? type.getSimpleName().toString() : v.value();
         }
 
         Edge e = type.getAnnotation(Edge.class);
         if (e != null) {
-            return e.label().isEmpty() ? type.getSimpleName().toString().toLowerCase() : e.label();
+            return e.value().isEmpty() ? type.getSimpleName().toString().toLowerCase() : e.value();
         }
 
         return null;

@@ -31,6 +31,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Target(METHOD)
 public @interface Property {
 
-    String name() default "";
+    String value() default "";
 
 }

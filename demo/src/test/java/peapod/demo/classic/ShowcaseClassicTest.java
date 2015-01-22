@@ -45,22 +45,16 @@ package peapod.demo.classic;
 
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import peapod.FramedGraph;
 import org.junit.Before;
 import org.junit.Test;
+import peapod.FramedGraph;
 
-import java.util.Optional;
-
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 
 public class ShowcaseClassicTest {
 
-    private FramedGraph graph;
     private Person marko;
     private Person vadas;
     private Software lop;
@@ -71,7 +65,7 @@ public class ShowcaseClassicTest {
     @Before
     public void init() {
         TinkerGraph classic = TinkerFactory.createClassic();
-        graph = new FramedGraph(classic);
+        FramedGraph graph = new FramedGraph(classic);
 
         marko = graph.v(1, Person.class);
         vadas = graph.v(2, Person.class);
@@ -103,42 +97,36 @@ public class ShowcaseClassicTest {
     }
 
     @Test
-    public void testEqualsAndHashcode() {
-        assertEquals(graph.v(1, Person.class), graph.v(1, Person.class));
-        assertEquals(graph.v(1, Person.class).hashCode(), graph.v(1, Person.class).hashCode());
-    }
-
-    @Test
     public void testNearVertices() {
-        assertThat(marko.getKnows(), containsInAnyOrder(vadas, josh));
+        assertThat(marko.getKnowsPerson(), containsInAnyOrder(vadas, josh));
 
-        assertThat(marko.getCreated(), containsInAnyOrder(lop));
-        assertThat(peter.getCreated(), containsInAnyOrder(lop));
-        assertThat(josh.getCreated(), containsInAnyOrder(lop, ripple));
+        assertThat(marko.getCreatedSoftware(), contains(lop));
+        assertThat(peter.getCreatedSoftware(), contains(lop));
+        assertThat(josh.getCreatedSoftware(), containsInAnyOrder(lop, ripple));
 
+        assertThat(lop.getCreatedBy(), containsInAnyOrder(marko, josh, peter));
+        assertThat(ripple.getCreatedBy(), contains(josh));
     }
 
     @Test
     public void testNearEdges() {
-        assertThat(marko.getCreatedEdge(), hasSize(1));
-        Created created = marko.getCreatedEdge().get(0);
+        assertThat(marko.getCreated(), hasSize(1));
+        Created created = marko.getCreated().get(0);
         assertEquals(new Float(0.4), created.getWeight());
         assertEquals(marko, created.getPerson());
         assertEquals(lop, created.getSoftware());
 
-        assertThat(marko.getKnowsEdge(), hasSize(2));
-        Optional<Knows> knowsVadas = marko.getKnowsEdge().stream().filter(k -> k.getOtherPerson().getName().equals("vadas")).findFirst();
-        Optional<Knows> knowsJosh = marko.getKnowsEdge().stream().filter(k -> k.getOtherPerson().getName().equals("josh")).findFirst();
+        assertThat(marko.getKnows().stream().map(Knows::getOtherPerson).toArray(), arrayContainingInAnyOrder(josh, vadas));
 
-        assertTrue(knowsVadas.isPresent());
-        assertEquals(marko, knowsVadas.get().getPerson());
-        assertEquals(vadas, knowsVadas.get().getOtherPerson());
-        assertEquals(new Float(0.5), knowsVadas.get().getWeight());
+        Knows knowsVadas = marko.getKnows(vadas);
+        assertEquals(marko, knowsVadas.getPerson());
+        assertEquals(vadas, knowsVadas.getOtherPerson());
+        assertEquals(new Float(0.5), knowsVadas.getWeight());
 
-        assertTrue(knowsJosh.isPresent());
-        assertEquals(marko, knowsJosh.get().getPerson());
-        assertEquals(josh, knowsJosh.get().getOtherPerson());
-        assertEquals(new Float(1.0), knowsJosh.get().getWeight());
+        Knows knowsJosh = marko.getKnows(josh);
+        assertEquals(marko, knowsJosh.getPerson());
+        assertEquals(josh, knowsJosh.getOtherPerson());
+        assertEquals(new Float(1.0), knowsJosh.getWeight());
     }
 
 }

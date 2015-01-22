@@ -46,9 +46,9 @@ public class EdgeTest {
     @Before
     public void init() {
         Graph g = TinkerGraph.open();
-        Vertex alice = g.addVertex(T.id, 1, T.label, "Person", "name", "alice");
-        Vertex bob = g.addVertex(T.id, 2, T.label, "Person", "name", "bob");
-        Vertex steve = g.addVertex(T.id, 3, T.label, "Person", "name", "steve");
+        Vertex alice = g.addVertex(T.id, 1, T.label, "Person", "value", "alice");
+        Vertex bob = g.addVertex(T.id, 2, T.label, "Person", "value", "bob");
+        Vertex steve = g.addVertex(T.id, 3, T.label, "Person", "value", "steve");
         alice.addEdge("friend", bob, "startYear", 2004);
         alice.addEdge("friend", steve, "startYear", 2012);
 

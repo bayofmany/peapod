@@ -25,7 +25,7 @@ import peapod.annotations.Edge;
 import peapod.annotations.In;
 import peapod.annotations.Out;
 
-@Edge(label = "friend")
+@Edge("friend")
 public abstract class Friend {
 
     public abstract int getStartYear();

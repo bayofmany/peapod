@@ -33,19 +33,19 @@ public abstract class Person implements FramedVertex<Person> {
 
     public abstract List<Person> getFriends();
 
-    @Edge(label = "friend")
+    @Edge("friend")
     public abstract List<Person> getFriendsWithAnnotationDefault();
 
     @Out
-    @Edge(label = "friend")
+    @Edge("friend")
     public abstract List<Person> getFriendsWithAnnotationOut();
 
     @In
-    @Edge(label = "friend")
+    @Edge("friend")
     public abstract List<Person> getFriendsWithAnnotationIn();
 
     @Both
-    @Edge(label = "friend")
+    @Edge("friend")
     public abstract List<Person> getFriendsWithAnnotationBoth();
 
 }

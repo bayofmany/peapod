@@ -22,9 +22,11 @@
 package peapod.demo.classic;
 
 import peapod.FramedVertex;
+import peapod.annotations.Edge;
 import peapod.annotations.In;
-import peapod.annotations.Out;
 import peapod.annotations.Vertex;
+
+import java.util.List;
 
 @Vertex
 public abstract class Software implements FramedVertex<Software> {
@@ -33,11 +35,9 @@ public abstract class Software implements FramedVertex<Software> {
 
     public abstract String getLang();
 
-    @Out
-    public abstract Person getPerson();
-
     @In
-    public abstract Software getSoftware();
+    @Edge("created")
+    public abstract List<Person> getCreatedBy();
 
 }
 

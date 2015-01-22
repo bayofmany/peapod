@@ -64,4 +64,15 @@ public class FramedElementTest {
         person.remove();
         assertTrue(!g.V().hasNext());
     }
+
+    @Test
+    public void testEquals() {
+        assertEquals(graph.v(1, Person.class), graph.v(1, Person.class));
+    }
+
+    @Test
+    public void testHashCode() {
+        assertEquals(graph.v(1, Person.class).hashCode(), graph.v(1, Person.class).hashCode());
+    }
+
 }

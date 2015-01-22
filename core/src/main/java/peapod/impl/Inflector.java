@@ -222,7 +222,7 @@ public class Inflector {
      * <pre>
      *   inflector.lowerCamelCase(&quot;active_record&quot;)       #=&gt; &quot;activeRecord&quot;
      *   inflector.lowerCamelCase(&quot;first_name&quot;)          #=&gt; &quot;firstName&quot;
-     *   inflector.lowerCamelCase(&quot;name&quot;)                #=&gt; &quot;name&quot;
+     *   inflector.lowerCamelCase(&quot;value&quot;)                #=&gt; &quot;value&quot;
      *   inflector.lowerCamelCase(&quot;the-first_name&quot;,'-')  #=&gt; &quot;theFirstName&quot;
      * </pre>
      *
@@ -246,7 +246,7 @@ public class Inflector {
      * <pre>
      *   inflector.upperCamelCase(&quot;active_record&quot;)       #=&gt; &quot;ActiveRecord&quot;
      *   inflector.upperCamelCase(&quot;first_name&quot;)          #=&gt; &quot;FirstName&quot;
-     *   inflector.upperCamelCase(&quot;name&quot;)                #=&gt; &quot;Name&quot;
+     *   inflector.upperCamelCase(&quot;value&quot;)                #=&gt; &quot;Name&quot;
      *   inflector.lowerCamelCase(&quot;the-first_name&quot;,'-')  #=&gt; &quot;TheFirstName&quot;
      * </pre>
      *
@@ -274,8 +274,8 @@ public class Inflector {
      *   inflector.camelCase(&quot;active_record&quot;,true)     #=&gt; &quot;ActiveRecord&quot;
      *   inflector.camelCase(&quot;first_name&quot;,false)       #=&gt; &quot;firstName&quot;
      *   inflector.camelCase(&quot;first_name&quot;,true)        #=&gt; &quot;FirstName&quot;
-     *   inflector.camelCase(&quot;name&quot;,false)             #=&gt; &quot;name&quot;
-     *   inflector.camelCase(&quot;name&quot;,true)              #=&gt; &quot;Name&quot;
+     *   inflector.camelCase(&quot;value&quot;,false)             #=&gt; &quot;value&quot;
+     *   inflector.camelCase(&quot;value&quot;,true)              #=&gt; &quot;Name&quot;
      * </pre>
      *
      * @param lowerCaseAndUnderscoredWord the word that is to be converted to camel case
@@ -321,7 +321,7 @@ public class Inflector {
      *   inflector.underscore(&quot;ActiveRecord&quot;)     #=&gt; &quot;active_record&quot;
      *   inflector.underscore(&quot;firstName&quot;)        #=&gt; &quot;first_name&quot;
      *   inflector.underscore(&quot;FirstName&quot;)        #=&gt; &quot;first_name&quot;
-     *   inflector.underscore(&quot;name&quot;)             #=&gt; &quot;name&quot;
+     *   inflector.underscore(&quot;value&quot;)             #=&gt; &quot;value&quot;
      *   inflector.underscore(&quot;The.firstName&quot;)    #=&gt; &quot;the_first_name&quot;
      * </pre>
      *

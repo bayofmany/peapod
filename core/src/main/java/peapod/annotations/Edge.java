@@ -32,6 +32,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Target({TYPE, METHOD})
 public @interface Edge {
 
-    String label() default "";
+    String value() default "";
 
 }

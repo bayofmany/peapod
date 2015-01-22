@@ -34,14 +34,17 @@ public abstract class Person implements FramedVertex<Person> {
 
     public abstract Integer getAge();
 
-    @Edge(label = "knows")
-    public abstract List<Person> getKnows();
+    @Edge("knows")
+    public abstract List<Person> getKnowsPerson();
 
-    public abstract List<Knows> getKnowsEdge();
+    public abstract List<Knows> getKnows();
 
-    public abstract List<Software> getCreated();
+    public abstract Knows getKnows(Person person);
 
-    public abstract List<Created> getCreatedEdge();
+    @Edge("created")
+    public abstract List<Software> getCreatedSoftware();
+
+    public abstract List<Created> getCreated();
 
 }
 

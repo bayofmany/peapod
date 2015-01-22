@@ -45,7 +45,7 @@ public class FramedGraph implements AutoCloseable {
     }
 
     /**
-     * Add a linked vertex of type {@link F} to the graph. The label will be the lowercase value of the class.
+     * Add a linked vertex of type {@link F} to the graph. The value will be the lowercase value of the class.
      *
      * @param clazz a class implementing {@link FramedVertex} and annotated with {@link com.tinkerpop.gremlin.structure.Vertex}
      * @return The newly created labeled linked vertex
@@ -57,7 +57,7 @@ public class FramedGraph implements AutoCloseable {
     }
 
     /**
-     * Add a linked vertex of type {@link V} and given id to the graph. The label will be the lowercase value of the class.
+     * Add a linked vertex of type {@link V} and given id to the graph. The value will be the lowercase value of the class.
      *
      * @param clazz a class implementing {@link FramedVertex} and annotated with {@link com.tinkerpop.gremlin.structure.Vertex}
      * @return The newly created labeled linked vertex
