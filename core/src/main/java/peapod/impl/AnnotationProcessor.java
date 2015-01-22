@@ -115,7 +115,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
         messager.printMessage(OTHER, "Generating " + type.getQualifiedName() + "$Impl");
 
         try (PrintWriter out = new PrintWriter(filer.createSourceFile(type.getQualifiedName() + "$Impl").openOutputStream())) {
-            JavaWriter writer = new JavaWriter(out);
+            JavaWriterExt writer = new JavaWriterExt(out);
             PackageElement packageEl = (PackageElement) type.getEnclosingElement();
             writer.emitPackage(packageEl.getQualifiedName().toString())
                     .emitImports(com.tinkerpop.gremlin.structure.Vertex.class, com.tinkerpop.gremlin.structure.Element.class, FramedVertex.class, FramedElement.class, FramedGraph.class, Collection.class, Arrays.class, Collections.class)
@@ -144,7 +144,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
         }
 
         try (PrintWriter out = new PrintWriter(filer.createSourceFile(type.getQualifiedName() + "Traversal").openOutputStream())) {
-            JavaWriter writer = new JavaWriter(out);
+            JavaWriterExt writer = new JavaWriterExt(out);
             PackageElement packageEl = (PackageElement) type.getEnclosingElement();
             writer.emitPackage(packageEl.getQualifiedName().toString())
                     .emitImports(Traversal.class)
@@ -281,7 +281,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    private void implementAbstractMethods(ClassDescription description, JavaWriter writer, boolean vertex) throws IOException {
+    private void implementAbstractMethods(ClassDescription description, JavaWriterExt writer, boolean vertex) throws IOException {
         for (ExecutableElement method : description.getMethods()) {
             MethodType methodType = MethodType.getType(method);
             if (description.isProperty(method)) {
@@ -292,7 +292,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    private void implementAbstractPropertyMethod(ExecutableElement method, MethodType methodType, String label, JavaWriter writer, boolean vertex) throws IOException {
+    private void implementAbstractPropertyMethod(ExecutableElement method, MethodType methodType, String label, JavaWriterExt writer, boolean vertex) throws IOException {
         String fieldName = vertex ? "v" : "e";
 
         Set<Modifier> modifiers = new HashSet<>(method.getModifiers());
@@ -327,7 +327,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    private void implementAbstractEdgeMethod(ExecutableElement method, MethodType methodType, String label, JavaWriter writer, boolean vertex) throws IOException {
+    private void implementAbstractEdgeMethod(ExecutableElement method, MethodType methodType, String label, JavaWriterExt writer, boolean vertex) throws IOException {
         String fieldName = vertex ? "v" : "e";
 
         Set<Modifier> modifiers = new HashSet<>(method.getModifiers());
@@ -463,7 +463,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
         return element.getAnnotation(annotation) != null;
     }
 
-    private void generateNotSupportedMethod(String code, ExecutableElement method, JavaWriter writer) throws IOException {
+    private void generateNotSupportedMethod(String code, ExecutableElement method, JavaWriterExt writer) throws IOException {
         messager.printMessage(WARNING, "Abstract method not yet supported: " + method, method.getEnclosingElement());
 
         List<String> parameters = new ArrayList<>();
@@ -530,7 +530,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
         messager.printMessage(OTHER, "Generating " + type.getQualifiedName() + "$Impl");
 
         try (PrintWriter out = new PrintWriter(filer.createSourceFile(type.getQualifiedName() + "$Impl").openOutputStream())) {
-            JavaWriter writer = new JavaWriter(out);
+            JavaWriterExt writer = new JavaWriterExt(out);
             PackageElement packageEl = (PackageElement) type.getEnclosingElement();
             writer.emitPackage(packageEl.getQualifiedName().toString())
                     .emitImports(com.tinkerpop.gremlin.structure.Edge.class, com.tinkerpop.gremlin.structure.Element.class, FramedEdge.class, FramedElement.class, FramedGraph.class, Collection.class, Arrays.class, Collections.class)
@@ -559,7 +559,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
     }
 
-    private void implementFramerMethods(TypeElement type, JavaWriter writer, boolean vertex) throws IOException {
+    private void implementFramerMethods(TypeElement type, JavaWriterExt writer, boolean vertex) throws IOException {
         String fieldName = vertex ? "v" : "e";
 
         writer.beginMethod("int", "hashCode", EnumSet.of(PUBLIC))

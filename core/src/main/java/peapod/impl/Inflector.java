@@ -68,7 +68,7 @@ public class Inflector {
         return INSTANCE;
     }
 
-    protected class Rule {
+    private static class Rule {
 
         protected final String expression;
         protected final Pattern expressionPattern;

@@ -51,16 +51,16 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Set;
 
-public class JavaWriter extends com.squareup.javawriter.JavaWriter {
+public class JavaWriterExt extends com.squareup.javawriter.JavaWriter {
 
     /**
      * @param out the stream to which Java source will be written. This should be a buffered stream.
      */
-    public JavaWriter(Writer out) {
+    public JavaWriterExt(Writer out) {
         super(out);
     }
 
-    public JavaWriter beginMethod(ExecutableElement method, Set<Modifier> modifiers) throws IOException {
+    public JavaWriterExt beginMethod(ExecutableElement method, Set<Modifier> modifiers) throws IOException {
         String[] params = new String[method.getParameters().size() * 2];
         int i = 0;
 
@@ -68,7 +68,7 @@ public class JavaWriter extends com.squareup.javawriter.JavaWriter {
             params[i++] = var.asType().toString();
             params[i++] = var.getSimpleName().toString();
         }
-        return (JavaWriter) super.beginMethod(method.getReturnType().toString(), method.getSimpleName().toString(), modifiers, params);
+        return (JavaWriterExt) super.beginMethod(method.getReturnType().toString(), method.getSimpleName().toString(), modifiers, params);
     }
 
     public String compressType(TypeMirror type) {
