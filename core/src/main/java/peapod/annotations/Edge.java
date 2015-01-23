@@ -28,6 +28,33 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+/**
+ * Marks class as a wrapper for a Tinkerpop 3 {@code edge}.
+ * <p>The wrapper class is obligatory {@code abstract}. Peapod will generate an implementation class at compile-time,
+ * that inherits from the wrapper class.</p>
+ * <pre>
+ * &#64;Edge
+ * public abstract class Develops {
+ *
+ *   public abstract String getName();
+ *
+ *   &#64;Out
+ *   public abstract Person getPerson();
+ *
+ *   &#64;In
+ *   public abstract Software getSoftware();
+ * }</pre>
+ * <p>When no annotation {@code value} is specified, the class simple name will act as the edge label.</p>
+ * <p>The wrapper class can optionally implement {@code FramedEdge} to get a reference to the wrapped {@code edge}.</p>
+ * <pre>
+ * &#64;Edge("has_developed")
+ * public abstract class Develops implements FramedEdge&lt;Develops&gt; {}</pre>
+ *
+ * @author Willem Salembier
+ * @see com.tinkerpop.gremlin.structure.Edge
+ * @see peapod.FramedEdge
+ * @since 1.0
+ */
 @Retention(RUNTIME)
 @Target({TYPE, METHOD})
 public @interface Edge {
