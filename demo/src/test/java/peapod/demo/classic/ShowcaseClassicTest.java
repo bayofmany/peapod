@@ -48,12 +48,15 @@ import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
+import peapod.FramedGraphTraversal;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 public class ShowcaseClassicTest {
+
+    private FramedGraph graph;
 
     private Person marko;
     private Person vadas;
@@ -65,7 +68,7 @@ public class ShowcaseClassicTest {
     @Before
     public void init() {
         TinkerGraph classic = TinkerFactory.createClassic();
-        FramedGraph graph = new FramedGraph(classic);
+        graph = new FramedGraph(classic);
 
         marko = graph.v(1, Person.class);
         vadas = graph.v(2, Person.class);
@@ -127,6 +130,54 @@ public class ShowcaseClassicTest {
         assertEquals(marko, knowsJosh.getPerson());
         assertEquals(josh, knowsJosh.getOtherPerson());
         assertEquals(new Float(1.0), knowsJosh.getWeight());
+    }
+
+    @Test
+    public void testMutations() {
+        clear();
+
+        // add a software vertex with a name property
+        Software gremlin = graph.addVertex(Software.class);
+        gremlin.setName("gremlin");
+        // only one vertex should exist
+        assertEqualCount(1, graph.V(Software.class).count());
+        // add a new property
+        gremlin.setCreated(2009);
+
+        // add a new software vertex to the graph
+        Software blueprints = graph.addVertex(Software.class);
+        blueprints.setName("blueprints");
+
+        // connect gremlin to blueprints via a dependsOn-edge
+        gremlin.addDependsOn(blueprints);
+
+        // now there are two vertices and one edge
+        assertEqualCount(2, graph.V(Software.class).count());
+
+        // add a property to blueprints
+        blueprints.setCreated(2010);
+        // remove that property
+        blueprints.setCreated(null);
+        // connect gremlin to blueprints via encapsulates
+        gremlin.addEncapsulates(blueprints);
+        assertEqualCount(2, graph.V(Software.class).count());
+
+        // removing a vertex removes all its incident edges as well
+        blueprints.remove();
+        gremlin.remove();
+
+        // the graph is now empty
+        assertEqualCount(0, graph.V(Software.class).count());
+        // tada!
+    }
+
+    private void clear() {
+        // removes all vertices
+        graph.graph().V().remove();
+    }
+
+    private void assertEqualCount(long expected, FramedGraphTraversal<?, Long> traversal) {
+        assertEquals(expected, traversal.tryNext().orElse(0L).longValue());
     }
 
 }

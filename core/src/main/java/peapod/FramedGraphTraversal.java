@@ -178,6 +178,18 @@ public class FramedGraphTraversal<S, E> {
         return traversal.next();
     }
 
+    public Optional<E> tryNext() {
+        addFrameStep(lastFramingClass);
+        return traversal.tryNext();
+    }
+
+    public FramedGraphTraversal<S, Long> count() {
+        this.lastFramingClass = null;
+
+        GraphTraversal<S, Long> count = traversal.count();
+        return (FramedGraphTraversal<S, Long>) this;
+    }
+
     private <F> void addFrameStep(Class<F> framingClass) {
         if (framingClass == null) {
             return;
@@ -189,5 +201,6 @@ public class FramedGraphTraversal<S, E> {
         mapStep.setFunction(v -> framer.frame(v.get(), graph));
         traversal.asAdmin().addStep(mapStep);
     }
+
 
 }

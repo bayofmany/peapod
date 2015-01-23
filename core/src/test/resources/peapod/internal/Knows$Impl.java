@@ -61,6 +61,7 @@ public final class Knows$Impl extends Knows
         }
     }
 
+    @SuppressWarnings("unused")
     public static peapod.Framer<Edge, Knows> framer() {
         return Framer.instance;
     }

@@ -62,6 +62,7 @@ public final class Person$Impl extends Person
         }
     }
 
+    @SuppressWarnings("unused")
     public static peapod.Framer<Vertex, Person> framer() {
         return Framer.instance;
     }

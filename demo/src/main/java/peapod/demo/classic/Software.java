@@ -33,11 +33,18 @@ public abstract class Software implements FramedVertex<Software> {
 
     public abstract String getName();
 
+    public abstract void setName(String name);
+
+    public abstract void setCreated(Integer created);
+
     public abstract String getLang();
 
     @In
     @Edge("created")
     public abstract List<Person> getCreatedBy();
 
+    public abstract void addDependsOn(Software software);
+
+    public abstract void addEncapsulates(Software software);
 }
 

@@ -21,7 +21,6 @@
 
 package peapod.internal;
 
-import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import peapod.*;
 import peapod.annotations.*;
@@ -143,7 +142,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
             e.printStackTrace();
         }
 
-        try (PrintWriter out = new PrintWriter(filer.createSourceFile(type.getQualifiedName() + "Traversal").openOutputStream())) {
+        /*try (PrintWriter out = new PrintWriter(filer.createSourceFile(type.getQualifiedName() + "Traversal").openOutputStream())) {
             JavaWriterExt writer = new JavaWriterExt(out);
             PackageElement packageEl = (PackageElement) type.getEnclosingElement();
             writer.emitPackage(packageEl.getQualifiedName().toString())
@@ -153,7 +152,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
                     .endType();
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     private TypeElement getBaseType(TypeElement type) {
@@ -610,7 +609,8 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 .emitEmptyLine();
 
         modifiers = new HashSet<>(Arrays.asList(Modifier.PUBLIC, Modifier.STATIC));
-        writer.beginMethod(framer, "framer", modifiers)
+        writer.emitAnnotation("SuppressWarnings(\"unused\")")
+                .beginMethod(framer, "framer", modifiers)
                 .emitStatement("return Framer.instance")
                 .endMethod();
 
