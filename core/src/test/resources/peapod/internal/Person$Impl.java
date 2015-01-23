@@ -1,4 +1,4 @@
-package peapod.impl;
+package peapod.internal;
 
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -28,7 +28,7 @@ public final class Person$Impl extends Person
         return v.<String>property("name").orElse(null);
     }
     public List<Knows> getKnows() {
-        return Collections.unmodifiableList(v.outE("knows").map(v -> (peapod.impl.Knows) new peapod.impl.Knows$Impl(v.get(), graph)).toList());
+        return Collections.unmodifiableList(v.outE("knows").map(v -> (peapod.internal.Knows) new peapod.internal.Knows$Impl(v.get(), graph)).toList());
     }
     public int hashCode() {
         return v.hashCode();

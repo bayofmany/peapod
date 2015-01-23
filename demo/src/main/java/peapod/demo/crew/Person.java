@@ -35,7 +35,7 @@ public abstract class Person implements FramedVertex<Person> {
     @Edge("develops")
     public abstract List<Software> getDevelopedSoftware();
 
-    //public abstract Develops getDevelops(Software software);
+    public abstract Develops getDevelops(Software software);
 
 }
 

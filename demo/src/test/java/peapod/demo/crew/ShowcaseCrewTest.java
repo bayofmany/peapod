@@ -48,16 +48,11 @@ import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Test;
 import peapod.FramedGraph;
 
-import java.util.List;
-
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 
-/**
- * Created by Willem on 26/12/2014.
- */
 public class ShowcaseCrewTest {
 
     @Test
@@ -84,7 +79,7 @@ public class ShowcaseCrewTest {
         assertEquals("tinkergraph", tinkergraph.getName());
 
         assertThat(marko.getDevelopedSoftware(), containsInAnyOrder(gremlin, tinkergraph));
-        //assertEquals(2010, marko.getDevelops(tinkergraph).getSince());
+        assertEquals(2010, marko.getDevelops(tinkergraph).getSince());
 
     }
 }

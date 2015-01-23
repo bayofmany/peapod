@@ -1,4 +1,4 @@
-package peapod.impl;
+package peapod.internal;
 
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;

@@ -19,7 +19,7 @@
  *    http://www.apache.org/licenses/LICENSE-2.0
  */
 
-package peapod.impl;
+package peapod.internal;
 
 import com.tinkerpop.gremlin.process.Traversal;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
@@ -45,7 +45,7 @@ import static javax.lang.model.type.TypeKind.VOID;
 import static javax.tools.Diagnostic.Kind.*;
 import static javax.tools.Diagnostic.Kind.OTHER;
 import static peapod.Direction.*;
-import static peapod.impl.ClassDescription.ElementType.EDGE;
+import static peapod.internal.ClassDescription.ElementType.EDGE;
 
 /**
  * Annotation processor for all {link @Vertex} annotated classes that generates the concrete implementation classes.

@@ -1,4 +1,4 @@
-package peapod.impl;
+package peapod.internal;
 
 import peapod.annotations.Edge;
 import peapod.annotations.In;

@@ -19,7 +19,7 @@
  *    http://www.apache.org/licenses/LICENSE-2.0
  */
 
-package peapod.impl;
+package peapod.internal;
 
 /*
  * JBoss DNA (http://www.jboss.org/dna)

@@ -19,7 +19,7 @@
  *    http://www.apache.org/licenses/LICENSE-2.0
  */
 
-package peapod.impl;
+package peapod.internal;
 
 import com.google.testing.compile.CompilationRule;
 import com.google.testing.compile.JavaFileObjects;
@@ -41,10 +41,10 @@ public class AnnotationProcessorTest {
     @Test
     public void testCompile() {
         List<JavaFileObject> input = new ArrayList<>();
-        input.add(JavaFileObjects.forResource("peapod/impl/Person.java"));
-        input.add(JavaFileObjects.forResource("peapod/impl/Knows.java"));
-        JavaFileObject framedVertex = JavaFileObjects.forResource("peapod/impl/Person$Impl.java");
-        JavaFileObject framedEdge = JavaFileObjects.forResource("peapod/impl/Knows$Impl.java");
+        input.add(JavaFileObjects.forResource("peapod/internal/Person.java"));
+        input.add(JavaFileObjects.forResource("peapod/internal/Knows.java"));
+        JavaFileObject framedVertex = JavaFileObjects.forResource("peapod/internal/Person$Impl.java");
+        JavaFileObject framedEdge = JavaFileObjects.forResource("peapod/internal/Knows$Impl.java");
 
         assert_().about(javaSources())
                 .that(input)

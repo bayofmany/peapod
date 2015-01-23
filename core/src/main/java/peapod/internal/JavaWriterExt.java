@@ -41,95 +41,41 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package peapod.impl;
-
-import peapod.annotations.Edge;
-import peapod.annotations.Vertex;
+package peapod.internal;
 
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import java.util.*;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Set;
 
-public class ClassDescription {
+public class JavaWriterExt extends com.squareup.javawriter.JavaWriter {
 
-    private final List<ExecutableElement> methods;
-
-    enum ElementType {
-        VERTEX, EDGE
+    /**
+     * @param out the stream to which Java source will be written. This should be a buffered stream.
+     */
+    public JavaWriterExt(Writer out) {
+        super(out);
     }
 
-    private ElementType elementType;
+    public JavaWriterExt beginMethod(ExecutableElement method, Set<Modifier> modifiers) throws IOException {
+        String[] params = new String[method.getParameters().size() * 2];
+        int i = 0;
 
-    private final String packageName;
-
-    private final Map<ExecutableElement, String> method2Label = new LinkedHashMap<>();
-
-    private final Set<ExecutableElement> properties = new HashSet<>();
-
-    private final Set<String> imports = new HashSet<>();
-
-    public ClassDescription(TypeElement t, List<ExecutableElement> elements) {
-        methods = elements;
-
-        packageName = ((PackageElement) t.getEnclosingElement()).getQualifiedName().toString();
-        if (t.getAnnotation(Vertex.class) != null) {
-            elementType = ElementType.VERTEX;
-        } else if (t.getAnnotation(Edge.class) != null) {
-            elementType = ElementType.EDGE;
-        } else {
-            throw new IllegalArgumentException("Type is not @Vertex or @Edge: " + t);
+        for (VariableElement var : method.getParameters()) {
+            params[i++] = var.asType().toString();
+            params[i++] = var.getSimpleName().toString();
         }
+        return (JavaWriterExt) super.beginMethod(method.getReturnType().toString(), method.getSimpleName().toString(), modifiers, params);
     }
 
-    public ElementType getElementType() {
-        return elementType;
+    public String compressType(TypeMirror type) {
+        return super.compressType(type.toString());
     }
 
-    public void setLabel(ExecutableElement element, String label, boolean isProperty) {
-        method2Label.put(element, label);
-
-        if (isProperty) {
-            properties.add(element);
-        }
-
-        //     addImport(element.getReturnType());
-        for (VariableElement param : element.getParameters()) {
-            addImport(param.asType());
-        }
-    }
-
-    public List<ExecutableElement> getMethods() {
-        return methods;
-    }
-
-    public String getLabel(ExecutableElement method) {
-        return method2Label.get(method);
-    }
-
-    public boolean isProperty(ExecutableElement method) {
-        return properties.contains(method);
-    }
-
-    public Set<String> getImports() {
-        return imports;
-    }
-
-    public void addImport(Class<?> clazz) {
-        addImport(clazz.getName());
-    }
-
-    void addImport(String anImport) {
-        if (anImport != null && !anImport.startsWith("java.lang.") && !anImport.startsWith(packageName)) {
-            imports.add(anImport);
-        }
-    }
-
-    void addImport(TypeMirror type) {
-        if (type != null && !type.getKind().isPrimitive()) {
-            addImport(type.toString());
-        }
+    public String compressType(Class<?> clazz) {
+        return super.compressType(clazz.getName());
     }
 }

@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>peapod-core</artifactId>
+    <name>Peapod Core</name>
 
     <build>
         <plugins>
