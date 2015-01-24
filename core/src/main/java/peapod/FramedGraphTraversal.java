@@ -37,7 +37,11 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * Extension of {@link com.tinkerpop.gremlin.process.Traversal} supporting framed vertices and edges.
+ * Defines the framed graph traversals and keeps track of the traversed framed classes.
+ *
+ * @author Willem Salembier
+ * @see com.tinkerpop.gremlin.process.graph.GraphTraversal
+ * @since 1.0
  */
 @SuppressWarnings({"unchecked", "unused"})
 public class FramedGraphTraversal<S, E> {

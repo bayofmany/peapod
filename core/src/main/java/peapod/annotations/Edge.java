@@ -30,8 +30,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * Marks class as a wrapper for a Tinkerpop 3 edge.
- * <p>The wrapper class is obligatory {@code abstract}. Peapod will generate an implementation class at compile-time,
- * that inherits from the wrapper class.</p>
+ * <p>The wrapper class is obligatory {@code abstract}. Peapod will generate its implementation class at compile-time.</p>
  * <pre>
  * &#64;Edge
  * public abstract class Develops {
@@ -48,7 +47,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * <p>The wrapper class can optionally implement {@code FramedEdge} to get a reference to the wrapped {@code edge}.</p>
  * <pre>
  * &#64;Edge("has_developed")
- * public abstract class Develops implements FramedEdge&lt;Develops&gt; {}</pre>
+ * public abstract class Develops implements FramedEdge {}</pre>
  *
  * @author Willem Salembier
  * @see com.tinkerpop.gremlin.structure.Edge

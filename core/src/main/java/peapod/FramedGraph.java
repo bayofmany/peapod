@@ -36,7 +36,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 /**
- * A framed instance of a tinkerpop graph.
+ * A framed instance of a Tinkerpop 3 graph.
  */
 public class FramedGraph implements AutoCloseable {
 

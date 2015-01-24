@@ -23,6 +23,17 @@ package peapod;
 
 import com.tinkerpop.gremlin.structure.Vertex;
 
+/**
+ * All generated {@code @Vertex} classes implement the {@code FramedVertex} interface. It can be optionally
+ * defined on the abstract class for traversals and to get a reference to the wrapped Tinkerpop 3 {@code vertex}.</p>
+ * <pre>
+ * &#64;Vertex
+ * public abstract class Person implements FramedVertex&lt;Person&gt; {}</pre>
+ *
+ * @author Willem Salembier
+ * @see com.tinkerpop.gremlin.structure.Vertex
+ * @since 1.0
+ */
 public interface FramedVertex<V> extends FramedElement, FramedVertexTraversal<V> {
 
     default Vertex vertex() {

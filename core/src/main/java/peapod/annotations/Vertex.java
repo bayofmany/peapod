@@ -29,8 +29,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * Marks class as a wrapper for a Tinkerpop 3 vertex.
- * <p>The wrapper class is obligatory {@code abstract}. Peapod will generate an implementation class at compile-time,
- * that inherits from the wrapper class.</p>
+ * <p>The wrapper class is obligatory {@code abstract}. Peapod will generate its implementation class at compile-time.</p>
  * <pre>
  * &#64;Vertex
  * public abstract class Person {

@@ -27,6 +27,18 @@ import java.lang.annotation.Target;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+
+/**
+ * Optional annotation for vertex and edge properties. The value denotes an alternative property name to be used.
+ *
+ * <pre>
+ *     &#64;Property("name")
+ *     public abstract String getLastName();
+ * </pre>
+ *
+ * @author Willem Salembier
+ * @since 1.0
+ */
 @Retention(RUNTIME)
 @Target(METHOD)
 public @interface Property {

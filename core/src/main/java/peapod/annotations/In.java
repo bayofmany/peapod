@@ -28,7 +28,10 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 /**
- * Annotation to mark the vertex at the incoming side of the edge.
+ * Marks the incoming side of edge traversals.
+ *
+ * @author Willem Salembier
+ * @since 1.0
  */
 @Retention(SOURCE)
 @Target(METHOD)

@@ -43,7 +43,7 @@ import static javax.lang.model.type.TypeKind.DECLARED;
 import static javax.lang.model.type.TypeKind.VOID;
 import static javax.tools.Diagnostic.Kind.*;
 import static javax.tools.Diagnostic.Kind.OTHER;
-import static peapod.Direction.*;
+import static peapod.internal.Direction.*;
 import static peapod.internal.ClassDescription.ElementType.EDGE;
 
 /**
