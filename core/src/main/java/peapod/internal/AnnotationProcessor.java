@@ -117,10 +117,14 @@ public final class AnnotationProcessor extends AbstractProcessor {
             JavaWriterExt writer = new JavaWriterExt(out);
             PackageElement packageEl = (PackageElement) type.getEnclosingElement();
             writer.emitPackage(packageEl.getQualifiedName().toString())
-                    .emitImports(com.tinkerpop.gremlin.structure.Vertex.class, com.tinkerpop.gremlin.structure.Element.class, FramedVertex.class, FramedElement.class, FramedGraph.class, Collection.class, Arrays.class, Collections.class)
+                    .emitImports(com.tinkerpop.gremlin.structure.Vertex.class, com.tinkerpop.gremlin.structure.Element.class, FramedVertex.class, FramedElement.class, FramedGraph.class, Collection.class, Arrays.class, Collections.class, IFramer.class)
                     .emitImports(description.getImports())
                     .emitEmptyLine()
                     .beginType(type.getQualifiedName() + "$Impl", "class", EnumSet.of(PUBLIC, Modifier.FINAL), type.getQualifiedName().toString(), "FramedVertex<" + getBaseType(type).getSimpleName() + ">")
+                    .emitEmptyLine();
+            String label = getLabel(type);
+            writer.emitConstant("String", "LABEL", "\"" + label + "\"")
+                    .emitEmptyLine()
                     .emitField(peapod.FramedGraph.class.getName(), "graph", EnumSet.of(PRIVATE))
                     .emitField(com.tinkerpop.gremlin.structure.Vertex.class.getName(), "v", EnumSet.of(PRIVATE))
                     .beginConstructor(EnumSet.of(PUBLIC), "Vertex", "v", FramedGraph.class.getSimpleName(), "graph")
@@ -553,9 +557,14 @@ public final class AnnotationProcessor extends AbstractProcessor {
             JavaWriterExt writer = new JavaWriterExt(out);
             PackageElement packageEl = (PackageElement) type.getEnclosingElement();
             writer.emitPackage(packageEl.getQualifiedName().toString())
-                    .emitImports(com.tinkerpop.gremlin.structure.Edge.class, com.tinkerpop.gremlin.structure.Element.class, FramedEdge.class, FramedElement.class, FramedGraph.class, Collection.class, Arrays.class, Collections.class)
+                    .emitImports(com.tinkerpop.gremlin.structure.Edge.class, com.tinkerpop.gremlin.structure.Element.class, FramedEdge.class, FramedElement.class, FramedGraph.class, Collection.class, Arrays.class, Collections.class, IFramer.class)
                     .emitEmptyLine()
                     .beginType(type.getQualifiedName() + "$Impl", "class", EnumSet.of(PUBLIC, Modifier.FINAL), type.getQualifiedName().toString(), FramedEdge.class.getSimpleName())
+                    .emitEmptyLine();
+
+            String label = getLabel(type);
+            writer.emitConstant("String", "LABEL", "\"" + label + "\"")
+                    .emitEmptyLine()
                     .emitField(peapod.FramedGraph.class.getSimpleName(), "graph", EnumSet.of(PRIVATE))
                     .emitField(com.tinkerpop.gremlin.structure.Edge.class.getName(), "e", EnumSet.of(PRIVATE))
                     .beginConstructor(EnumSet.of(PUBLIC), "Edge", "e", FramedGraph.class.getSimpleName(), "graph")
@@ -597,26 +606,24 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
         Set<Modifier> modifiers = new HashSet<>(Arrays.asList(Modifier.PRIVATE, Modifier.STATIC, FINAL));
 
-        String label = getLabel(type);
-
         List<String> subLabels = subTypes.getOrDefault(type, Collections.emptyList());
         String initializer;
         if (subLabels.isEmpty()) {
-            initializer = "Arrays.asList(label)";
+            initializer = "Arrays.asList(LABEL)";
         } else {
             String collect = subLabels.stream().map(s -> "\"" + s + "\"").collect(Collectors.joining(","));
-            initializer = "Arrays.asList(label, " + collect + ")";
+            initializer = "Arrays.asList(LABEL, " + collect + ")";
         }
 
-        String framer = "peapod.Framer<" + (vertex ? "Vertex" : "Edge") + ", " + type + ">";
+        writer.emitConstant("Framer", "instance", "new Framer()")
+                .emitEmptyLine();
+        String framer = "IFramer<" + (vertex ? "Vertex" : "Edge") + ", " + type + ">";
         writer.beginType("Framer", "class", modifiers, null, framer)
                 .emitEmptyLine()
-                .emitField("Framer", "instance", modifiers, "new Framer()")
-                .emitField("String", "label", modifiers, "\"" + label + "\"")
                 .emitField("Collection<String>", "subLabels", modifiers, "Collections.unmodifiableCollection(" + initializer + ")")
                 .emitEmptyLine()
                 .beginMethod("String", "label", Collections.singleton(PUBLIC))
-                .emitStatement("return label")
+                .emitStatement("return LABEL")
                 .endMethod()
                 .emitEmptyLine()
                 .beginMethod("Collection<String>", "subLabels", Collections.singleton(PUBLIC))
@@ -626,14 +633,8 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 .beginMethod(type.toString(), "frame", Collections.singleton(PUBLIC), vertex ? "Vertex" : "Edge", fieldName, "FramedGraph", "graph")
                 .emitStatement("return new %s$Impl(%s, graph)", type.getSimpleName(), fieldName)
                 .endMethod()
-                .endType()
-                .emitEmptyLine();
+                .endType();
 
-        modifiers = new HashSet<>(Arrays.asList(Modifier.PUBLIC, Modifier.STATIC));
-        writer.emitAnnotation("SuppressWarnings(\"unused\")")
-                .beginMethod(framer, "framer", modifiers)
-                .emitStatement("return Framer.instance")
-                .endMethod();
 
     }
 

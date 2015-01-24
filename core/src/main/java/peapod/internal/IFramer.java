@@ -19,16 +19,17 @@
  *    http://www.apache.org/licenses/LICENSE-2.0
  */
 
-package peapod;
+package peapod.internal;
 
 import com.tinkerpop.gremlin.structure.Element;
+import peapod.FramedGraph;
 
 import java.util.Collection;
 
 /**
  * A Framer implementation converts Tinkerpop {@link com.tinkerpop.gremlin.structure.Element} instance to framed objects.
  */
-public interface Framer<E extends Element, F> {
+public interface IFramer<E extends Element, F> {
 
     String label();
 

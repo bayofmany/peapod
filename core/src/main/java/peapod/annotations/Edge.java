@@ -29,7 +29,7 @@ import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Marks class as a wrapper for a Tinkerpop 3 {@code edge}.
+ * Marks class as a wrapper for a Tinkerpop 3 edge.
  * <p>The wrapper class is obligatory {@code abstract}. Peapod will generate an implementation class at compile-time,
  * that inherits from the wrapper class.</p>
  * <pre>
@@ -44,7 +44,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  *   &#64;In
  *   public abstract Software getSoftware();
  * }</pre>
- * <p>When no annotation {@code value} is specified, the class simple name will act as the edge label.</p>
+ * <p>By default the class simple name in lower case is used as edge label, but this can be changed via the annotation value.
  * <p>The wrapper class can optionally implement {@code FramedEdge} to get a reference to the wrapped {@code edge}.</p>
  * <pre>
  * &#64;Edge("has_developed")

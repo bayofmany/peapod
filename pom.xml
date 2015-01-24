@@ -76,6 +76,9 @@
                 <version>2.10.1</version>
                 <configuration>
                     <excludePackageNames>*.internal.*</excludePackageNames>
+                    <links>
+                        <link>http://www.tinkerpop.com/javadocs/${tinkerpop.version}/core/</link>
+                    </links>
                 </configuration>
             </plugin>
         </plugins>

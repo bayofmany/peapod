@@ -37,8 +37,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  *   public abstract String getName();
  *   public abstract void addSoftware(Software software);
  * }</pre>
- * <p>When no annotation {@code value} is specified, the class simple name will act as the vertex label.</p>
- * <p>The wrapper class can optionally implement {@code FramedVertex} to add traversal functionality and
+ * <p>By default the class simple name is used as vertex label, but this can be changed via the annotation value.
+ * The wrapper class can optionally implement {@code FramedVertex} to add traversal functionality and
  * get a reference to the wrapped {@code vertex}.</p>
  * <pre>
  * &#64;Vertex("individual")

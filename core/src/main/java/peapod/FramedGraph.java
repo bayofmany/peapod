@@ -29,6 +29,8 @@ import com.tinkerpop.gremlin.structure.Graph.Variables;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
+import peapod.internal.IFramer;
+import peapod.internal.FramerRegistry;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -51,7 +53,7 @@ public class FramedGraph implements AutoCloseable {
      * @return The newly created labeled linked vertex
      */
     public <F> F addVertex(Class<F> clazz) {
-        Framer<Element, F> framer = FramerRegistry.instance.get(clazz);
+        IFramer<Element, F> framer = FramerRegistry.instance.get(clazz);
         Vertex v = graph.addVertex(framer.label());
         return framer.frame(v, this);
     }
@@ -63,7 +65,7 @@ public class FramedGraph implements AutoCloseable {
      * @return The newly created labeled linked vertex
      */
     public <V> V addVertex(Class<V> clazz, Object id) {
-        Framer<Element, V> framer = FramerRegistry.instance.get(clazz);
+        IFramer<Element, V> framer = FramerRegistry.instance.get(clazz);
         Vertex v = graph.addVertex(T.id, id, T.label, framer.label());
         return framer.frame(v, this);
     }

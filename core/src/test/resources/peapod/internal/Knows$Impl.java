@@ -8,9 +8,13 @@ import java.util.Collections;
 import peapod.FramedEdge;
 import peapod.FramedElement;
 import peapod.FramedGraph;
+import peapod.internal.IFramer;
 
 public final class Knows$Impl extends Knows
         implements FramedEdge {
+
+    public static final String LABEL = "knows";
+
     private FramedGraph graph;
     private Edge e;
     public Knows$Impl(Edge e, FramedGraph graph) {
@@ -26,6 +30,7 @@ public final class Knows$Impl extends Knows
     public Person getPerson() {
         return e.outV().map(v -> new Person$Impl(v.get(), graph)).next();
     }
+
     public Person getOtherPerson() {
         return e.inV().map(v -> new Person$Impl(v.get(), graph)).next();
     }
@@ -41,15 +46,15 @@ public final class Knows$Impl extends Knows
         return e.label() + "[" + e.id() + "]";
     }
 
-    private static final class Framer
-            implements peapod.Framer<Edge, Knows> {
+    public static final Framer instance = new Framer();
 
-        private static final Framer instance = new Framer();
-        private static final String label = "knows";
-        private static final Collection<String> subLabels = Collections.unmodifiableCollection(Arrays.asList(label));
+    private static final class Framer
+            implements IFramer<Edge, Knows> {
+
+        private static final Collection<String> subLabels = Collections.unmodifiableCollection(Arrays.asList(LABEL));
 
         public String label() {
-            return label;
+            return LABEL;
         }
 
         public Collection<String> subLabels() {
@@ -59,10 +64,5 @@ public final class Knows$Impl extends Knows
         public Knows frame(Edge e, FramedGraph graph) {
             return new Knows$Impl(e, graph);
         }
-    }
-
-    @SuppressWarnings("unused")
-    public static peapod.Framer<Edge, Knows> framer() {
-        return Framer.instance;
     }
 }

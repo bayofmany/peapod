@@ -49,9 +49,13 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 public class JavaWriterExt extends com.squareup.javawriter.JavaWriter {
+
+    private static final Set<Modifier> CONSTANT_MODIFIERS = new HashSet<>(Arrays.asList(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL));
 
     /**
      * @param out the stream to which Java source will be written. This should be a buffered stream.
@@ -69,6 +73,10 @@ public class JavaWriterExt extends com.squareup.javawriter.JavaWriter {
             params[i++] = var.getSimpleName().toString();
         }
         return (JavaWriterExt) super.beginMethod(method.getReturnType().toString(), method.getSimpleName().toString(), modifiers, params);
+    }
+
+    public JavaWriterExt emitConstant(String type, String name, String value) throws IOException {
+        return (JavaWriterExt) emitField(type, name, CONSTANT_MODIFIERS, value);
     }
 
     public String compressType(TypeMirror type) {

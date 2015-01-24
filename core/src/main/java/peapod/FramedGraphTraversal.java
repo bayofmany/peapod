@@ -28,6 +28,8 @@ import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
+import peapod.internal.IFramer;
+import peapod.internal.FramerRegistry;
 
 import java.util.*;
 import java.util.function.BiPredicate;
@@ -195,7 +197,7 @@ public class FramedGraphTraversal<S, E> {
             return;
         }
 
-        Framer<Element, F> framer = FramerRegistry.instance.get(framingClass);
+        IFramer<Element, F> framer = FramerRegistry.instance.get(framingClass);
 
         MapStep<Vertex, F> mapStep = new MapStep<>(traversal);
         mapStep.setFunction(v -> framer.frame(v.get(), graph));

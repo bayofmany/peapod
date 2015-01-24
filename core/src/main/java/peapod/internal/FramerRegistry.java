@@ -19,35 +19,34 @@
  *    http://www.apache.org/licenses/LICENSE-2.0
  */
 
-package peapod;
+package peapod.internal;
 
 import com.tinkerpop.gremlin.structure.Element;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
-class FramerRegistry {
+public class FramerRegistry {
 
-    static final FramerRegistry instance = new FramerRegistry();
+    public static final FramerRegistry instance = new FramerRegistry();
 
-    private final Map<Class<?>, Framer<?, ?>> framers = new HashMap<>();
+    private final Map<Class<?>, IFramer<?, ?>> framers = new HashMap<>();
 
     @SuppressWarnings("unchecked")
-    private <E extends Element, F> Framer<E, F> register(Class<F> framed) {
+    private <E extends Element, F> IFramer<E, F> register(Class<F> framed) {
         try {
             Class<?> framingClass = framed.getClassLoader().loadClass(framed.getName() + "$Impl");
-            Framer<E, F> framer = (Framer<E, F>) framingClass.getMethod("framer").invoke(null);
+            IFramer<E, F> framer = (IFramer<E, F>) framingClass.getField("instance").get(null);
             framers.put(framed, framer);
             return framer;
-        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+        } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
 
     @SuppressWarnings("unchecked")
-    <E extends Element, F> Framer<E, F> get(Class<F> framed) {
-        return (Framer<E, F>) framers.getOrDefault(framed, register(framed));
+    public <E extends Element, F> IFramer<E, F> get(Class<F> framed) {
+        return (IFramer<E, F>) framers.getOrDefault(framed, register(framed));
     }
 
 }

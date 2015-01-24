@@ -8,10 +8,14 @@ import java.util.Collections;
 import peapod.FramedElement;
 import peapod.FramedGraph;
 import peapod.FramedVertex;
+import peapod.internal.IFramer;
 import java.util.List;
 
 public final class Person$Impl extends Person
         implements FramedVertex<Person> {
+
+    public static final String LABEL = "Person";
+
     private FramedGraph graph;
     private Vertex v;
     public Person$Impl(Vertex v, FramedGraph graph) {
@@ -42,15 +46,15 @@ public final class Person$Impl extends Person
         return v.label() + "[" + v.id() + "]";
     }
 
-    private static final class Framer
-            implements peapod.Framer<Vertex, Person> {
+    public static final Framer instance = new Framer();
 
-        private static final Framer instance = new Framer();
-        private static final String label = "Person";
-        private static final Collection<String> subLabels = Collections.unmodifiableCollection(Arrays.asList(label));
+    private static final class Framer
+            implements IFramer<Vertex, Person> {
+
+        private static final Collection<String> subLabels = Collections.unmodifiableCollection(Arrays.asList(LABEL));
 
         public String label() {
-            return label;
+            return LABEL;
         }
 
         public Collection<String> subLabels() {
@@ -60,10 +64,5 @@ public final class Person$Impl extends Person
         public Person frame(Vertex v, FramedGraph graph) {
             return new Person$Impl(v, graph);
         }
-    }
-
-    @SuppressWarnings("unused")
-    public static peapod.Framer<Vertex, Person> framer() {
-        return Framer.instance;
     }
 }
