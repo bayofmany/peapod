@@ -19,18 +19,16 @@
  *    http://www.apache.org/licenses/LICENSE-2.0
  */
 
-package peapod;
+package peapod.vertexproperty;
 
+import peapod.FramedVertexProperty;
 import peapod.annotations.VertexProperty;
 
-public interface FramedVertexProperty<T> extends FramedElement {
+@VertexProperty
+public abstract class Location implements FramedVertexProperty<String> {
 
-    public void setValue(T t);
+    //public abstract Integer getStartTime();
 
-    public T getValue();
-
-    default VertexProperty property() {
-        return (VertexProperty) element();
-    }
+    //public abstract Integer getEndTime();
 
 }

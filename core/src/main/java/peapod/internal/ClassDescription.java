@@ -45,6 +45,7 @@ package peapod.internal;
 
 import peapod.annotations.Edge;
 import peapod.annotations.Vertex;
+import peapod.annotations.VertexProperty;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
@@ -56,10 +57,6 @@ import java.util.*;
 public class ClassDescription {
 
     private final List<ExecutableElement> methods;
-
-    enum ElementType {
-        VERTEX, EDGE
-    }
 
     private ElementType elementType;
 
@@ -76,11 +73,13 @@ public class ClassDescription {
 
         packageName = ((PackageElement) t.getEnclosingElement()).getQualifiedName().toString();
         if (t.getAnnotation(Vertex.class) != null) {
-            elementType = ElementType.VERTEX;
+            elementType = ElementType.Vertex;
         } else if (t.getAnnotation(Edge.class) != null) {
-            elementType = ElementType.EDGE;
+            elementType = ElementType.Edge;
+        } else if (t.getAnnotation(VertexProperty.class) != null) {
+            elementType = ElementType.VertexProperty;
         } else {
-            throw new IllegalArgumentException("Type is not @Vertex or @Edge: " + t);
+            throw new IllegalArgumentException("Type is not @Vertex, @VertexProperty or @Edge: " + t);
         }
     }
 

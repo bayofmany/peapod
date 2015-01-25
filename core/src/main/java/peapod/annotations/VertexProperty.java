@@ -19,18 +19,9 @@
  *    http://www.apache.org/licenses/LICENSE-2.0
  */
 
-package peapod;
+package peapod.annotations;
 
-import peapod.annotations.VertexProperty;
+public @interface VertexProperty {
 
-public interface FramedVertexProperty<T> extends FramedElement {
-
-    public void setValue(T t);
-
-    public T getValue();
-
-    default VertexProperty property() {
-        return (VertexProperty) element();
-    }
-
+    String value() default "";
 }

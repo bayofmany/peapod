@@ -19,18 +19,19 @@
  *    http://www.apache.org/licenses/LICENSE-2.0
  */
 
-package peapod;
+package peapod.internal;
 
-import peapod.annotations.VertexProperty;
+enum ElementType {
 
-public interface FramedVertexProperty<T> extends FramedElement {
+    Vertex("v"), VertexProperty("vp"), Edge("e");
 
-    public void setValue(T t);
+    private String field;
 
-    public T getValue();
-
-    default VertexProperty property() {
-        return (VertexProperty) element();
+    ElementType(String field) {
+        this.field = field;
     }
 
+    public String getFieldName() {
+        return field;
+    }
 }

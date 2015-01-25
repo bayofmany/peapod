@@ -33,7 +33,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -44,12 +43,11 @@ import static javax.lang.model.type.TypeKind.VOID;
 import static javax.tools.Diagnostic.Kind.*;
 import static javax.tools.Diagnostic.Kind.OTHER;
 import static peapod.internal.Direction.*;
-import static peapod.internal.ClassDescription.ElementType.EDGE;
 
 /**
  * Annotation processor for all {link @Vertex} annotated classes that generates the concrete implementation classes.
  */
-@SupportedAnnotationTypes({"peapod.annotations.Vertex"})
+@SupportedAnnotationTypes({"peapod.annotations.Vertex", "peapod.annotations.VertexProperty", "peapod.annotations.Edge"})
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public final class AnnotationProcessor extends AbstractProcessor {
 
@@ -78,6 +76,10 @@ public final class AnnotationProcessor extends AbstractProcessor {
             messager.printMessage(OTHER, elements.size() + " elements with annotation @Vertex");
             elements.stream().forEach(e -> registerBaseClass((TypeElement) e));
             elements.stream().forEach(e -> generateVertexImplementationClass((TypeElement) e));
+
+            elements = roundEnv.getElementsAnnotatedWith(VertexProperty.class);
+            messager.printMessage(OTHER, elements.size() + " elements with annotation @VertexProperty");
+            elements.stream().filter(e -> e.getKind().isClass()).forEach(e -> generateVertexPropertyImplementationClass((TypeElement) e));
 
             elements = roundEnv.getElementsAnnotatedWith(Edge.class);
             messager.printMessage(OTHER, elements.size() + " elements with annotation @Edge");
@@ -138,8 +140,8 @@ public final class AnnotationProcessor extends AbstractProcessor {
                     .emitStatement("return v")
                     .endMethod();
 
-            implementAbstractMethods(description, writer, true);
-            implementFramerMethods(type, writer, true);
+            implementAbstractMethods(description, writer, ElementType.Vertex);
+            implementFramerMethods(type, writer, ElementType.Vertex);
 
             writer.endType();
         } catch (IOException e) {
@@ -159,144 +161,120 @@ public final class AnnotationProcessor extends AbstractProcessor {
         }*/
     }
 
-    private TypeElement getBaseType(TypeElement type) {
-        TypeMirror superclass = type.getSuperclass();
-        if (hasAnnotation(superclass, Vertex.class)) {
-            return getBaseType((TypeElement) types.asElement(superclass));
-        } else {
-            return type;
+    private void generateVertexPropertyImplementationClass(TypeElement type) {
+        ClassDescription description = parse(type);
+        messager.printMessage(OTHER, "Generating " + type.getQualifiedName() + "$Impl");
+
+        Optional<? extends TypeMirror> vertexPropertyClass = type.getInterfaces().stream().filter(i -> i.toString().contains("FramedVertexProperty")).findAny();
+        if (!vertexPropertyClass.isPresent()) {
+            messager.printMessage(ERROR, type.getQualifiedName() + " does not implement " + FramedVertexProperty.class);
+        }
+
+        DeclaredType vertexPropertyInterface = (DeclaredType) vertexPropertyClass.get();
+        TypeMirror propertyType = vertexPropertyInterface.getTypeArguments().get(0);
+
+        try (PrintWriter out = new PrintWriter(filer.createSourceFile(type.getQualifiedName() + "$Impl").openOutputStream())) {
+            JavaWriterExt writer = new JavaWriterExt(out);
+            PackageElement packageEl = (PackageElement) type.getEnclosingElement();
+            writer.emitPackage(packageEl.getQualifiedName().toString())
+                    .emitImports(com.tinkerpop.gremlin.structure.VertexProperty.class, com.tinkerpop.gremlin.structure.Element.class, FramedElement.class, FramedGraph.class, FramedVertexProperty.class, Collection.class, Arrays.class, Collections.class, IFramer.class)
+                    .emitEmptyLine()
+                    .beginType(type.getQualifiedName() + "$Impl", "class", EnumSet.of(PUBLIC, Modifier.FINAL), type.getQualifiedName().toString()/*, FramedVertexProperty.class.getSimpleName()*/)
+                    .emitEmptyLine();
+
+            String label = getLabel(type);
+            writer.emitConstant("String", "LABEL", "\"" + label + "\"")
+                    .emitEmptyLine()
+                    .emitField(peapod.FramedGraph.class.getSimpleName(), "graph", EnumSet.of(PRIVATE))
+                    .emitField(com.tinkerpop.gremlin.structure.VertexProperty.class.getName(), "vp", EnumSet.of(PRIVATE))
+                    .beginConstructor(EnumSet.of(PUBLIC), "VertexProperty", "vp", FramedGraph.class.getSimpleName(), "graph")
+                    .emitStatement("this.vp = vp")
+                    .emitStatement("this.graph = graph")
+                    .endConstructor()
+                    .beginMethod(peapod.FramedGraph.class.getSimpleName(), "graph", EnumSet.of(PUBLIC))
+                    .emitStatement("return graph")
+                    .endMethod()
+                    .beginMethod("Element", "element", EnumSet.of(PUBLIC))
+                    .emitStatement("return vp")
+                    .endMethod();
+
+
+            HashSet<Modifier> modifiers = new HashSet<>();
+            modifiers.add(PUBLIC);
+            writer.beginMethod(propertyType.toString(), "getValue", modifiers)
+                    .emitStatement("return vp.<%s>value(\"%s\")", writer.compressType(propertyType), label)
+                    .endMethod();
+
+            writer.beginMethod("void", "setValue", modifiers, writer.compressType(propertyType), "value")
+                    .beginControlFlow("if (value == null)")
+                    .emitStatement("vp.remove()")
+                    .nextControlFlow("else")
+                    .emitStatement("vp.property(\"%s\", value)", label)
+                    .endControlFlow();
+            writer.endMethod();
+
+            implementAbstractMethods(description, writer, ElementType.VertexProperty);
+            implementFramerMethods(type, writer, ElementType.VertexProperty);
+
+            writer.endType();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private ClassDescription parse(TypeElement type) {
-        List<ExecutableElement> elements = new ArrayList<>();
+    private void generateEdgeImplementationClass(TypeElement type) {
+        ClassDescription description = parse(type);
+        messager.printMessage(OTHER, "Generating " + type.getQualifiedName() + "$Impl");
 
-        TypeElement t = type;
-        do {
-            t.getEnclosedElements().stream().filter(e -> e.getKind() == METHOD && e.getModifiers().contains(Modifier.ABSTRACT)).forEach(e -> elements.add((ExecutableElement) e));
-            if (t.getSuperclass().getKind() == DECLARED) {
-                t = (TypeElement) types.asElement(t.getSuperclass());
-            } else {
-                t = null;
-            }
+        try (PrintWriter out = new PrintWriter(filer.createSourceFile(type.getQualifiedName() + "$Impl").openOutputStream())) {
+            JavaWriterExt writer = new JavaWriterExt(out);
+            PackageElement packageEl = (PackageElement) type.getEnclosingElement();
+            writer.emitPackage(packageEl.getQualifiedName().toString())
+                    .emitImports(com.tinkerpop.gremlin.structure.Edge.class, com.tinkerpop.gremlin.structure.Element.class, FramedEdge.class, FramedElement.class, FramedGraph.class, Collection.class, Arrays.class, Collections.class, IFramer.class)
+                    .emitEmptyLine()
+                    .beginType(type.getQualifiedName() + "$Impl", "class", EnumSet.of(PUBLIC, Modifier.FINAL), type.getQualifiedName().toString(), FramedEdge.class.getSimpleName())
+                    .emitEmptyLine();
+
+            String label = getLabel(type);
+            writer.emitConstant("String", "LABEL", "\"" + label + "\"")
+                    .emitEmptyLine()
+                    .emitField(peapod.FramedGraph.class.getSimpleName(), "graph", EnumSet.of(PRIVATE))
+                    .emitField(com.tinkerpop.gremlin.structure.Edge.class.getName(), "e", EnumSet.of(PRIVATE))
+                    .beginConstructor(EnumSet.of(PUBLIC), "Edge", "e", FramedGraph.class.getSimpleName(), "graph")
+                    .emitStatement("this.e = e")
+                    .emitStatement("this.graph = graph")
+                    .endConstructor()
+                    .beginMethod(peapod.FramedGraph.class.getSimpleName(), "graph", EnumSet.of(PUBLIC))
+                    .emitStatement("return graph")
+                    .endMethod()
+                    .beginMethod("Element", "element", EnumSet.of(PUBLIC))
+                    .emitStatement("return e")
+                    .endMethod();
+
+            implementAbstractMethods(description, writer, ElementType.Edge);
+            implementFramerMethods(type, writer, ElementType.Edge);
+
+            writer.endType();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        while (t != null);
-
-        ClassDescription description = new ClassDescription(type, elements);
-
-        Map<String, List<ExecutableElement>> property2Methods = elements.stream().collect(Collectors.groupingBy(this::extractProperty));
-        property2Methods.forEach((p, l) -> parse(description, p, l));
-
-        return description;
-    }
-
-    private String extractProperty(ExecutableElement method) {
-        MethodType type = MethodType.getType(method);
-        if (type == null) {
-            messager.printMessage(ERROR, "Unsupported abstract method: " + method.getEnclosingElement() + "::" + method);
-            return null;
-        }
-
-        String property = type.getPropertyName(method);
-        if (getCollectionType(method.getReturnType()) != null) {
-            property = Inflector.getInstance().singularize(property);
-        }
-        return property;
-    }
-
-    private void parse(ClassDescription description, String property, List<ExecutableElement> methods) {
-        String label = null;
-
-        boolean isProperty = true;
-
-        for (ExecutableElement method : methods) {
-            TypeMirror singularType;
-
-            MethodType type = MethodType.getType(method);
-            if (type == MethodType.SETTER || type == MethodType.REMOVER || (type == MethodType.ADDER && method.getReturnType().getKind() == VOID)) {
-                singularType = getSingularizedType(method.getParameters().get(0).asType());
-            } else {
-                singularType = getSingularizedType(method.getReturnType());
-            }
-
-            CollectionType collectionType = getCollectionType(method.getReturnType());
-            if (collectionType != null) {
-                description.addImport(collectionType.getImport());
-            }
-
-            boolean isVertex = hasAnnotation(singularType, Vertex.class);
-            boolean isEdge = hasAnnotation(singularType, Edge.class);
-
-            if (isVertex || isEdge) {
-                if (description.getElementType() == EDGE && type != MethodType.GETTER) {
-                    messager.printMessage(ERROR, "@Edge classes cannot have linked vertex update methods: " + method);
-                    continue;
-                }
-
-                if (type == MethodType.GETTER && isVertex) {
-                    description.addImport(GraphTraversal.class);
-                    if (!method.getParameters().isEmpty()) {
-                        description.addImport(com.tinkerpop.gremlin.structure.Edge.class);
-                    }
-                }
-
-                if (isVertex) {
-                    Edge edge = method.getAnnotation(Edge.class);
-                    if (edge != null && !edge.value().isEmpty()) {
-                        label = edge.value();
-                    }
-                } else {
-                    TypeElement edgeClass = (TypeElement) types.asElement(singularType);
-                    label = getLabel(edgeClass);
-                }
-
-                isProperty = false;
-            } else {
-                Property p = method.getAnnotation(Property.class);
-                if (p != null && !p.value().isEmpty()) {
-                    label = p.value();
-                }
-            }
-        }
-
-        if (label == null) {
-            label = property;
-        }
-
-        String finalLabel = label;
-        boolean finalIsProperty = isProperty;
-        methods.forEach(m -> description.setLabel(m, finalLabel, finalIsProperty));
 
     }
 
-    private TypeMirror getSingularizedType(TypeMirror type) {
-        CollectionType collectionType = getCollectionType(type);
-        if (collectionType == null) {
-            return type;
-        } else {
-            DeclaredType returnType = (DeclaredType) type;
-            if (returnType.getTypeArguments().size() != 1) {
-                messager.printMessage(ERROR, "Only one type argument supported: " + type);
-                throw new IllegalArgumentException("Only one type argument supported: " + type);
-            }
-
-            return returnType.getTypeArguments().get(0);
-        }
-    }
-
-    private void implementAbstractMethods(ClassDescription description, JavaWriterExt writer, boolean vertex) throws IOException {
+    private void implementAbstractMethods(ClassDescription description, JavaWriterExt writer, ElementType elementType) throws IOException {
         for (ExecutableElement method : description.getMethods()) {
             MethodType methodType = MethodType.getType(method);
             if (description.isProperty(method)) {
-                implementAbstractPropertyMethod(method, methodType, description.getLabel(method), writer, vertex);
+                implementAbstractPropertyMethod(method, methodType, description.getLabel(method), writer, elementType);
             } else {
-                implementAbstractEdgeMethod(method, methodType, description.getLabel(method), writer, vertex);
+                implementAbstractEdgeMethod(method, methodType, description.getLabel(method), writer, elementType == ElementType.Vertex);
             }
         }
     }
 
-    private void implementAbstractPropertyMethod(ExecutableElement method, MethodType methodType, String label, JavaWriterExt writer, boolean vertex) throws IOException {
-        String elementName = vertex ? "v" : "e";
+    private void implementAbstractPropertyMethod(ExecutableElement method, MethodType methodType, String label, JavaWriterExt writer, ElementType elementType) throws IOException {
+        String fieldName = elementType.getFieldName();
+        boolean vertex = elementType == ElementType.Vertex;
 
         Set<Modifier> modifiers = new HashSet<>(method.getModifiers());
         modifiers.remove(ABSTRACT);
@@ -317,23 +295,31 @@ public final class AnnotationProcessor extends AbstractProcessor {
             CollectionType collectionType = getCollectionType(method.getReturnType());
             if (collectionType == null) {
                 writer.beginMethod(method, modifiers)
-                        .emitStatement("return %s.<%s>property(\"%s\").orElse(%s)", elementName, className, label, getDefaultValue(method.getReturnType()))
+                        .emitStatement("return %s.<%s>property(\"%s\").orElse(%s)", fieldName, className, label, getDefaultValue(method.getReturnType()))
                         .endMethod();
             } else {
                 TypeMirror singularizedType = getSingularizedType(method.getReturnType());
-                writer.beginMethod(method, modifiers)
-                        .emitStatement("return " + collectionType.wrap("v.<%s>values(\"%s\")"), writer.compressType(singularizedType), label)
-                        .endMethod();
+
+                if (isVertexProperty(singularizedType)) {
+                    writer.beginMethod(method, modifiers)
+                            .emitStatement("return " + collectionType.wrap("v.<%s>properties(\"%s\").map(it -> (%s) new %s$Impl(it.get(), graph))"), writer.compressType(singularizedType), label, writer.compressType(singularizedType), writer.compressType(singularizedType))
+                            .endMethod();
+                } else {
+                    writer.beginMethod(method, modifiers)
+                            .emitStatement("return " + collectionType.wrap("v.<%s>values(\"%s\")"), writer.compressType(singularizedType), label)
+                            .endMethod();
+                }
+
             }
         } else if (methodType == MethodType.SETTER) {
             writer.beginMethod(method, modifiers);
             if (method.getParameters().get(0).asType().getKind().isPrimitive()) {
-                writer.emitStatement(elementName + ".%s(\"%s\", %s)", vertex ? "singleProperty" : "property", label, parameterName);
+                writer.emitStatement(fieldName + ".%s(\"%s\", %s)", vertex ? "singleProperty" : "property", label, parameterName);
             } else {
                 writer.beginControlFlow("if (%s == null)", parameterName)
-                        .emitStatement(elementName + ".property(\"%s\").remove()", label)
+                        .emitStatement(fieldName + ".property(\"%s\").remove()", label)
                         .nextControlFlow("else")
-                        .emitStatement(elementName + ".%s(\"%s\", %s)", vertex ? "singleProperty" : "property", label, parameterName)
+                        .emitStatement(fieldName + ".%s(\"%s\", %s)", vertex ? "singleProperty" : "property", label, parameterName)
                         .endControlFlow();
             }
             writer.endMethod();
@@ -463,28 +449,54 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
     }
 
-    private Direction getDirection(ExecutableElement method, MethodType type) {
-        Direction direction;
-        if (method.getAnnotation(In.class) != null) {
-            direction = IN;
-        } else if (method.getAnnotation(Both.class) != null) {
-            direction = BOTH;
-        } else {
-            direction = OUT;
-        }
-        if (type != MethodType.GETTER && direction != OUT) {
-            messager.printMessage(ERROR, "Direction " + direction + " only supported for getter methods currently");
-            direction = OUT;
-        }
-        return direction;
-    }
+    private void implementFramerMethods(TypeElement type, JavaWriterExt writer, ElementType elementType) throws IOException {
+        String fieldName = elementType.getFieldName();
 
-    private boolean hasAnnotation(TypeMirror type, Class<? extends Annotation> annotation) {
-        if (type.getKind() != DECLARED) {
-            return false;
+        writer.beginMethod("int", "hashCode", EnumSet.of(PUBLIC))
+                .emitStatement("return %s.hashCode()", fieldName)
+                .endMethod()
+                .emitEmptyLine();
+        writer.beginMethod("boolean", "equals", EnumSet.of(PUBLIC), Arrays.asList("Object", "other"), Collections.<String>emptyList())
+                .emitStatement("return (other instanceof FramedElement) && %s.equals(((FramedElement) other).element())", fieldName)
+                .endMethod()
+                .emitEmptyLine();
+        writer.beginMethod("String", "toString", EnumSet.of(PUBLIC))
+                .emitStatement("return %s.label() + \"[\" + %s.id() + \"]\"", fieldName, fieldName)
+                .endMethod()
+                .emitEmptyLine();
+
+        Set<Modifier> modifiers = new HashSet<>(Arrays.asList(Modifier.PRIVATE, Modifier.STATIC, FINAL));
+
+        List<String> subLabels = subTypes.getOrDefault(type, Collections.emptyList());
+        String initializer;
+        if (subLabels.isEmpty()) {
+            initializer = "Arrays.asList(LABEL)";
+        } else {
+            String collect = subLabels.stream().map(s -> "\"" + s + "\"").collect(Collectors.joining(","));
+            initializer = "Arrays.asList(LABEL, " + collect + ")";
         }
-        Element element = types.asElement(type);
-        return element.getAnnotation(annotation) != null;
+
+        writer.emitConstant("Framer", "instance", "new Framer()")
+                .emitEmptyLine();
+        String framer = "IFramer<" + elementType + ", " + type + ">";
+        writer.beginType("Framer", "class", modifiers, null, framer)
+                .emitEmptyLine()
+                .emitField("Collection<String>", "subLabels", modifiers, "Collections.unmodifiableCollection(" + initializer + ")")
+                .emitEmptyLine()
+                .beginMethod("String", "label", Collections.singleton(PUBLIC))
+                .emitStatement("return LABEL")
+                .endMethod()
+                .emitEmptyLine()
+                .beginMethod("Collection<String>", "subLabels", Collections.singleton(PUBLIC))
+                .emitStatement("return subLabels")
+                .endMethod()
+                .emitEmptyLine()
+                .beginMethod(type.toString(), "frame", Collections.singleton(PUBLIC), elementType.toString(), fieldName, "FramedGraph", "graph")
+                .emitStatement("return new %s$Impl(%s, graph)", type.getSimpleName(), fieldName)
+                .endMethod()
+                .endType();
+
+
     }
 
     private void generateNotSupportedMethod(String code, ExecutableElement method, JavaWriterExt writer) throws IOException {
@@ -502,6 +514,150 @@ public final class AnnotationProcessor extends AbstractProcessor {
         writer.beginMethod(method.getReturnType().toString(), method.getSimpleName().toString(), modifiers, parameters, null)
                 .emitStatement("throw new RuntimeException(\"" + code + ": not yet supported\")")
                 .endMethod();
+    }
+
+    private TypeElement getBaseType(TypeElement type) {
+        TypeMirror superclass = type.getSuperclass();
+        if (isVertex(superclass)) {
+            return getBaseType((TypeElement) types.asElement(superclass));
+        } else {
+            return type;
+        }
+    }
+
+    private ClassDescription parse(TypeElement type) {
+        List<ExecutableElement> elements = new ArrayList<>();
+
+        TypeElement t = type;
+        do {
+            t.getEnclosedElements().stream().filter(e -> e.getKind() == METHOD && e.getModifiers().contains(Modifier.ABSTRACT)).forEach(e -> elements.add((ExecutableElement) e));
+            if (t.getSuperclass().getKind() == DECLARED) {
+                t = (TypeElement) types.asElement(t.getSuperclass());
+            } else {
+                t = null;
+            }
+        }
+        while (t != null);
+
+        ClassDescription description = new ClassDescription(type, elements);
+
+        Map<String, List<ExecutableElement>> property2Methods = elements.stream().collect(Collectors.groupingBy(this::extractProperty));
+        property2Methods.forEach((p, l) -> parse(description, p, l));
+
+        return description;
+    }
+
+    private void parse(ClassDescription description, String property, List<ExecutableElement> methods) {
+        String label = null;
+
+        boolean isProperty = true;
+
+        for (ExecutableElement method : methods) {
+            TypeMirror singularType;
+
+            MethodType type = MethodType.getType(method);
+            if (type == MethodType.SETTER || type == MethodType.REMOVER || (type == MethodType.ADDER && method.getReturnType().getKind() == VOID)) {
+                singularType = getSingularizedType(method.getParameters().get(0).asType());
+            } else {
+                singularType = getSingularizedType(method.getReturnType());
+            }
+
+            CollectionType collectionType = getCollectionType(method.getReturnType());
+            if (collectionType != null) {
+                description.addImport(collectionType.getImport());
+            }
+
+            boolean isVertex = isVertex(singularType);
+            boolean isEdge = isEdge(singularType);
+
+            if (isVertex || isEdge) {
+                if ((description.getElementType() == ElementType.Edge) && type != MethodType.GETTER) {
+                    messager.printMessage(ERROR, "@Edge classes cannot have vertex update methods: " + method);
+                    continue;
+                } else if ((description.getElementType() == ElementType.VertexProperty)) {
+                    messager.printMessage(ERROR, "@VertexProperty classes cannot only have property methods: " + method);
+                    continue;
+                }
+
+                if (type == MethodType.GETTER && isVertex) {
+                    description.addImport(GraphTraversal.class);
+                    if (!method.getParameters().isEmpty()) {
+                        description.addImport(com.tinkerpop.gremlin.structure.Edge.class);
+                    }
+                }
+
+                if (isVertex) {
+                    Edge edge = method.getAnnotation(Edge.class);
+                    if (edge != null && !edge.value().isEmpty()) {
+                        label = edge.value();
+                    }
+                } else {
+                    TypeElement edgeClass = (TypeElement) types.asElement(singularType);
+                    label = getLabel(edgeClass);
+                }
+
+                isProperty = false;
+            } else {
+                Property p = method.getAnnotation(Property.class);
+                if (p != null && !p.value().isEmpty()) {
+                    label = p.value();
+                }
+            }
+        }
+
+        if (label == null) {
+            label = property;
+        }
+
+        String finalLabel = label;
+        boolean finalIsProperty = isProperty;
+        methods.forEach(m -> description.setLabel(m, finalLabel, finalIsProperty));
+
+    }
+
+    private String extractProperty(ExecutableElement method) {
+        MethodType type = MethodType.getType(method);
+        if (type == null) {
+            messager.printMessage(ERROR, "Unsupported abstract method: " + method.getEnclosingElement() + "::" + method);
+            return null;
+        }
+
+        String property = type.getPropertyName(method);
+        if (getCollectionType(method.getReturnType()) != null) {
+            property = Inflector.getInstance().singularize(property);
+        }
+        return property;
+    }
+
+    private TypeMirror getSingularizedType(TypeMirror type) {
+        CollectionType collectionType = getCollectionType(type);
+        if (collectionType == null) {
+            return type;
+        } else {
+            DeclaredType returnType = (DeclaredType) type;
+            if (returnType.getTypeArguments().size() != 1) {
+                messager.printMessage(ERROR, "Only one type argument supported: " + type);
+                throw new IllegalArgumentException("Only one type argument supported: " + type);
+            }
+
+            return returnType.getTypeArguments().get(0);
+        }
+    }
+
+    private Direction getDirection(ExecutableElement method, MethodType type) {
+        Direction direction;
+        if (method.getAnnotation(In.class) != null) {
+            direction = IN;
+        } else if (method.getAnnotation(Both.class) != null) {
+            direction = BOTH;
+        } else {
+            direction = OUT;
+        }
+        if (type != MethodType.GETTER && direction != OUT) {
+            messager.printMessage(ERROR, "Direction " + direction + " only supported for getter methods currently");
+            direction = OUT;
+        }
+        return direction;
     }
 
     private String getDefaultValue(TypeMirror type) {
@@ -549,99 +705,15 @@ public final class AnnotationProcessor extends AbstractProcessor {
         throw new IllegalArgumentException("Unrecognized primitive type: " + type.getKind());
     }
 
-    private void generateEdgeImplementationClass(TypeElement type) {
-        ClassDescription description = parse(type);
-        messager.printMessage(OTHER, "Generating " + type.getQualifiedName() + "$Impl");
-
-        try (PrintWriter out = new PrintWriter(filer.createSourceFile(type.getQualifiedName() + "$Impl").openOutputStream())) {
-            JavaWriterExt writer = new JavaWriterExt(out);
-            PackageElement packageEl = (PackageElement) type.getEnclosingElement();
-            writer.emitPackage(packageEl.getQualifiedName().toString())
-                    .emitImports(com.tinkerpop.gremlin.structure.Edge.class, com.tinkerpop.gremlin.structure.Element.class, FramedEdge.class, FramedElement.class, FramedGraph.class, Collection.class, Arrays.class, Collections.class, IFramer.class)
-                    .emitEmptyLine()
-                    .beginType(type.getQualifiedName() + "$Impl", "class", EnumSet.of(PUBLIC, Modifier.FINAL), type.getQualifiedName().toString(), FramedEdge.class.getSimpleName())
-                    .emitEmptyLine();
-
-            String label = getLabel(type);
-            writer.emitConstant("String", "LABEL", "\"" + label + "\"")
-                    .emitEmptyLine()
-                    .emitField(peapod.FramedGraph.class.getSimpleName(), "graph", EnumSet.of(PRIVATE))
-                    .emitField(com.tinkerpop.gremlin.structure.Edge.class.getName(), "e", EnumSet.of(PRIVATE))
-                    .beginConstructor(EnumSet.of(PUBLIC), "Edge", "e", FramedGraph.class.getSimpleName(), "graph")
-                    .emitStatement("this.e = e")
-                    .emitStatement("this.graph = graph")
-                    .endConstructor()
-                    .beginMethod(peapod.FramedGraph.class.getSimpleName(), "graph", EnumSet.of(PUBLIC))
-                    .emitStatement("return graph")
-                    .endMethod()
-                    .beginMethod("Element", "element", EnumSet.of(PUBLIC))
-                    .emitStatement("return e")
-                    .endMethod();
-
-            implementAbstractMethods(description, writer, false);
-            implementFramerMethods(type, writer, false);
-
-            writer.endType();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    private void implementFramerMethods(TypeElement type, JavaWriterExt writer, boolean vertex) throws IOException {
-        String fieldName = vertex ? "v" : "e";
-
-        writer.beginMethod("int", "hashCode", EnumSet.of(PUBLIC))
-                .emitStatement("return %s.hashCode()", fieldName)
-                .endMethod()
-                .emitEmptyLine();
-        writer.beginMethod("boolean", "equals", EnumSet.of(PUBLIC), Arrays.asList("Object", "other"), Collections.<String>emptyList())
-                .emitStatement("return (other instanceof FramedElement) && %s.equals(((FramedElement) other).element())", fieldName)
-                .endMethod()
-                .emitEmptyLine();
-        writer.beginMethod("String", "toString", EnumSet.of(PUBLIC))
-                .emitStatement("return %s.label() + \"[\" + %s.id() + \"]\"", fieldName, fieldName)
-                .endMethod()
-                .emitEmptyLine();
-
-        Set<Modifier> modifiers = new HashSet<>(Arrays.asList(Modifier.PRIVATE, Modifier.STATIC, FINAL));
-
-        List<String> subLabels = subTypes.getOrDefault(type, Collections.emptyList());
-        String initializer;
-        if (subLabels.isEmpty()) {
-            initializer = "Arrays.asList(LABEL)";
-        } else {
-            String collect = subLabels.stream().map(s -> "\"" + s + "\"").collect(Collectors.joining(","));
-            initializer = "Arrays.asList(LABEL, " + collect + ")";
-        }
-
-        writer.emitConstant("Framer", "instance", "new Framer()")
-                .emitEmptyLine();
-        String framer = "IFramer<" + (vertex ? "Vertex" : "Edge") + ", " + type + ">";
-        writer.beginType("Framer", "class", modifiers, null, framer)
-                .emitEmptyLine()
-                .emitField("Collection<String>", "subLabels", modifiers, "Collections.unmodifiableCollection(" + initializer + ")")
-                .emitEmptyLine()
-                .beginMethod("String", "label", Collections.singleton(PUBLIC))
-                .emitStatement("return LABEL")
-                .endMethod()
-                .emitEmptyLine()
-                .beginMethod("Collection<String>", "subLabels", Collections.singleton(PUBLIC))
-                .emitStatement("return subLabels")
-                .endMethod()
-                .emitEmptyLine()
-                .beginMethod(type.toString(), "frame", Collections.singleton(PUBLIC), vertex ? "Vertex" : "Edge", fieldName, "FramedGraph", "graph")
-                .emitStatement("return new %s$Impl(%s, graph)", type.getSimpleName(), fieldName)
-                .endMethod()
-                .endType();
-
-
-    }
-
     private String getLabel(TypeElement type) {
         Vertex v = type.getAnnotation(Vertex.class);
         if (v != null) {
             return v.value().isEmpty() ? type.getSimpleName().toString() : v.value();
+        }
+
+        VertexProperty vp = type.getAnnotation(VertexProperty.class);
+        if (vp != null) {
+            return vp.value().isEmpty() ? type.getSimpleName().toString().toLowerCase() : vp.value();
         }
 
         Edge e = type.getAnnotation(Edge.class);
@@ -683,20 +755,41 @@ public final class AnnotationProcessor extends AbstractProcessor {
         return null;
     }
 
-    private boolean isVertex(TypeMirror type) {
-        if (type instanceof DeclaredType) {
-            DeclaredType declaredType = (DeclaredType) type;
-            return hasAnnotation(declaredType, Vertex.class);
+    private enum CollectionType {
+        LIST("Collections.unmodifiableList(", ".toList())", List.class),
+        COLLECTION("Collections.unmodifiableCollection(", ".toList())", Collection.class),
+        SET("Collections.unmodifiableSet(", ".toSet())", Set.class),
+        ITERABLE("new DefaultIterable(", ".iterate())", DefaultIterable.class);
+
+        private final String prefix;
+        private final String suffix;
+        private final Class<? extends Iterable> importClass;
+
+        CollectionType(String prefix, String suffix, Class<? extends Iterable> importClass) {
+            this.prefix = prefix;
+            this.suffix = suffix;
+            this.importClass = importClass;
         }
-        return false;
+
+        public String wrap(String variable) {
+            return prefix + variable + suffix;
+        }
+
+        public Class<? extends Iterable> getImport() {
+            return importClass;
+        }
+    }
+
+    private boolean isVertex(TypeMirror type) {
+        return type.getKind() == DECLARED && types.asElement(type).getAnnotation(Vertex.class) != null;
+    }
+
+    private boolean isVertexProperty(TypeMirror type) {
+        return type.getKind() == DECLARED && types.asElement(type).getAnnotation(VertexProperty.class) != null;
     }
 
     private boolean isEdge(TypeMirror type) {
-        if (type instanceof DeclaredType) {
-            DeclaredType declaredType = (DeclaredType) type;
-            return hasAnnotation(declaredType, Edge.class);
-        }
-        return false;
+        return type.getKind() == DECLARED && types.asElement(type).getAnnotation(Edge.class) != null;
     }
 
     private enum MethodType {
@@ -733,28 +826,4 @@ public final class AnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    private enum CollectionType {
-        LIST("Collections.unmodifiableList(", ".toList())", List.class),
-        COLLECTION("Collections.unmodifiableCollection(", ".toList())", Collection.class),
-        SET("Collections.unmodifiableSet(", ".toSet())", Set.class),
-        ITERABLE("new DefaultIterable(", ".iterate())", DefaultIterable.class);
-
-        private final String prefix;
-        private final String suffix;
-        private final Class<? extends Iterable> importClass;
-
-        CollectionType(String prefix, String suffix, Class<? extends Iterable> importClass) {
-            this.prefix = prefix;
-            this.suffix = suffix;
-            this.importClass = importClass;
-        }
-
-        public String wrap(String variable) {
-            return prefix + variable + suffix;
-        }
-
-        public Class<? extends Iterable> getImport() {
-            return importClass;
-        }
-    }
 }

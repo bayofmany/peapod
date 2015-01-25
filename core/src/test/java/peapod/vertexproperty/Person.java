@@ -19,18 +19,17 @@
  *    http://www.apache.org/licenses/LICENSE-2.0
  */
 
-package peapod;
+package peapod.vertexproperty;
 
-import peapod.annotations.VertexProperty;
+import peapod.annotations.Vertex;
 
-public interface FramedVertexProperty<T> extends FramedElement {
+import java.util.List;
 
-    public void setValue(T t);
+@Vertex
+public abstract class Person {
 
-    public T getValue();
+    public abstract String getName();
 
-    default VertexProperty property() {
-        return (VertexProperty) element();
-    }
+    public abstract List<Location> getLocations();
 
 }
