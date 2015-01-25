@@ -26,11 +26,8 @@ import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import peapod.FramedGraph;
-
-import java.util.List;
 
 import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
 import static org.junit.Assert.assertThat;
@@ -53,12 +50,8 @@ public class VertexPropertyTest {
     }
 
     @Test
-    @Ignore
     public void testGetLocations() {
-        List<Location> locations = alice.getLocations();
-        String value = locations.get(0).getValue();
-        System.out.println("value = " + value);
-        assertThat(locations.stream().map(Location::getValue).toArray(), arrayContainingInAnyOrder("Brussels", "Antwerp"));
+        assertThat(alice.getLocations().stream().map(Location::getValue).toArray(), arrayContainingInAnyOrder("Brussels", "Antwerp"));
     }
 
 

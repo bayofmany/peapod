@@ -186,7 +186,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
             writer.emitConstant("String", "LABEL", "\"" + label + "\"")
                     .emitEmptyLine()
                     .emitField(peapod.FramedGraph.class.getSimpleName(), "graph", EnumSet.of(PRIVATE))
-                    .emitField(com.tinkerpop.gremlin.structure.VertexProperty.class.getName(), "vp", EnumSet.of(PRIVATE))
+                    .emitField("VertexProperty<" + writer.compressType(propertyType)  +">", "vp", EnumSet.of(PRIVATE))
                     .beginConstructor(EnumSet.of(PUBLIC), "VertexProperty", "vp", FramedGraph.class.getSimpleName(), "graph")
                     .emitStatement("this.vp = vp")
                     .emitStatement("this.graph = graph")
@@ -202,7 +202,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
             HashSet<Modifier> modifiers = new HashSet<>();
             modifiers.add(PUBLIC);
             writer.beginMethod(propertyType.toString(), "getValue", modifiers)
-                    .emitStatement("return vp.<%s>value(\"%s\")", writer.compressType(propertyType), label)
+                    .emitStatement("return vp.value()")
                     .endMethod();
 
             writer.beginMethod("void", "setValue", modifiers, writer.compressType(propertyType), "value")
