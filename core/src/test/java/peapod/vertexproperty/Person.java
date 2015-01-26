@@ -32,4 +32,9 @@ public abstract class Person {
 
     public abstract List<Location> getLocations();
 
+    public abstract Location getLocation(String location);
+
+    public abstract Location addLocation(String location);
+
+    public abstract void removeLocation(String location);
 }

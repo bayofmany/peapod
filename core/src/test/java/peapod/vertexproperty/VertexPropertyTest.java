@@ -24,29 +24,34 @@ package peapod.vertexproperty;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.VertexProperty;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
+import peapod.FramedVertex;
+
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 public class VertexPropertyTest {
 
     private Person alice;
-    //private Vertex v;
+    private Vertex v;
 
     @Before
     public void init() {
         Graph g = TinkerGraph.open();
         Vertex v = g.addVertex(T.id, 1, T.label, "Person", "name", "Alice");
-        v.property("location", "Brussels", "startTime", "2010", "endTime", "2012");
-        v.property("location", "Antwerp", "startTime", "2012");
+        v.property("location", "Brussels", "startTime", 2010, "endTime", 2012);
+        v.property("location", "Antwerp", "startTime", 2012);
+
 
         FramedGraph graph = new FramedGraph(g);
         alice = graph.v(1, Person.class);
-        //this.v = ((FramedVertex) alice).vertex();
+        this.v = ((FramedVertex) alice).vertex();
     }
 
     @Test
@@ -54,5 +59,34 @@ public class VertexPropertyTest {
         assertThat(alice.getLocations().stream().map(Location::getValue).toArray(), arrayContainingInAnyOrder("Brussels", "Antwerp"));
     }
 
+    @Test
+    public void testGetLocation() {
+        Location brussels = alice.getLocation("Brussels");
+        assertEquals("Brussels", brussels.getValue());
+        assertEquals(new Integer(2010), brussels.getStartTime());
+        assertEquals(new Integer(2012), brussels.getEndTime());
 
+        Location antwerp = alice.getLocation("Antwerp");
+        assertEquals("Antwerp", antwerp.getValue());
+        assertEquals(new Integer(2012), antwerp.getStartTime());
+        assertNull(antwerp.getEndTime());
+    }
+
+    @Test
+    public void testAddLocation() {
+        Location location = alice.addLocation("London");
+        assertEquals("London", location.getValue());
+
+        location.setStartTime(2015);
+
+        Optional<VertexProperty<Integer>> vp = v.properties("location").<VertexProperty<Integer>>has(T.value, "London").tryNext();
+        assertTrue(vp.isPresent());
+        assertEquals(new Integer(2015), vp.get().<Integer>value("startTime"));
+    }
+
+    @Test
+    public void testRemoveLocation() {
+        alice.removeLocation("Brussels");
+        assertFalse(v.properties("location").has(T.value, "Brussels").hasNext());
+    }
 }

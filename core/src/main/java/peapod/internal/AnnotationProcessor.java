@@ -21,6 +21,7 @@
 
 package peapod.internal;
 
+import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import peapod.*;
 import peapod.annotations.*;
@@ -186,7 +187,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
             writer.emitConstant("String", "LABEL", "\"" + label + "\"")
                     .emitEmptyLine()
                     .emitField(peapod.FramedGraph.class.getSimpleName(), "graph", EnumSet.of(PRIVATE))
-                    .emitField("VertexProperty<" + writer.compressType(propertyType)  +">", "vp", EnumSet.of(PRIVATE))
+                    .emitField("VertexProperty<" + writer.compressType(propertyType) + ">", "vp", EnumSet.of(PRIVATE))
                     .beginConstructor(EnumSet.of(PUBLIC), "VertexProperty", "vp", FramedGraph.class.getSimpleName(), "graph")
                     .emitStatement("this.vp = vp")
                     .emitStatement("this.graph = graph")
@@ -302,15 +303,19 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
                 if (isVertexProperty(singularizedType)) {
                     writer.beginMethod(method, modifiers)
-                            .emitStatement("return " + collectionType.wrap("v.<%s>properties(\"%s\").map(it -> (%s) new %s$Impl(it.get(), graph))"), writer.compressType(singularizedType), label, writer.compressType(singularizedType), writer.compressType(singularizedType))
+                            .emitStatement("return " + collectionType.wrap("v.properties(\"%s\").map(it -> (%s) new %s$Impl(it.get(), graph))"), label, writer.compressType(singularizedType), writer.compressType(singularizedType))
                             .endMethod();
                 } else {
                     writer.beginMethod(method, modifiers)
                             .emitStatement("return " + collectionType.wrap("v.<%s>values(\"%s\")"), writer.compressType(singularizedType), label)
                             .endMethod();
                 }
-
             }
+        } else if (methodType == MethodType.FILTERED_GETTER && isVertexProperty(method.getReturnType())) {
+            writer.beginMethod(method, modifiers)
+                    .emitStatement("GraphTraversal<Vertex, %s> traversal = v.properties(\"%s\").<VertexProperty>has(T.value, %s).map(it -> (%s) new %s$Impl(it.get(), graph))", writer.compressType(method.getReturnType()), label, parameterName, writer.compressType(method.getReturnType()), writer.compressType(method.getReturnType()))
+                    .emitStatement("return traversal.hasNext()? traversal.next() : null")
+                    .endMethod();
         } else if (methodType == MethodType.SETTER) {
             writer.beginMethod(method, modifiers);
             if (method.getParameters().get(0).asType().getKind().isPrimitive()) {
@@ -327,7 +332,10 @@ public final class AnnotationProcessor extends AbstractProcessor {
             writer.beginMethod(method, modifiers);
             writer.emitStatement("v.property(\"%s\", %s)", label, parameterName);
             writer.endMethod();
-
+        } else if (methodType == MethodType.ADDER && parameterClass != null && isVertexProperty(method.getReturnType())) {
+            writer.beginMethod(method, modifiers);
+            writer.emitStatement("return new %s$Impl(v.property(\"%s\", %s), graph)", writer.compressType(method.getReturnType()), label, parameterName);
+            writer.endMethod();
         } else if (methodType == MethodType.REMOVER && parameterClass != null && returnClass == null) {
             writer.beginMethod(method, modifiers);
             writer.emitStatement("v.properties(\"%s\").has(com.tinkerpop.gremlin.process.T.value, %s).remove()", label, parameterName);
@@ -601,6 +609,12 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 Property p = method.getAnnotation(Property.class);
                 if (p != null && !p.value().isEmpty()) {
                     label = p.value();
+                }
+
+                if (type == MethodType.FILTERED_GETTER) {
+                    description.addImport(GraphTraversal.class);
+                    description.addImport(T.class);
+                    description.addImport(com.tinkerpop.gremlin.structure.VertexProperty.class);
                 }
             }
         }

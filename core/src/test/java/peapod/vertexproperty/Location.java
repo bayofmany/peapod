@@ -27,8 +27,10 @@ import peapod.annotations.VertexProperty;
 @VertexProperty
 public abstract class Location implements FramedVertexProperty<String> {
 
-    //public abstract Integer getStartTime();
+    public abstract Integer getStartTime();
 
-    //public abstract Integer getEndTime();
+    public abstract void setStartTime(Integer startTime);
+
+    public abstract Integer getEndTime();
 
 }
