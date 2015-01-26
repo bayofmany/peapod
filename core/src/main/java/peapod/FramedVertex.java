@@ -25,7 +25,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
 
 /**
  * All generated {@code @Vertex} classes implement the {@code FramedVertex} interface. It can be optionally
- * defined on the abstract class for traversals and to get a reference to the wrapped Tinkerpop 3 {@code vertex}.</p>
+ * defined on the abstract class for traversals and to get a reference to the wrapped Tinkerpop 3 {@code vertex}.
  * <pre>
  * &#64;Vertex
  * public abstract class Person implements FramedVertex&lt;Person&gt; {}</pre>
