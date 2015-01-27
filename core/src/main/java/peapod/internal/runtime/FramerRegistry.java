@@ -19,7 +19,7 @@
  *    http://www.apache.org/licenses/LICENSE-2.0
  */
 
-package peapod.internal;
+package peapod.internal.runtime;
 
 import com.tinkerpop.gremlin.structure.Element;
 

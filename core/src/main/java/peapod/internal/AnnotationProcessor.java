@@ -25,6 +25,8 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import peapod.*;
 import peapod.annotations.*;
+import peapod.internal.runtime.DefaultIterable;
+import peapod.internal.runtime.IFramer;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;

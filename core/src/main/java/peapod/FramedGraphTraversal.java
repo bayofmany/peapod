@@ -28,8 +28,8 @@ import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
-import peapod.internal.IFramer;
-import peapod.internal.FramerRegistry;
+import peapod.internal.runtime.IFramer;
+import peapod.internal.runtime.FramerRegistry;
 
 import java.util.*;
 import java.util.function.BiPredicate;

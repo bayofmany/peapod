@@ -8,7 +8,7 @@ import java.util.Collections;
 import peapod.FramedEdge;
 import peapod.FramedElement;
 import peapod.FramedGraph;
-import peapod.internal.IFramer;
+import peapod.internal.runtime.IFramer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 
 public final class Knows$Impl extends Knows

@@ -29,8 +29,8 @@ import com.tinkerpop.gremlin.structure.Graph.Variables;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
-import peapod.internal.IFramer;
-import peapod.internal.FramerRegistry;
+import peapod.internal.runtime.IFramer;
+import peapod.internal.runtime.FramerRegistry;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;

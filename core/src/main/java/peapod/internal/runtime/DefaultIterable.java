@@ -19,21 +19,19 @@
  *    http://www.apache.org/licenses/LICENSE-2.0
  */
 
-package peapod.internal;
+package peapod.internal.runtime;
 
-import com.tinkerpop.gremlin.structure.Element;
-import peapod.FramedGraph;
+import java.util.Iterator;
 
-import java.util.Collection;
+public class DefaultIterable<T> implements Iterable<T> {
+    private final Iterator<T> iterator;
 
-/**
- * A Framer implementation converts Tinkerpop {@link com.tinkerpop.gremlin.structure.Element} instance to framed objects.
- */
-public interface IFramer<E extends Element, F> {
+    public DefaultIterable(Iterator<T> iterator) {
+        this.iterator = iterator;
+    }
 
-    String label();
-
-    Collection<String> subLabels();
-
-    public F frame(E element, FramedGraph framedGraph);
+    @Override
+    public Iterator<T> iterator() {
+        return iterator;
+    }
 }

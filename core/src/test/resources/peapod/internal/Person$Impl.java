@@ -8,7 +8,7 @@ import java.util.Collections;
 import peapod.FramedElement;
 import peapod.FramedGraph;
 import peapod.FramedVertex;
-import peapod.internal.IFramer;
+import peapod.internal.runtime.IFramer;
 import java.util.List;
 
 public final class Person$Impl extends Person
