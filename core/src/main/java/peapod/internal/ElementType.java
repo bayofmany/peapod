@@ -21,14 +21,22 @@
 
 package peapod.internal;
 
+import com.tinkerpop.gremlin.structure.Element;
+
 enum ElementType {
 
-    Vertex("v"), VertexProperty("vp"), Edge("e");
+    Vertex(com.tinkerpop.gremlin.structure.Vertex.class, "v"), VertexProperty(com.tinkerpop.gremlin.structure.VertexProperty.class, "vp"), Edge(com.tinkerpop.gremlin.structure.Edge.class, "e");
 
+    private Class<? extends Element> clazz;
     private String field;
 
-    ElementType(String field) {
+    ElementType(Class<? extends Element> clazz, String field) {
+        this.clazz = clazz;
         this.field = field;
+    }
+
+    public Class<? extends Element> getClazz() {
+        return clazz;
     }
 
     public String getFieldName() {

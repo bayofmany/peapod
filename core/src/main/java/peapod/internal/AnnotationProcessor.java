@@ -76,7 +76,9 @@ public final class AnnotationProcessor extends AbstractProcessor {
             Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(Vertex.class);
             messager.printMessage(OTHER, elements.size() + " elements with annotation @Vertex");
             elements.stream().forEach(e -> registerBaseClass((TypeElement) e));
-            elements.stream().forEach(e -> generateVertexImplementationClass((TypeElement) e));
+
+            Class<?>[] vImports = {com.tinkerpop.gremlin.structure.Vertex.class, com.tinkerpop.gremlin.structure.Element.class, FramedVertex.class, FramedElement.class, FramedGraph.class, Collection.class, Arrays.class, Collections.class, IFramer.class};
+            elements.stream().forEach(e -> generateImplementationClass((TypeElement) e, ElementType.Vertex, "FramedVertex<" + getBaseType((TypeElement) e).getSimpleName() + ">", vImports));
 
             elements = roundEnv.getElementsAnnotatedWith(VertexProperty.class);
             messager.printMessage(OTHER, elements.size() + " elements with annotation @VertexProperty");
@@ -84,7 +86,8 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
             elements = roundEnv.getElementsAnnotatedWith(Edge.class);
             messager.printMessage(OTHER, elements.size() + " elements with annotation @Edge");
-            elements.stream().filter(e -> e.getKind().isClass()).forEach(e -> generateEdgeImplementationClass((TypeElement) e));
+            Class<?>[] eImports = {com.tinkerpop.gremlin.structure.Edge.class, com.tinkerpop.gremlin.structure.Element.class, FramedEdge.class, FramedElement.class, FramedGraph.class, Collection.class, Arrays.class, Collections.class, IFramer.class};
+            elements.stream().filter(e -> e.getKind().isClass()).forEach(e -> generateImplementationClass((TypeElement) e, ElementType.Edge, FramedEdge.class.getSimpleName(), eImports));
 
             return true;
         } catch (Exception e) {
@@ -111,7 +114,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    private void generateVertexImplementationClass(TypeElement type) {
+    private void generateImplementationClass(TypeElement type, ElementType elementType, String implementsType, Class<?>... imports) {
         ClassDescription description = parse(type);
 
         messager.printMessage(OTHER, "Generating " + type.getQualifiedName() + "$Impl");
@@ -120,46 +123,34 @@ public final class AnnotationProcessor extends AbstractProcessor {
             JavaWriterExt writer = new JavaWriterExt(out);
             PackageElement packageEl = (PackageElement) type.getEnclosingElement();
             writer.emitPackage(packageEl.getQualifiedName().toString())
-                    .emitImports(com.tinkerpop.gremlin.structure.Vertex.class, com.tinkerpop.gremlin.structure.Element.class, FramedVertex.class, FramedElement.class, FramedGraph.class, Collection.class, Arrays.class, Collections.class, IFramer.class)
+                    .emitImports(imports)
                     .emitImports(description.getImports())
                     .emitEmptyLine()
-                    .beginType(type.getQualifiedName() + "$Impl", "class", EnumSet.of(PUBLIC, Modifier.FINAL), type.getQualifiedName().toString(), "FramedVertex<" + getBaseType(type).getSimpleName() + ">")
+                    .beginType(type.getQualifiedName() + "$Impl", "class", EnumSet.of(PUBLIC, Modifier.FINAL), type.getQualifiedName().toString(), implementsType)
                     .emitEmptyLine();
             String label = getLabel(type);
             writer.emitConstant("String", "LABEL", "\"" + label + "\"")
                     .emitEmptyLine()
                     .emitField(peapod.FramedGraph.class.getName(), "graph", EnumSet.of(PRIVATE))
-                    .emitField(com.tinkerpop.gremlin.structure.Vertex.class.getName(), "v", EnumSet.of(PRIVATE))
-                    .beginConstructor(EnumSet.of(PUBLIC), "Vertex", "v", FramedGraph.class.getSimpleName(), "graph")
-                    .emitStatement("this.v = v")
+                    .emitField(elementType.getClazz().getName(), elementType.getFieldName(), EnumSet.of(PRIVATE))
+                    .beginConstructor(EnumSet.of(PUBLIC), elementType.toString(), elementType.getFieldName(), FramedGraph.class.getSimpleName(), "graph")
+                    .emitStatement("this.%s  = %s", elementType.getFieldName(), elementType.getFieldName())
                     .emitStatement("this.graph = graph")
                     .endConstructor()
                     .beginMethod(peapod.FramedGraph.class.getSimpleName(), "graph", EnumSet.of(PUBLIC))
                     .emitStatement("return graph")
                     .endMethod()
                     .beginMethod("Element", "element", EnumSet.of(PUBLIC))
-                    .emitStatement("return v")
+                    .emitStatement("return %s", elementType.getFieldName())
                     .endMethod();
 
-            implementAbstractMethods(description, writer, ElementType.Vertex);
-            implementFramerMethods(type, writer, ElementType.Vertex);
+            implementAbstractMethods(description, writer, elementType);
+            implementFramerMethods(type, writer, elementType);
 
             writer.endType();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-
-        /*try (PrintWriter out = new PrintWriter(filer.createSourceFile(type.getQualifiedName() + "Traversal").openOutputStream())) {
-            JavaWriterExt writer = new JavaWriterExt(out);
-            PackageElement packageEl = (PackageElement) type.getEnclosingElement();
-            writer.emitPackage(packageEl.getQualifiedName().toString())
-                    .emitImports(Traversal.class)
-                    .emitEmptyLine()
-                    .beginType(type.getQualifiedName() + "Traversal<S, E>", "interface", EnumSet.of(PUBLIC), "Traversal<S, E>")
-                    .endType();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
     }
 
     private void generateVertexPropertyImplementationClass(TypeElement type) {
@@ -216,44 +207,6 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
             implementAbstractMethods(description, writer, ElementType.VertexProperty);
             implementFramerMethods(type, writer, ElementType.VertexProperty);
-
-            writer.endType();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void generateEdgeImplementationClass(TypeElement type) {
-        ClassDescription description = parse(type);
-        messager.printMessage(OTHER, "Generating " + type.getQualifiedName() + "$Impl");
-
-        try (PrintWriter out = new PrintWriter(filer.createSourceFile(type.getQualifiedName() + "$Impl").openOutputStream())) {
-            JavaWriterExt writer = new JavaWriterExt(out);
-            PackageElement packageEl = (PackageElement) type.getEnclosingElement();
-            writer.emitPackage(packageEl.getQualifiedName().toString())
-                    .emitImports(com.tinkerpop.gremlin.structure.Edge.class, com.tinkerpop.gremlin.structure.Element.class, FramedEdge.class, FramedElement.class, FramedGraph.class, Collection.class, Arrays.class, Collections.class, IFramer.class)
-                    .emitEmptyLine()
-                    .beginType(type.getQualifiedName() + "$Impl", "class", EnumSet.of(PUBLIC, Modifier.FINAL), type.getQualifiedName().toString(), FramedEdge.class.getSimpleName())
-                    .emitEmptyLine();
-
-            String label = getLabel(type);
-            writer.emitConstant("String", "LABEL", "\"" + label + "\"")
-                    .emitEmptyLine()
-                    .emitField(peapod.FramedGraph.class.getSimpleName(), "graph", EnumSet.of(PRIVATE))
-                    .emitField(com.tinkerpop.gremlin.structure.Edge.class.getName(), "e", EnumSet.of(PRIVATE))
-                    .beginConstructor(EnumSet.of(PUBLIC), "Edge", "e", FramedGraph.class.getSimpleName(), "graph")
-                    .emitStatement("this.e = e")
-                    .emitStatement("this.graph = graph")
-                    .endConstructor()
-                    .beginMethod(peapod.FramedGraph.class.getSimpleName(), "graph", EnumSet.of(PUBLIC))
-                    .emitStatement("return graph")
-                    .endMethod()
-                    .beginMethod("Element", "element", EnumSet.of(PUBLIC))
-                    .emitStatement("return e")
-                    .endMethod();
-
-            implementAbstractMethods(description, writer, ElementType.Edge);
-            implementFramerMethods(type, writer, ElementType.Edge);
 
             writer.endType();
         } catch (IOException e) {
