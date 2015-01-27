@@ -21,7 +21,10 @@
 
 package peapod.linkededge;
 
-import peapod.annotations.*;
+import peapod.annotations.Both;
+import peapod.annotations.In;
+import peapod.annotations.Out;
+import peapod.annotations.Vertex;
 
 import java.util.List;
 

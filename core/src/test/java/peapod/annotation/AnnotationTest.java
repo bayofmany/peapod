@@ -46,10 +46,10 @@ package peapod.annotation;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
+import peapod.GraphProvider;
 
 import java.util.List;
 
@@ -64,10 +64,10 @@ public class AnnotationTest {
 
     @Before
     public void init() {
-        Graph g = TinkerGraph.open();
-        Vertex alice = g.addVertex(T.id, 1, T.label, "Person", "p-name", "alice");
-        Vertex bob = g.addVertex(T.id, 2, T.label, "Person", "p-name", "bob");
-        Vertex charlie = g.addVertex(T.id, 3, T.label, "Person", "p-name", "charlie");
+        Graph g = GraphProvider.getGraph();
+        Vertex alice = g.addVertex(T.label, "Person", "p-name", "alice");
+        Vertex bob = g.addVertex(T.label, "Person", "p-name", "bob");
+        Vertex charlie = g.addVertex(T.label, "Person", "p-name", "charlie");
 
         alice.addEdge("e-friend", bob);
 

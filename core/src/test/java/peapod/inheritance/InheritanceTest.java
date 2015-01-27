@@ -23,10 +23,10 @@ package peapod.inheritance;
 
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
+import peapod.GraphProvider;
 
 import java.util.List;
 
@@ -38,9 +38,9 @@ public class InheritanceTest {
 
     @Before
     public void init() {
-        Graph g = TinkerGraph.open();
-        g.addVertex(T.id, 1, T.label, "Person", "name", "alice");
-        g.addVertex(T.id, 2, T.label, "Programmer", "name", "bob", "yearsExperience", 10);
+        Graph g = GraphProvider.getGraph();
+        g.addVertex(T.label, "Person", "name", "alice");
+        g.addVertex(T.label, "Programmer", "name", "bob", "yearsExperience", 10);
 
         graph = new FramedGraph(g);
     }

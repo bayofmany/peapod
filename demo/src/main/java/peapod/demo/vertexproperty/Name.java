@@ -41,75 +41,24 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package peapod.manytooneedge;
+package peapod.demo.vertexproperty;
 
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Before;
-import org.junit.Test;
-import peapod.FramedGraph;
-import peapod.GraphProvider;
+import peapod.FramedVertexProperty;
+import peapod.annotations.VertexProperty;
 
-import static org.junit.Assert.*;
+@VertexProperty
+public abstract class Name implements FramedVertexProperty<String> {
 
-public class ManyToOneEdgeTest {
+    public abstract void setCreator(String creator);
 
-    private Person alice;
-    private Person bob;
-    private City london;
-    private City madrid;
+    public abstract String getCreator();
 
-    @Before
-    public void init() {
-        Graph g = GraphProvider.getGraph();
-        Vertex alice = g.addVertex(T.label, "Person", "name", "alice");
-        Vertex bob = g.addVertex(T.label, "Person", "name", "bob");
-        Vertex london = g.addVertex(T.label, "City", "name", "london");
-        Vertex madrid = g.addVertex(T.label, "City", "name", "madrid");
+    public abstract void setDate(Integer date);
 
-        alice.addEdge("hometown", london);
+    public abstract Integer getDate();
 
-        FramedGraph graph = new FramedGraph(g);
-        this.alice = graph.v(alice.id(), Person.class);
-        this.bob = graph.v(bob.id(), Person.class);
-        this.london = graph.v(london.id(), City.class);
-        this.madrid = graph.v(madrid.id(), City.class);
-    }
+    public abstract void setAcl(String acl);
 
-    @Test
-    public void testGetExisting() {
-        assertEquals(london, alice.getHometown().getCity());
-        assertEquals(alice, alice.getHometown().getPerson());
-    }
+    public abstract String getAcl();
 
-    @Test
-    public void testGetNonExisting() {
-        assertNull(bob.getHometown());
-    }
-
-    @Test
-    public void testSet() {
-        Hometown hometown = bob.setHometown(madrid);
-        assertNotNull(hometown);
-
-        hometown.setFromYear(2012);
-
-        assertTrue(bob.vertex().out("hometown").has("name", "madrid").hasNext());
-        assertTrue(bob.vertex().outE("hometown").has("fromYear", 2012).hasNext());
-    }
-
-    @Test
-    public void testSetDifferent() {
-        alice.setHometown(madrid);
-        assertTrue(alice.vertex().out("hometown").has("name", "madrid").hasNext());
-        assertTrue(london.vertex().in("hometown").toList().isEmpty());
-    }
-
-    @Test
-    public void testSetNull() {
-        alice.setHometown(null);
-        assertTrue(alice.vertex().out("hometown").toList().isEmpty());
-        assertTrue(london.vertex().in("hometown").toList().isEmpty());
-    }
 }

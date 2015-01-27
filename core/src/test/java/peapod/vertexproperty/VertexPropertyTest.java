@@ -25,11 +25,10 @@ import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
-import peapod.FramedVertex;
+import peapod.GraphProvider;
 
 import java.util.Optional;
 
@@ -43,15 +42,13 @@ public class VertexPropertyTest {
 
     @Before
     public void init() {
-        Graph g = TinkerGraph.open();
-        Vertex v = g.addVertex(T.id, 1, T.label, "Person", "name", "Alice");
+        Graph g = GraphProvider.getGraph();
+        v = g.addVertex(T.label, "Person", "name", "Alice");
         v.property("location", "Brussels", "startTime", 2010, "endTime", 2012);
         v.property("location", "Antwerp", "startTime", 2012);
 
-
         FramedGraph graph = new FramedGraph(g);
-        alice = graph.v(1, Person.class);
-        this.v = ((FramedVertex) alice).vertex();
+        this.alice = graph.v(v.id(), Person.class);
     }
 
     @Test

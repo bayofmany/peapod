@@ -24,10 +24,10 @@ package peapod.manytomanyedge;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
+import peapod.GraphProvider;
 
 import java.util.List;
 
@@ -42,10 +42,10 @@ public class ManyToManyEdgeTest {
 
     @Before
     public void init() {
-        Graph g = TinkerGraph.open();
-        Vertex alice = g.addVertex(T.id, 1, T.label, "Person", "name", "alice");
-        Vertex bob = g.addVertex(T.id, 2, T.label, "Person", "name", "bob");
-        Vertex charlie = g.addVertex(T.id, 3, T.label, "Person", "name", "charlie");
+        Graph g = GraphProvider.getGraph();
+        Vertex alice = g.addVertex(T.label, "Person", "name", "alice");
+        Vertex bob = g.addVertex(T.label, "Person", "name", "bob");
+        Vertex charlie = g.addVertex(T.label, "Person", "name", "charlie");
 
         alice.addEdge("friend", bob);
 

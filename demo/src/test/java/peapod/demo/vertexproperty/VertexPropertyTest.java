@@ -41,75 +41,51 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package peapod.manytooneedge;
+package peapod.demo.vertexproperty;
 
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Before;
+import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Test;
 import peapod.FramedGraph;
-import peapod.GraphProvider;
 
+import static org.hamcrest.collection.IsArrayContainingInAnyOrder.arrayContainingInAnyOrder;
 import static org.junit.Assert.*;
 
-public class ManyToOneEdgeTest {
-
-    private Person alice;
-    private Person bob;
-    private City london;
-    private City madrid;
-
-    @Before
-    public void init() {
-        Graph g = GraphProvider.getGraph();
-        Vertex alice = g.addVertex(T.label, "Person", "name", "alice");
-        Vertex bob = g.addVertex(T.label, "Person", "name", "bob");
-        Vertex london = g.addVertex(T.label, "City", "name", "london");
-        Vertex madrid = g.addVertex(T.label, "City", "name", "madrid");
-
-        alice.addEdge("hometown", london);
-
-        FramedGraph graph = new FramedGraph(g);
-        this.alice = graph.v(alice.id(), Person.class);
-        this.bob = graph.v(bob.id(), Person.class);
-        this.london = graph.v(london.id(), City.class);
-        this.madrid = graph.v(madrid.id(), City.class);
-    }
+public class VertexPropertyTest {
 
     @Test
-    public void testGetExisting() {
-        assertEquals(london, alice.getHometown().getCity());
-        assertEquals(alice, alice.getHometown().getPerson());
+    public void testVertexProperty() {
+        FramedGraph g = new FramedGraph(TinkerGraph.open());
+
+        Person marko = g.addVertex(Person.class);
+        marko.addName("marko");
+        marko.addName("marko a. rodriguez");
+
+        assertEquals(2, marko.getNames().size());
+        assertThat(marko.getNames().stream().map(Name::getValue).toArray(), arrayContainingInAnyOrder("marko", "marko a. rodriguez"));
+
+        Name name = marko.getName("marko");
+        assertNotNull(name);
+        name.setAcl("private");
+
+        name = marko.getName("marko a. rodriguez");
+        name.setAcl("public");
+
+        name = marko.getNameWithAcl("public");
+        assertEquals("marko a. rodriguez", name.getValue());
+        assertEquals("public", name.getAcl());
+        marko.removeName("marko a. rodriguez");
+        assertNull(marko.getNameWithAcl("public"));
+
+        name = marko.getNameWithAcl("private");
+        assertEquals("private", name.getAcl());
+        assertEquals("marko", name.getValue());
+
+        name.setDate(2014);
+        name.setCreator("stephen");
+
+        name = marko.getNameWithAcl("private");
+        assertEquals("stephen", name.getCreator());
+        assertEquals(new Integer(2014), name.getDate());
     }
 
-    @Test
-    public void testGetNonExisting() {
-        assertNull(bob.getHometown());
-    }
-
-    @Test
-    public void testSet() {
-        Hometown hometown = bob.setHometown(madrid);
-        assertNotNull(hometown);
-
-        hometown.setFromYear(2012);
-
-        assertTrue(bob.vertex().out("hometown").has("name", "madrid").hasNext());
-        assertTrue(bob.vertex().outE("hometown").has("fromYear", 2012).hasNext());
-    }
-
-    @Test
-    public void testSetDifferent() {
-        alice.setHometown(madrid);
-        assertTrue(alice.vertex().out("hometown").has("name", "madrid").hasNext());
-        assertTrue(london.vertex().in("hometown").toList().isEmpty());
-    }
-
-    @Test
-    public void testSetNull() {
-        alice.setHometown(null);
-        assertTrue(alice.vertex().out("hometown").toList().isEmpty());
-        assertTrue(london.vertex().in("hometown").toList().isEmpty());
-    }
 }

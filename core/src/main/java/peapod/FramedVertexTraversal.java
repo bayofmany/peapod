@@ -44,4 +44,8 @@ public interface FramedVertexTraversal<S> {
         return start().in(edgeLabel, clazz);
     }
 
+    public default <E2> FramedGraphTraversal<S, E2> properties(Class<E2> clazz) {
+        return this.start().properties(clazz);
+    }
+
 }

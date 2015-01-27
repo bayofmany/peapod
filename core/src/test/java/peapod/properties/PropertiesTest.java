@@ -46,11 +46,10 @@ package peapod.properties;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
-import peapod.FramedVertex;
+import peapod.GraphProvider;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
@@ -62,12 +61,11 @@ public class PropertiesTest {
 
     @Before
     public void init() {
-        Graph g = TinkerGraph.open();
-        g.addVertex(T.id, 1, T.label, "Person", "name", "Alice", "name", "Alicia");
+        Graph g = GraphProvider.getGraph();
+        v = g.addVertex(T.label, "Person", "name", "Alice", "name", "Alicia");
 
         FramedGraph graph = new FramedGraph(g);
-        alice = graph.v(1, Person.class);
-        v = ((FramedVertex) alice).vertex();
+        alice = graph.v(v.id(), Person.class);
     }
 
     @Test

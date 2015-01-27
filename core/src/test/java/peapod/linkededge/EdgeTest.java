@@ -24,10 +24,10 @@ package peapod.linkededge;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
+import peapod.GraphProvider;
 
 import java.util.List;
 import java.util.Optional;
@@ -41,21 +41,21 @@ public class EdgeTest {
 
     private Person alice;
     private Person bob;
-    private Person steve;
+    private Person charlie;
 
     @Before
     public void init() {
-        Graph g = TinkerGraph.open();
-        Vertex alice = g.addVertex(T.id, 1, T.label, "Person", "value", "alice");
-        Vertex bob = g.addVertex(T.id, 2, T.label, "Person", "value", "bob");
-        Vertex steve = g.addVertex(T.id, 3, T.label, "Person", "value", "steve");
+        Graph g = GraphProvider.getGraph();
+        Vertex alice = g.addVertex(T.label, "Person", "value", "alice");
+        Vertex bob = g.addVertex(T.label, "Person", "value", "bob");
+        Vertex charlie = g.addVertex(T.label, "Person", "value", "charlie");
         alice.addEdge("friend", bob, "startYear", 2004);
-        alice.addEdge("friend", steve, "startYear", 2012);
+        alice.addEdge("friend", charlie, "startYear", 2012);
 
         FramedGraph graph = new FramedGraph(g);
-        this.alice = graph.v(1, Person.class);
-        this.bob = graph.v(2, Person.class);
-        this.steve = graph.v(3, Person.class);
+        this.alice = graph.v(alice.id(), Person.class);
+        this.bob = graph.v(bob.id(), Person.class);
+        this.charlie = graph.v(charlie.id(), Person.class);
     }
 
     @Test
@@ -73,7 +73,7 @@ public class EdgeTest {
     @Test
     public void testLinkedEdgeAnnotationOut() {
         List<Person> friends = alice.getFriendsWithAnnotationOut().stream().map(Friend::getFriend).collect(Collectors.toList());
-        assertThat(friends, containsInAnyOrder(bob, steve));
+        assertThat(friends, containsInAnyOrder(bob, charlie));
 
         friends = bob.getFriendsWithAnnotationOut().stream().map(Friend::getFriend).collect(Collectors.toList());
         assertThat(friends, empty());
@@ -94,7 +94,7 @@ public class EdgeTest {
         assertThat(friends, containsInAnyOrder(alice));
 
         friends = alice.getFriendsWithAnnotationBoth().stream().map(Friend::getFriend).collect(Collectors.toList());
-        assertThat(friends, containsInAnyOrder(bob, steve));
+        assertThat(friends, containsInAnyOrder(bob, charlie));
     }
 
 }

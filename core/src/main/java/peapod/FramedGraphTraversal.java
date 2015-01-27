@@ -28,8 +28,8 @@ import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
 import com.tinkerpop.gremlin.structure.Contains;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
-import peapod.internal.runtime.IFramer;
 import peapod.internal.runtime.FramerRegistry;
+import peapod.internal.runtime.IFramer;
 
 import java.util.*;
 import java.util.function.BiPredicate;
@@ -49,9 +49,9 @@ public class FramedGraphTraversal<S, E> {
     private GraphTraversal<S, E> traversal;
     private FramedGraph graph;
 
-    private Class<E> lastFramingClass;
+    private Class<?> lastFramingClass;
 
-    private Map<String, Class<E>> stepLabel2FrameClass = new HashMap<>();
+    private Map<String, Class<?>> stepLabel2FrameClass = new HashMap<>();
 
     public FramedGraphTraversal(GraphTraversal traversal, FramedGraph graph) {
         this.traversal = traversal;
@@ -117,13 +117,13 @@ public class FramedGraphTraversal<S, E> {
 
     public <E2> FramedGraphTraversal<S, E2> in(final String edgeLabel, Class<E2> clazz) {
         traversal.in(edgeLabel);
-        this.lastFramingClass = (Class<E>) clazz;
+        this.lastFramingClass = clazz;
         return (FramedGraphTraversal<S, E2>) this;
     }
 
     public <E2> FramedGraphTraversal<S, E2> out(final String edgeLabel, Class<E2> clazz) {
         traversal.out(edgeLabel);
-        this.lastFramingClass = (Class<E>) clazz;
+        this.lastFramingClass = clazz;
         return (FramedGraphTraversal<S, E2>) this;
     }
 
@@ -160,12 +160,12 @@ public class FramedGraphTraversal<S, E> {
     }
 
     public FramedGraphTraversal<S, E> except(E exceptionObject) {
-        traversal.except(exceptionObject instanceof FramedElement ? (E) ((FramedElement)exceptionObject).element() : exceptionObject);
+        traversal.except(exceptionObject instanceof FramedElement ? (E) ((FramedElement) exceptionObject).element() : exceptionObject);
         return this;
     }
 
     public FramedGraphTraversal<S, E> except(Collection<E> exceptionCollection) {
-        traversal.except(exceptionCollection.stream().map(e -> e instanceof FramedElement ? (E) ((FramedElement)e).element() : e).collect(Collectors.toList()));
+        traversal.except(exceptionCollection.stream().map(e -> e instanceof FramedElement ? (E) ((FramedElement) e).element() : e).collect(Collectors.toList()));
         return this;
     }
 
@@ -196,6 +196,15 @@ public class FramedGraphTraversal<S, E> {
         return (FramedGraphTraversal<S, Long>) this;
     }
 
+
+    public <E2> FramedGraphTraversal<S, E2> properties(Class<E2> framingClass) {
+        String label = FramerRegistry.instance.get(framingClass).label();
+        traversal.properties(label);
+        this.lastFramingClass = framingClass;
+        return (FramedGraphTraversal<S, E2>) this;
+    }
+
+
     private <F> void addFrameStep(Class<F> framingClass) {
         if (framingClass == null) {
             return;
@@ -209,4 +218,8 @@ public class FramedGraphTraversal<S, E> {
     }
 
 
+    public <E2> FramedGraphTraversal<S, E2> value() {
+        traversal.value();
+        return (FramedGraphTraversal<S, E2>) this;
+    }
 }

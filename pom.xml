@@ -41,6 +41,7 @@
     <modules>
         <module>core</module>
         <module>demo</module>
+        <module>neo4j</module>
     </modules>
 
     <scm>
@@ -84,6 +85,21 @@
         </plugins>
 
     </reporting>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>java-hamcrest</artifactId>
+            <version>2.0.0.0</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
 
 </project>

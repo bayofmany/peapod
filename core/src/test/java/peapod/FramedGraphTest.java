@@ -24,29 +24,31 @@ package peapod;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.model.Person;
 
 import java.util.List;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.*;
 
 public class FramedGraphTest {
 
-    private FramedGraph graph = new FramedGraph(TinkerGraph.open());
+    private FramedGraph graph = new FramedGraph(GraphProvider.getGraph());
     private Graph g;
+    private Vertex alice;
 
     @Before
     public void init() {
-        g = TinkerGraph.open();
-        Vertex a = g.addVertex(T.id, 1, T.label, "Person", "name", "alice");
-        Vertex b = g.addVertex(T.id, 2, T.label, "Person", "name", "bob");
-        Vertex c = g.addVertex(T.id, 3, T.label, "Person", "name", "charlie");
-        a.addEdge("friend", b);
-        a.addEdge("friend", c);
+        g = GraphProvider.getGraph();
+        alice = g.addVertex(T.label, "Person", "name", "alice");
+        Vertex b = g.addVertex(T.label, "Person", "name", "bob");
+        Vertex c = g.addVertex(T.label, "Person", "name", "charlie");
+        alice.addEdge("friend", b);
+        alice.addEdge("friend", c);
         graph = new FramedGraph(g);
     }
 
@@ -70,8 +72,8 @@ public class FramedGraphTest {
 
     @Test
     public void testV() throws Exception {
-        Person p = graph.v(1, Person.class);
-        assertEquals(1, p.vertex().id());
+        Person p = graph.v(alice.id(), Person.class);
+        assertEquals(alice.id(), p.vertex().id());
         assertEquals("alice", p.getName());
     }
 
@@ -95,7 +97,7 @@ public class FramedGraphTest {
         assertEquals(1, result.size());
         assertEquals("alice", result.get(0).getName());
 
-        assertThat(graph.v(1, Person.class).getFriends(), hasItem(graph.v(2, Person.class)));
+        assertThat(graph.v(alice.id(), Person.class).getFriends(), hasItem(hasProperty("name", equalTo("bob"))));
     }
 
     @Test

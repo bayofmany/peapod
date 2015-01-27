@@ -23,30 +23,33 @@ package peapod;
 
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.model.Person;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class FramedElementTest {
 
-    private FramedGraph graph = new FramedGraph(TinkerGraph.open());
+    private FramedGraph graph = new FramedGraph(GraphProvider.getGraph());
     private Graph g;
+
     private Person person;
+    private Vertex v;
 
     @Before
     public void init() {
-        g = TinkerGraph.open();
-        g.addVertex(T.id, 1, T.label, "Person", "name", "alice");
+        g = GraphProvider.getGraph();
+        v = g.addVertex(T.label, "Person", "name", "alice");
         graph = new FramedGraph(g);
-        person = graph.v(1, Person.class);
+        person = graph.v(v.id(), Person.class);
     }
 
     @Test
     public void testElement() throws Exception {
-        assertEquals(g.V(1).next(), person.element());
+        assertEquals(v, person.element());
     }
 
     @Test
@@ -56,7 +59,7 @@ public class FramedElementTest {
 
     @Test
     public void testId() throws Exception {
-        assertEquals(1, person.id());
+        assertEquals(v.id(), person.id());
     }
 
     @Test
@@ -67,12 +70,12 @@ public class FramedElementTest {
 
     @Test
     public void testEquals() {
-        assertEquals(graph.v(1, Person.class), graph.v(1, Person.class));
+        assertEquals(graph.v(v.id(), Person.class), graph.v(v.id(), Person.class));
     }
 
     @Test
     public void testHashCode() {
-        assertEquals(graph.v(1, Person.class).hashCode(), graph.v(1, Person.class).hashCode());
+        assertEquals(v.hashCode(), person.hashCode());
     }
 
 }

@@ -46,14 +46,12 @@ package peapod.manytoone;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
+import peapod.GraphProvider;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class ManyToOneTest {
 
@@ -64,11 +62,11 @@ public class ManyToOneTest {
 
     @Before
     public void init() {
-        Graph g = TinkerGraph.open();
-        Vertex alice = g.addVertex(T.id, 1, T.label, "Person", "name", "alice");
-        Vertex bob = g.addVertex(T.id, 2, T.label, "Person", "name", "bob");
-        Vertex london = g.addVertex(T.id, 3, T.label, "city", "name", "london");
-        Vertex madrid = g.addVertex(T.id, 4, T.label, "city", "name", "madrid");
+        Graph g = GraphProvider.getGraph();
+        Vertex alice = g.addVertex(T.label, "Person", "name", "alice");
+        Vertex bob = g.addVertex(T.label, "Person", "name", "bob");
+        Vertex london = g.addVertex(T.label, "city", "name", "london");
+        Vertex madrid = g.addVertex(T.label, "city", "name", "madrid");
 
         alice.addEdge("hometown", london);
 
@@ -92,13 +90,13 @@ public class ManyToOneTest {
     @Test
     public void testSet() {
         bob.setHometown(madrid);
-        assertTrue(bob.vertex().out("hometown").has(T.id, 4).hasNext());
+        assertTrue(bob.vertex().out("hometown").has("name", "madrid").hasNext());
     }
 
     @Test
     public void testSetDifferent() {
         alice.setHometown(madrid);
-        assertTrue(alice.vertex().out("hometown").has(T.id, 4).hasNext());
+        assertTrue(alice.vertex().out("hometown").has("name", "madrid").hasNext());
         assertTrue(london.vertex().in("hometown").toList().isEmpty());
     }
 

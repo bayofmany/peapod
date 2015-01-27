@@ -24,11 +24,10 @@ package peapod.property;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import peapod.FramedGraph;
 import org.junit.Before;
 import org.junit.Test;
-import peapod.FramedVertex;
+import peapod.FramedGraph;
+import peapod.GraphProvider;
 
 import java.util.Date;
 
@@ -46,8 +45,8 @@ public class PropertyTest {
 
     @Before
     public void init() {
-        Graph g = TinkerGraph.open();
-        g.addVertex(T.id, 1, T.label, "Person",
+        Graph g = GraphProvider.getGraph();
+        v = g.addVertex(T.label, "Person",
                 "s", "hello", "date", new Date(1000),
                 "b1", true, "b2", true,
                 "s1", (short) 42, "s2", (short) 43,
@@ -59,8 +58,7 @@ public class PropertyTest {
                 "by1", (byte) 0x11, "by2", (byte) 0x21);
 
         FramedGraph graph = new FramedGraph(g);
-        p = graph.v(1, Person.class);
-        v = ((FramedVertex) p).vertex();
+        p = graph.v(v.id(), Person.class);
     }
 
     @Test
