@@ -77,7 +77,7 @@ public class Inflector {
         protected Rule(String expression,
                        String replacement) {
             this.expression = expression;
-            this.replacement = replacement != null ? replacement : "";
+            this.replacement = replacement == null ? "" : replacement;
             this.expressionPattern = Pattern.compile(this.expression, Pattern.CASE_INSENSITIVE);
         }
 
