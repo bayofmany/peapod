@@ -42,7 +42,6 @@
         <module>core</module>
         <module>demo</module>
         <module>neo4j</module>
-        <module>titan</module>
     </modules>
 
     <scm>
