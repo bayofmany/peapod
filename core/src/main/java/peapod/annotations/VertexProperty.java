@@ -21,6 +21,30 @@
 
 package peapod.annotations;
 
+/**
+ * <p>Marks class as a wrapper class for a Tinkerpop 3 vertex property. The wrapper class is obligatory {@code abstract}.
+ * Peapod will generate its implementation class at compile-time.</p>
+ * <p>Vertex property classes should only be created when the Tinkerpop 3 graph database supports meta-properties.</p>
+ * <p>Additionally, the class must implement the {@code FramedVertexProperty} interface and specify the property type via
+ * the type argument. Hence, the vertex property values can be set with the {@link peapod.FramedVertexProperty#getValue}
+ * and {@link peapod.FramedVertexProperty#setValue} methods.</p>
+ * <pre>
+ * &#64;VertexProperty
+ * public abstract class Name implements FramedVertexProperty&lt;String&gt; {
+ *   public abstract String getAcl();
+ *   public abstract void setAcl(String acl);
+ * }</pre>
+ * <p>By default the class simple name will define the property name, but this can be changed via the annotation value.</p>
+ * <pre>
+ * &#64;VertexProperty("denomination")
+ * public abstract class Name implements FramedVertexProperty&lt;String&gt; {}</pre>
+ *
+ * @author Willem Salembier
+ * @see com.tinkerpop.gremlin.structure.VertexProperty
+ * @see peapod.FramedVertexProperty
+ * @see com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures#supportsMetaProperties()
+ * @since 0.1
+ */
 public @interface VertexProperty {
 
     String value() default "";

@@ -23,6 +23,19 @@ package peapod;
 
 import peapod.annotations.VertexProperty;
 
+/**
+ * <p>All vertex property wrapper classes must obligatory implement the {@code FramedVertexProperty} interface.
+ * Via the interface type argument the developer specifies the vertex porperty type.</p>
+ * <pre>
+ * &#64;VertexProperty
+ * public abstract class Name implements FramedVertexProperty&lt;String&gt; {
+ * }</pre>
+ *
+ * @author Willem Salembier
+ * @see com.tinkerpop.gremlin.structure.VertexProperty
+ * @see peapod.annotations.VertexProperty
+ * @since 0.1
+ */
 public interface FramedVertexProperty<T> extends FramedElement {
 
     public void setValue(T t);

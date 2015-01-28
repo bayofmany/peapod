@@ -36,7 +36,20 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 /**
- * A framed instance of a Tinkerpop 3 graph.
+ * <p>A framed instance of a Tinkerpop 3 graph.</p>
+ * <p>Allows to query the graph and return framed objects instead of Tinkerpop 3 {@code vertices} and {@code edges}</p>
+ * <pre>
+ *     FramedGraph graph = new FramedGraph(TinkerGraph.open());
+ *
+ *     Person person = graph.addVertex(1, Person.class);
+ *     person.setName("alice");
+ *
+ *     List&lt;Person&gt; result = graph.V(Person.class).has("name", "alice").toList();
+ *     assertEquals(1, result.size());
+ * </pre>
+ * @author Willem Salembier
+ * @see com.tinkerpop.gremlin.structure.Graph
+ * @since 0.1
  */
 public class FramedGraph implements AutoCloseable {
 

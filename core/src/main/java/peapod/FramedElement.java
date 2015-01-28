@@ -29,7 +29,7 @@ import com.tinkerpop.gremlin.structure.Element;
  *
  * @author Willem Salembier
  * @see com.tinkerpop.gremlin.structure.Element
- * @since 1.0
+ * @since 0.1
  */
 public interface FramedElement {
 

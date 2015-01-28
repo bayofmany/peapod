@@ -31,7 +31,7 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
  * Marks the incoming side of edge traversals.
  *
  * @author Willem Salembier
- * @since 1.0
+ * @since 0.1
  */
 @Retention(SOURCE)
 @Target(METHOD)

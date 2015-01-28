@@ -32,7 +32,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
  *
  * @author Willem Salembier
  * @see com.tinkerpop.gremlin.structure.Vertex
- * @since 1.0
+ * @since 0.1
  */
 public interface FramedVertex<V> extends FramedElement, FramedVertexTraversal<V> {
 

@@ -29,15 +29,18 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 
 /**
- * Optional annotation for vertex and edge multiproperties. The value denotes an alternative property name to be used.
- * <p/>
+ * <p>Optional annotation to define an alternate name for vertex and edge properties.</p>
+ * <p>The value must only be specified once for each group of methods that share the same JavaBean property name.
+ * Abstraction is made of the singular and plural form, e.g. the methods {@code getName}, {@code setName}, {@code addName},
+ * {@code removeName} and {@code getNames} all belong to the same method group.</p>
  * <pre>
  *     &#64;Property("name")
  *     public abstract String getLastName();
+ *     public abstract void setLastName(String name);
  * </pre>
  *
  * @author Willem Salembier
- * @since 1.0
+ * @since 0.1
  */
 @Retention(RUNTIME)
 @Target(METHOD)

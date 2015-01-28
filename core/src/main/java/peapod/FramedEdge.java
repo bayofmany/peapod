@@ -32,7 +32,7 @@ import com.tinkerpop.gremlin.structure.Edge;
  *
  * @author Willem Salembier
  * @see com.tinkerpop.gremlin.structure.Edge
- * @since 1.0
+ * @since 0.1
  */
 public interface FramedEdge extends FramedElement {
 

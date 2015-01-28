@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
  *
  * @author Willem Salembier
  * @see com.tinkerpop.gremlin.process.graph.GraphTraversal
- * @since 1.0
+ * @since 0.1
  */
 @SuppressWarnings({"unchecked", "unused"})
 public class FramedGraphTraversal<S, E> {

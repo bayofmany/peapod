@@ -50,10 +50,10 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 /**
- * Marks the edge can be followed in both directions.
+ * Marks the edge traversals must be executed in both directions.
  *
  * @author Willem Salembier
- * @since 1.0
+ * @since 0.1
  */
 @Retention(SOURCE)
 @Target(METHOD)

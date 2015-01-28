@@ -28,8 +28,8 @@ import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Marks class as a wrapper for a Tinkerpop 3 vertex.
- * <p>The wrapper class is obligatory {@code abstract}. Peapod will generate its implementation class at compile-time.</p>
+ * <p>Marks class as a wrapper class for a Tinkerpop 3 vertex. The wrapper class is obligatory {@code abstract}.
+ * Peapod will generate its implementation class at compile-time.</p>
  * <pre>
  * &#64;Vertex
  * public abstract class Person {
@@ -46,7 +46,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * @author Willem Salembier
  * @see com.tinkerpop.gremlin.structure.Vertex
  * @see peapod.FramedVertex
- * @since 1.0
+ * @since 0.1
  */
 @Retention(RUNTIME)
 @Target(TYPE)

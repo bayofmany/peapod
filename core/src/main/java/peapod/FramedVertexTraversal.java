@@ -23,6 +23,12 @@ package peapod;
 
 import com.tinkerpop.gremlin.structure.Vertex;
 
+/**
+ * Defines the traversals supported on framed vertices.
+ *
+ * @author Willem Salembier
+ * @since 0.1
+ */
 @SuppressWarnings({"unchecked", "unused"})
 public interface FramedVertexTraversal<S> {
 
