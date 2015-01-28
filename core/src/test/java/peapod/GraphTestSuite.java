@@ -41,73 +41,24 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package peapod.manytooneedge;
+package peapod;
 
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Before;
-import org.junit.Test;
-import peapod.FramedGraph;
-import peapod.GraphTest;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import peapod.annotation.AnnotationTest;
+import peapod.inheritance.InheritanceTest;
+import peapod.linkededge.LinkedEdgeTest;
+import peapod.linkedvertex.LinkedVertexTest;
+import peapod.manytomany.ManyToManyTest;
+import peapod.manytomanyedge.ManyToManyEdgeTest;
+import peapod.manytoone.ManyToOneTest;
+import peapod.multiproperties.MultiPropertiesTest;
+import peapod.property.PropertyTest;
+import peapod.vertexproperty.VertexPropertyTest;
 
-import static org.junit.Assert.*;
+@RunWith(Suite.class)
+@Suite.SuiteClasses({AnnotationTest.class, InheritanceTest.class, LinkedEdgeTest.class, LinkedVertexTest.class, ManyToManyTest.class, ManyToManyEdgeTest.class, ManyToOneTest.class, MultiPropertiesTest.class, PropertyTest.class, VertexPropertyTest.class, FramedElementTest.class, FramedGraphTest.class})
+public class GraphTestSuite {
 
-public class ManyToOneEdgeTest extends GraphTest {
 
-    private Person alice;
-    private Person bob;
-    private City london;
-    private City madrid;
-
-    @Before
-    public void init() {
-        Vertex alice = g.addVertex(T.label, "Person", "name", "alice");
-        Vertex bob = g.addVertex(T.label, "Person", "name", "bob");
-        Vertex london = g.addVertex(T.label, "City", "name", "london");
-        Vertex madrid = g.addVertex(T.label, "City", "name", "madrid");
-
-        alice.addEdge("hometown", london);
-
-        FramedGraph graph = new FramedGraph(g);
-        this.alice = graph.v(alice.id(), Person.class);
-        this.bob = graph.v(bob.id(), Person.class);
-        this.london = graph.v(london.id(), City.class);
-        this.madrid = graph.v(madrid.id(), City.class);
-    }
-
-    @Test
-    public void testGetExisting() {
-        assertEquals(london, alice.getHometown().getCity());
-        assertEquals(alice, alice.getHometown().getPerson());
-    }
-
-    @Test
-    public void testGetNonExisting() {
-        assertNull(bob.getHometown());
-    }
-
-    @Test
-    public void testSet() {
-        Hometown hometown = bob.setHometown(madrid);
-        assertNotNull(hometown);
-
-        hometown.setFromYear(2012);
-
-        assertTrue(bob.vertex().out("hometown").has("name", "madrid").hasNext());
-        assertTrue(bob.vertex().outE("hometown").has("fromYear", 2012).hasNext());
-    }
-
-    @Test
-    public void testSetDifferent() {
-        alice.setHometown(madrid);
-        assertTrue(alice.vertex().out("hometown").has("name", "madrid").hasNext());
-        assertTrue(london.vertex().in("hometown").toList().isEmpty());
-    }
-
-    @Test
-    public void testSetNull() {
-        alice.setHometown(null);
-        assertTrue(alice.vertex().out("hometown").toList().isEmpty());
-        assertTrue(london.vertex().in("hometown").toList().isEmpty());
-    }
 }

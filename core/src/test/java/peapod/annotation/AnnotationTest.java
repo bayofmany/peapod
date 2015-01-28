@@ -44,19 +44,18 @@
 package peapod.annotation;
 
 import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
-import peapod.GraphProvider;
+import peapod.GraphTest;
 
 import java.util.List;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.*;
 
-public class AnnotationTest {
+public class AnnotationTest extends GraphTest {
 
     private Person alice;
     private Person bob;
@@ -64,7 +63,6 @@ public class AnnotationTest {
 
     @Before
     public void init() {
-        Graph g = GraphProvider.getGraph();
         Vertex alice = g.addVertex(T.label, "Person", "p-name", "alice");
         Vertex bob = g.addVertex(T.label, "Person", "p-name", "bob");
         Vertex charlie = g.addVertex(T.label, "Person", "p-name", "charlie");

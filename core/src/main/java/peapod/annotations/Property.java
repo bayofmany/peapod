@@ -29,7 +29,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 
 /**
- * Optional annotation for vertex and edge properties. The value denotes an alternative property name to be used.
+ * Optional annotation for vertex and edge multiproperties. The value denotes an alternative property name to be used.
  * <p/>
  * <pre>
  *     &#64;Property("name")

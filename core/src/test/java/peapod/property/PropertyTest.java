@@ -28,17 +28,16 @@ import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
 import peapod.GraphProvider;
-
-import java.util.Date;
+import peapod.GraphTest;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static junit.framework.TestCase.*;
 
 /**
- * Test class to test primitive and object properties.
+ * Test class to test primitive and object multiproperties.
  */
-public class PropertyTest {
+public class PropertyTest extends GraphTest {
 
     private Person p;
     private Vertex v;
@@ -47,7 +46,7 @@ public class PropertyTest {
     public void init() {
         Graph g = GraphProvider.getGraph();
         v = g.addVertex(T.label, "Person",
-                "s", "hello", "date", new Date(1000),
+                "s", "hello",
                 "b1", true, "b2", true,
                 "s1", (short) 42, "s2", (short) 43,
                 "i1", 42, "i2", 43,
@@ -78,18 +77,6 @@ public class PropertyTest {
         p.setS(null);
         assertEquals(null, p.getS());
         assertFalse(v.property("s").isPresent());
-    }
-
-    @Test
-    public void testGetDate() {
-        assertEquals(new Date(1000), p.getDate());
-    }
-
-    @Test
-    public void testSetDate() {
-        p.setDate(new Date(2000));
-        assertEquals(new Date(2000), p.getDate());
-        assertEquals(new Date(2000), v.value("date"));
     }
 
     @Test

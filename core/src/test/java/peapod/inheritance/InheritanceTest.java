@@ -22,23 +22,21 @@
 package peapod.inheritance;
 
 import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.structure.Graph;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
-import peapod.GraphProvider;
+import peapod.GraphTest;
 
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class InheritanceTest {
+public class InheritanceTest extends GraphTest {
 
     private FramedGraph graph;
 
     @Before
     public void init() {
-        Graph g = GraphProvider.getGraph();
         g.addVertex(T.label, "Person", "name", "alice");
         g.addVertex(T.label, "Programmer", "name", "bob", "yearsExperience", 10);
 

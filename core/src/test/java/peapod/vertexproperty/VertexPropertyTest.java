@@ -22,27 +22,28 @@
 package peapod.vertexproperty;
 
 import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.VertexProperty;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
-import peapod.GraphProvider;
+import peapod.GraphTest;
 
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
-public class VertexPropertyTest {
+public class VertexPropertyTest extends GraphTest {
 
     private Person alice;
     private Vertex v;
 
     @Before
     public void init() {
-        Graph g = GraphProvider.getGraph();
+        assumeTrue(g.features().vertex().supportsMetaProperties());
+
         v = g.addVertex(T.label, "Person", "name", "Alice");
         v.property("location", "Brussels", "startTime", 2010, "endTime", 2012);
         v.property("location", "Antwerp", "startTime", 2012);

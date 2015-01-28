@@ -41,49 +41,24 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package peapod.properties;
+package peapod;
 
-import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Vertex;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
-import peapod.FramedGraph;
-import peapod.GraphProvider;
 
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertThat;
+public abstract class GraphTest {
 
-public class PropertiesTest {
-
-    private Person alice;
-    private Vertex v;
+    protected Graph g;
 
     @Before
-    public void init() {
-        Graph g = GraphProvider.getGraph();
-        v = g.addVertex(T.label, "Person", "name", "Alice", "name", "Alicia");
-
-        FramedGraph graph = new FramedGraph(g);
-        alice = graph.v(v.id(), Person.class);
+    public void setup() {
+        g = GraphProvider.getGraph();
     }
 
-    @Test
-    public void testGetNames() {
-        assertThat(alice.getNames(), containsInAnyOrder("Alice", "Alicia"));
+    @After
+    public void teardown() {
+        g.V().remove();
     }
-
-    @Test
-    public void testAddName() {
-        alice.addName("Allison");
-        assertThat(v.values("name").toList(), containsInAnyOrder("Alice", "Alicia", "Allison"));
-    }
-
-    @Test
-    public void testRemoveName() {
-        alice.removeName("Alicia");
-        assertThat(v.values("name").toList(), containsInAnyOrder("Alice"));
-    }
-
-
 }
+

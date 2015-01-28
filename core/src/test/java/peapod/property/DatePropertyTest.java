@@ -41,7 +41,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package peapod.manytooneedge;
+package peapod.property;
 
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -50,64 +50,38 @@ import org.junit.Test;
 import peapod.FramedGraph;
 import peapod.GraphTest;
 
-import static org.junit.Assert.*;
+import java.util.Date;
 
-public class ManyToOneEdgeTest extends GraphTest {
+import static junit.framework.TestCase.assertEquals;
 
-    private Person alice;
-    private Person bob;
-    private City london;
-    private City madrid;
+/**
+ * Test class to test primitive and object multiproperties.
+ */
+public class DatePropertyTest extends GraphTest {
+
+    private Person p;
+    private Vertex v;
 
     @Before
     public void init() {
-        Vertex alice = g.addVertex(T.label, "Person", "name", "alice");
-        Vertex bob = g.addVertex(T.label, "Person", "name", "bob");
-        Vertex london = g.addVertex(T.label, "City", "name", "london");
-        Vertex madrid = g.addVertex(T.label, "City", "name", "madrid");
-
-        alice.addEdge("hometown", london);
+        v = g.addVertex(T.label, "Person", "date", new Date(1000));
 
         FramedGraph graph = new FramedGraph(g);
-        this.alice = graph.v(alice.id(), Person.class);
-        this.bob = graph.v(bob.id(), Person.class);
-        this.london = graph.v(london.id(), City.class);
-        this.madrid = graph.v(madrid.id(), City.class);
+        p = graph.v(v.id(), Person.class);
+    }
+
+
+    @Test
+    public void testGetDate() {
+        assertEquals(new Date(1000), p.getDate());
     }
 
     @Test
-    public void testGetExisting() {
-        assertEquals(london, alice.getHometown().getCity());
-        assertEquals(alice, alice.getHometown().getPerson());
+    public void testSetDate() {
+        p.setDate(new Date(2000));
+        assertEquals(new Date(2000), p.getDate());
+        assertEquals(new Date(2000), v.value("date"));
     }
 
-    @Test
-    public void testGetNonExisting() {
-        assertNull(bob.getHometown());
-    }
 
-    @Test
-    public void testSet() {
-        Hometown hometown = bob.setHometown(madrid);
-        assertNotNull(hometown);
-
-        hometown.setFromYear(2012);
-
-        assertTrue(bob.vertex().out("hometown").has("name", "madrid").hasNext());
-        assertTrue(bob.vertex().outE("hometown").has("fromYear", 2012).hasNext());
-    }
-
-    @Test
-    public void testSetDifferent() {
-        alice.setHometown(madrid);
-        assertTrue(alice.vertex().out("hometown").has("name", "madrid").hasNext());
-        assertTrue(london.vertex().in("hometown").toList().isEmpty());
-    }
-
-    @Test
-    public void testSetNull() {
-        alice.setHometown(null);
-        assertTrue(alice.vertex().out("hometown").toList().isEmpty());
-        assertTrue(london.vertex().in("hometown").toList().isEmpty());
-    }
 }

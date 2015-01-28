@@ -41,7 +41,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package peapod.properties;
+package peapod.multiproperties;
 
 import peapod.annotations.Vertex;
 

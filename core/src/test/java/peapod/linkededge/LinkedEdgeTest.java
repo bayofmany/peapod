@@ -22,12 +22,11 @@
 package peapod.linkededge;
 
 import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
-import peapod.GraphProvider;
+import peapod.GraphTest;
 
 import java.util.List;
 import java.util.Optional;
@@ -37,7 +36,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.*;
 
-public class EdgeTest {
+public class LinkedEdgeTest extends GraphTest {
 
     private Person alice;
     private Person bob;
@@ -45,7 +44,6 @@ public class EdgeTest {
 
     @Before
     public void init() {
-        Graph g = GraphProvider.getGraph();
         Vertex alice = g.addVertex(T.label, "Person", "value", "alice");
         Vertex bob = g.addVertex(T.label, "Person", "value", "bob");
         Vertex charlie = g.addVertex(T.label, "Person", "value", "charlie");

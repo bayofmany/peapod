@@ -44,16 +44,15 @@
 package peapod.manytoone;
 
 import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
-import peapod.GraphProvider;
+import peapod.GraphTest;
 
 import static org.junit.Assert.*;
 
-public class ManyToOneTest {
+public class ManyToOneTest extends GraphTest {
 
     private Person alice;
     private Person bob;
@@ -62,7 +61,6 @@ public class ManyToOneTest {
 
     @Before
     public void init() {
-        Graph g = GraphProvider.getGraph();
         Vertex alice = g.addVertex(T.label, "Person", "name", "alice");
         Vertex bob = g.addVertex(T.label, "Person", "name", "bob");
         Vertex london = g.addVertex(T.label, "city", "name", "london");

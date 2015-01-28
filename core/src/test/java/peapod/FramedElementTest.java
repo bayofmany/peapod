@@ -22,7 +22,6 @@
 package peapod;
 
 import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,10 +30,9 @@ import peapod.model.Person;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class FramedElementTest {
+public class FramedElementTest extends GraphTest {
 
-    private FramedGraph graph = new FramedGraph(GraphProvider.getGraph());
-    private Graph g;
+    private FramedGraph graph = new FramedGraph(g);
 
     private Person person;
     private Vertex v;

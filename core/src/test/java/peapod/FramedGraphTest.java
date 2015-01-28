@@ -22,7 +22,6 @@
 package peapod;
 
 import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,10 +34,9 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.*;
 
-public class FramedGraphTest {
+public class FramedGraphTest extends GraphTest {
 
-    private FramedGraph graph = new FramedGraph(GraphProvider.getGraph());
-    private Graph g;
+    private FramedGraph graph = new FramedGraph(g);
     private Vertex alice;
 
     @Before
