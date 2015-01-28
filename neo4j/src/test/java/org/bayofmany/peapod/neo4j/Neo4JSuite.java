@@ -44,15 +44,29 @@
 package org.bayofmany.peapod.neo4j;
 
 import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
+import com.tinkerpop.gremlin.structure.Graph;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.rules.TemporaryFolder;
 import peapod.GraphProvider;
+import peapod.GraphTest;
 import peapod.GraphTestSuite;
+
+import java.io.IOException;
 
 public class Neo4JSuite extends GraphTestSuite {
 
+    @ClassRule
+    public static TemporaryFolder folder = new TemporaryFolder();
+
     @BeforeClass
-    public static void init() {
-        Neo4jGraph graph = Neo4jGraph.open("/tmp");
-        GraphProvider.setGraph(graph);
+    public static void setGraphProvider() throws IOException {
+        GraphTest.graphProvider = new GraphProvider() {
+            @Override
+            public Graph getGraph() throws IOException {
+                return Neo4jGraph.open(folder.newFolder().getAbsolutePath());
+            }
+        };
     }
+
 }

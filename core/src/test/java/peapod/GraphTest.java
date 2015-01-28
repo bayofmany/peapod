@@ -45,20 +45,50 @@ package peapod;
 
 import com.tinkerpop.gremlin.structure.Graph;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
+
+import java.io.IOException;
 
 public abstract class GraphTest {
 
-    protected Graph g;
+    public static GraphProvider graphProvider;
+
+    protected static Graph g;
+
+    private boolean supportsTransactions;
+
+    @BeforeClass
+    public static void setGraphProvider() throws IOException {
+        if (graphProvider == null) {
+            graphProvider = new GraphProvider() {
+            };
+        }
+        g = graphProvider.getGraph();
+    }
 
     @Before
-    public void setup() {
-        g = GraphProvider.getGraph();
+    public void setup() throws IOException {
+        supportsTransactions = g.features().graph().supportsTransactions();
+        if (supportsTransactions) {
+            g.tx().open();
+        }
     }
 
     @After
-    public void teardown() {
-        g.V().remove();
+    public void teardown() throws Exception {
+        if (supportsTransactions) {
+            g.tx().rollback();
+        } else {
+            g.V().remove();
+        }
+
+    }
+
+    @AfterClass
+    public static void closeGraph() throws Exception {
+        g.close();
     }
 }
 

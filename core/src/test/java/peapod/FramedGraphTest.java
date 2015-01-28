@@ -33,15 +33,15 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 public class FramedGraphTest extends GraphTest {
 
-    private FramedGraph graph = new FramedGraph(g);
+    private FramedGraph graph;
     private Vertex alice;
 
     @Before
     public void init() {
-        g = GraphProvider.getGraph();
         alice = g.addVertex(T.label, "Person", "name", "alice");
         Vertex b = g.addVertex(T.label, "Person", "name", "bob");
         Vertex c = g.addVertex(T.label, "Person", "name", "charlie");
@@ -61,6 +61,8 @@ public class FramedGraphTest extends GraphTest {
 
     @Test
     public void testAddVertexWithId() throws Exception {
+        assumeTrue(graph.features().vertex().supportsUserSuppliedIds());
+
         Person person = graph.addVertex(Person.class, 456);
         assertNotNull(person);
         assertNotNull(person.vertex());
@@ -119,14 +121,9 @@ public class FramedGraphTest extends GraphTest {
     }
 
     @Test
-    public void testClose() throws Exception {
-        graph.close();
-    }
-
-    @Test(expected = UnsupportedOperationException.class)
     public void testTx() throws Exception {
-        // just verifying if it delegates to Tinkerpop Graph.tx() method
-        graph.tx();
+        assumeTrue(graph.features().graph().supportsTransactions());
+        assertNotNull(graph.tx());
     }
 
 }

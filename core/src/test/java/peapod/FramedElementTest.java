@@ -32,14 +32,13 @@ import static org.junit.Assert.assertTrue;
 
 public class FramedElementTest extends GraphTest {
 
-    private FramedGraph graph = new FramedGraph(g);
+    private FramedGraph graph;
 
     private Person person;
     private Vertex v;
 
     @Before
     public void init() {
-        g = GraphProvider.getGraph();
         v = g.addVertex(T.label, "Person", "name", "alice");
         graph = new FramedGraph(g);
         person = graph.v(v.id(), Person.class);
@@ -63,7 +62,7 @@ public class FramedElementTest extends GraphTest {
     @Test
     public void testRemove() throws Exception {
         person.remove();
-        assertTrue(!g.V().hasNext());
+        assertTrue(!g.V(Person.class).hasNext());
     }
 
     @Test

@@ -46,15 +46,12 @@ package peapod;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 
-public class GraphProvider {
+import java.io.IOException;
 
-    private static Graph graph;
+public interface GraphProvider {
 
-    public static Graph getGraph() {
-        return graph == null ? TinkerGraph.open() : graph;
+    default Graph getGraph() throws IOException {
+        return TinkerGraph.open();
     }
 
-    public static void setGraph(Graph graph) {
-        GraphProvider.graph = graph;
-    }
 }

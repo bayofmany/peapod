@@ -22,12 +22,10 @@
 package peapod.property;
 
 import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
-import peapod.GraphProvider;
 import peapod.GraphTest;
 
 import static java.lang.Boolean.FALSE;
@@ -44,7 +42,6 @@ public class PropertyTest extends GraphTest {
 
     @Before
     public void init() {
-        Graph g = GraphProvider.getGraph();
         v = g.addVertex(T.label, "Person",
                 "s", "hello",
                 "b1", true, "b2", true,
