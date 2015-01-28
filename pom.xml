@@ -50,7 +50,6 @@
         <developerConnection>scm:git:git@github.com:bayofmany/peapod.git</developerConnection>
         <url>https://github.com/bayofmany/peapod.git</url>
     </scm>
-
     <properties>
         <tinkerpop.version>3.0.0.M7</tinkerpop.version>
     </properties>

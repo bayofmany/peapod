@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>peapod</artifactId>
+        <groupId>org.bayofmany.peapod</groupId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>peapod-org.bayofmany.peapod.titan</artifactId>
+    <name>Peapod Titan</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.bayofmany.peapod</groupId>
+            <artifactId>peapod-core</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bayofmany.peapod</groupId>
+            <artifactId>peapod-core</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+            <type>test-jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkaurelius.titan</groupId>
+            <artifactId>titan-core</artifactId>
+            <version>0.9.0-M1</version>
+        </dependency>
+    </dependencies>
+
+</project>
