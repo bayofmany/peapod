@@ -41,7 +41,6 @@
     <modules>
         <module>core</module>
         <module>demo</module>
-        <module>neo4j</module>
     </modules>
 
     <scm>
