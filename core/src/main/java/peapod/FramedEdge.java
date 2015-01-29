@@ -24,8 +24,8 @@ package peapod;
 import com.tinkerpop.gremlin.structure.Edge;
 
 /**
- * All generated {@code @Edge} classes implement the {@code FramedEdge} interface. It can be optionally
- * defined on the abstract class to get a reference to the wrapped Tinkerpop 3 {@code edge}.
+ * <p>All generated {@code @Edge} classes implement the {@code FramedEdge} interface. It can be optionally
+ * defined on the abstract class to get a reference to the wrapped Tinkerpop 3 {@code edge}.</p>
  * <pre>
  * &#64;Edge
  * public abstract class Develops implements FramedEdge {}</pre>
