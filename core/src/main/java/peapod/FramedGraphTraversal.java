@@ -26,10 +26,7 @@ import com.tinkerpop.gremlin.process.Traverser;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
 import com.tinkerpop.gremlin.structure.Contains;
-import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
-import peapod.internal.runtime.FramerRegistry;
-import peapod.internal.runtime.IFramer;
 
 import java.util.*;
 import java.util.function.BiPredicate;
@@ -58,9 +55,9 @@ public class FramedGraphTraversal<S, E> {
         this.graph = graph;
     }
 
-    protected FramedGraphTraversal<S, E> label(Class<E> clazz) {
+    protected FramedGraphTraversal<S, E> labels(Class clazz, Collection<String> labels) {
         this.lastFramingClass = clazz;
-        traversal.has(T.label, Contains.within, FramerRegistry.instance.get(clazz).subLabels());
+        traversal.has(T.label, Contains.within, labels);
         return this;
     }
 
@@ -198,7 +195,7 @@ public class FramedGraphTraversal<S, E> {
 
 
     public <E2> FramedGraphTraversal<S, E2> properties(Class<E2> framingClass) {
-        String label = FramerRegistry.instance.get(framingClass).label();
+        String label = graph.framer(framingClass).label();
         traversal.properties(label);
         this.lastFramingClass = framingClass;
         return (FramedGraphTraversal<S, E2>) this;
@@ -210,10 +207,8 @@ public class FramedGraphTraversal<S, E> {
             return;
         }
 
-        IFramer<Element, F> framer = FramerRegistry.instance.get(framingClass);
-
         MapStep<Vertex, F> mapStep = new MapStep<>(traversal);
-        mapStep.setFunction(v -> framer.frame(v.get(), graph));
+        mapStep.setFunction(v -> graph.frame(v.get(), framingClass));
         traversal.asAdmin().addStep(mapStep);
     }
 

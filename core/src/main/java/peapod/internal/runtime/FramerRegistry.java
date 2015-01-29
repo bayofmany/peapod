@@ -22,13 +22,18 @@
 package peapod.internal.runtime;
 
 import com.tinkerpop.gremlin.structure.Element;
+import peapod.annotations.Edge;
+import peapod.annotations.Vertex;
+import peapod.annotations.VertexProperty;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class FramerRegistry {
 
-    public static final FramerRegistry instance = new FramerRegistry();
+    private final Map<String, IFramer<?, ?>> vertexFramers = new HashMap<>();
+    private final Map<String, IFramer<?, ?>> vertexPropertyFramers = new HashMap<>();
+    private final Map<String, IFramer<?, ?>> edgeFramers = new HashMap<>();
 
     private final Map<Class<?>, IFramer<?, ?>> framers = new HashMap<>();
 
@@ -37,6 +42,15 @@ public class FramerRegistry {
         try {
             Class<?> framingClass = framed.getClassLoader().loadClass(framed.getName() + "$Impl");
             IFramer<E, F> framer = (IFramer<E, F>) framingClass.getField("instance").get(null);
+
+            if (framed.getAnnotation(Vertex.class) != null) {
+                vertexFramers.put(framer.label(), framer);
+            } else if (framed.getAnnotation(Edge.class) != null) {
+                edgeFramers.put(framer.label(), framer);
+            } else if (framed.getAnnotation(VertexProperty.class) != null) {
+                vertexPropertyFramers.put(framer.label(), framer);
+            }
+
             framers.put(framed, framer);
             return framer;
         } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
@@ -45,8 +59,25 @@ public class FramerRegistry {
     }
 
     @SuppressWarnings("unchecked")
-    public <E extends Element, F> IFramer<E, F> get(Class<F> framed) {
-        return (IFramer<E, F>) framers.getOrDefault(framed, register(framed));
+    public <E extends Element, F> IFramer<E, F> get(E e, Class<F> framingClass) {
+        IFramer<E, F> framer = get(e);
+        return framer == null ? get(framingClass) : framer;
     }
 
+    @SuppressWarnings("unchecked")
+    public <E extends Element, F> IFramer<E, F> get(Class<F> framingClass) {
+        return (IFramer<E, F>) framers.getOrDefault(framingClass, register(framingClass));
+    }
+
+    @SuppressWarnings("unchecked")
+    public <E extends Element, F> IFramer<E, F> get(E e) {
+        if (e instanceof com.tinkerpop.gremlin.structure.Vertex) {
+            return (IFramer<E, F>) vertexFramers.get(e.label());
+        } else if (e instanceof com.tinkerpop.gremlin.structure.Edge) {
+            return (IFramer<E, F>) edgeFramers.get(e.label());
+        } else if (e instanceof com.tinkerpop.gremlin.structure.VertexProperty) {
+            return (IFramer<E, F>) vertexPropertyFramers.get(e.label());
+        }
+        return null;
+    }
 }

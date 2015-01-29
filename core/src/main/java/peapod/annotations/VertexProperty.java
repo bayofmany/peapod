@@ -21,6 +21,13 @@
 
 package peapod.annotations;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 /**
  * <p>Marks class as a wrapper class for a Tinkerpop 3 vertex property. The wrapper class is obligatory {@code abstract}.
  * Peapod will generate its implementation class at compile-time.</p>
@@ -45,6 +52,8 @@ package peapod.annotations;
  * @see com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures#supportsMetaProperties()
  * @since 0.1
  */
+@Retention(RUNTIME)
+@Target({TYPE})
 public @interface VertexProperty {
 
     String value() default "";

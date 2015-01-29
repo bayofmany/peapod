@@ -55,6 +55,9 @@ public class FramedGraph implements AutoCloseable {
 
     private final Graph graph;
 
+    private FramerRegistry registry = new FramerRegistry();
+
+
     public FramedGraph(Graph graph) {
         this.graph = graph;
     }
@@ -66,9 +69,9 @@ public class FramedGraph implements AutoCloseable {
      * @return The newly created labeled linked vertex
      */
     public <F> F addVertex(Class<F> clazz) {
-        IFramer<Element, F> framer = FramerRegistry.instance.get(clazz);
+        IFramer<Element, F> framer = registry.get(clazz);
         Vertex v = graph.addVertex(framer.label());
-        return framer.frame(v, this);
+        return frame(v, clazz);
     }
 
     /**
@@ -78,14 +81,14 @@ public class FramedGraph implements AutoCloseable {
      * @return The newly created labeled linked vertex
      */
     public <V> V addVertex(Class<V> clazz, Object id) {
-        IFramer<Element, V> framer = FramerRegistry.instance.get(clazz);
+        IFramer<Element, V> framer = registry.get(clazz);
         Vertex v = graph.addVertex(T.id, id, T.label, framer.label());
         return framer.frame(v, this);
     }
 
     @SuppressWarnings("unchecked")
     public <S, V> FramedGraphTraversal<S, V> V(Class<V> clazz) {
-        return new FramedGraphTraversal(graph().V(), this).label(clazz);
+        return new FramedGraphTraversal(graph().V(), this).labels(clazz, registry.get(clazz).subLabels());
     }
 
     /**
@@ -97,7 +100,15 @@ public class FramedGraph implements AutoCloseable {
     @SuppressWarnings("unchecked")
     public <V> V v(Object id, Class<V> clazz) throws NoSuchElementException {
         Optional<Vertex> vertex = graph.V(id).tryNext();
-        return vertex.isPresent() ? FramerRegistry.instance.get(clazz).frame(vertex.get(), this) : null;
+        return vertex.isPresent() ? frame(vertex.get(), clazz) : null;
+    }
+
+    public <F, E extends Element> F frame(E e, Class<F> clazz) {
+        return registry.get(e, clazz).frame(e, this);
+    }
+
+    protected  <F, E extends Element> IFramer<E, F> framer(Class<F> clazz) {
+        return registry.get(clazz);
     }
 
     /**
