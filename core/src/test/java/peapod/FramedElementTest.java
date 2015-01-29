@@ -40,8 +40,8 @@ public class FramedElementTest extends GraphTest {
     @Before
     public void init() {
         v = g.addVertex(T.label, "Person", "name", "alice");
-        graph = new FramedGraph(g);
-        person = graph.v(v.id(), Person.class);
+        graph = new FramedGraph(g, Person.class.getPackage());
+        person = graph.v(v.id());
     }
 
     @Test
@@ -67,7 +67,7 @@ public class FramedElementTest extends GraphTest {
 
     @Test
     public void testEquals() {
-        assertEquals(graph.v(v.id(), Person.class), graph.v(v.id(), Person.class));
+        assertEquals(graph.<Person>v(v.id()), graph.<Person>v(v.id()));
     }
 
     @Test
