@@ -24,15 +24,12 @@ package peapod.demo.crew;
 import peapod.FramedVertex;
 import peapod.annotations.Vertex;
 
-@Vertex
+@Vertex("software")
 public abstract class Software implements FramedVertex<Software> {
 
     public abstract String getName();
 
     public abstract void setName(String name);
 
-    public abstract String getLang();
-
-    public abstract void setLang(String lang);
 }
 

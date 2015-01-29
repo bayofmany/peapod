@@ -53,8 +53,8 @@ public class PropertyTest extends GraphTest {
                 "c1", 'a', "c2", 'b',
                 "by1", (byte) 0x11, "by2", (byte) 0x21);
 
-        FramedGraph graph = new FramedGraph(g);
-        p = graph.v(v.id(), Person.class);
+        FramedGraph graph = new FramedGraph(g, Person.class.getPackage());
+        p = graph.v(v.id());
     }
 
     @Test

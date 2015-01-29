@@ -22,6 +22,7 @@
 package peapod.inheritance;
 
 import com.tinkerpop.gremlin.process.T;
+import com.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
@@ -30,22 +31,31 @@ import peapod.GraphTest;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class InheritanceTest extends GraphTest {
 
     private FramedGraph graph;
+    private Vertex vertex;
 
     @Before
     public void init() {
         g.addVertex(T.label, "Person", "name", "alice");
-        g.addVertex(T.label, "Programmer", "name", "bob", "yearsExperience", 10);
+        vertex = g.addVertex(T.label, "Programmer", "name", "bob", "yearsExperience", 10);
 
-        graph = new FramedGraph(g);
+        graph = new FramedGraph(g, Person.class.getPackage());
     }
 
     @Test
     public void testFind() {
         List<Person> persons = graph.V(Person.class).toList();
         assertEquals(2, persons.size());
+        assertEquals(1, persons.stream().filter(p -> p instanceof Programmer).count());
+    }
+
+    @Test
+    public void testLoad() {
+        Person person = graph.v(vertex.id());
+        assertTrue(person instanceof Programmer);
     }
 }

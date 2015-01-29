@@ -2,24 +2,21 @@ package peapod.internal;
 
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import peapod.FramedEdge;
 import peapod.FramedElement;
 import peapod.FramedGraph;
+import peapod.internal.runtime.Framer;
 import peapod.internal.runtime.IFramer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 
 public final class Knows$Impl extends Knows
         implements FramedEdge {
 
-    public static final String LABEL = "knows";
-
     private FramedGraph graph;
     private Edge e;
     public Knows$Impl(Edge e, FramedGraph graph) {
-        this.e = e;
+        this.e  = e;
         this.graph = graph;
     }
     public FramedGraph graph() {
@@ -31,7 +28,6 @@ public final class Knows$Impl extends Knows
     public Person getPerson() {
         return e.outV().map(v -> new Person$Impl(v.get(), graph)).next();
     }
-
     public Person getOtherPerson() {
         return e.inV().map(v -> new Person$Impl(v.get(), graph)).next();
     }
@@ -47,19 +43,20 @@ public final class Knows$Impl extends Knows
         return e.label() + "[" + e.id() + "]";
     }
 
-    public static final Framer instance = new Framer();
-
-    private static final class Framer
+    @Framer
+    public static final class KnowsFramer
             implements IFramer<Edge, Knows> {
 
-        private static final Collection<String> subLabels = Collections.unmodifiableCollection(Arrays.asList(LABEL));
-
-        public String label() {
-            return LABEL;
+        public Class<Edge> type() {
+            return Edge.class;
         }
 
-        public Collection<String> subLabels() {
-            return subLabels;
+        public Class<Knows> frameClass() {
+            return peapod.internal.Knows.class;
+        }
+
+        public String label() {
+            return "knows";
         }
 
         public Knows frame(Edge e, FramedGraph graph) {

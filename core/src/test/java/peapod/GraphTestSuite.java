@@ -53,12 +53,26 @@ import peapod.manytomany.ManyToManyTest;
 import peapod.manytomanyedge.ManyToManyEdgeTest;
 import peapod.manytoone.ManyToOneTest;
 import peapod.multiproperties.MultiPropertiesTest;
+import peapod.property.DatePropertyTest;
 import peapod.property.PropertyTest;
 import peapod.vertexproperty.VertexPropertyTest;
 
 @RunWith(Suite.class)
-@Suite.SuiteClasses({AnnotationTest.class, InheritanceTest.class, LinkedEdgeTest.class, LinkedVertexTest.class, ManyToManyTest.class, ManyToManyEdgeTest.class, ManyToOneTest.class, MultiPropertiesTest.class, PropertyTest.class, VertexPropertyTest.class, FramedElementTest.class, FramedGraphTest.class})
+@Suite.SuiteClasses({
+        AnnotationTest.class,
+        DatePropertyTest.class,
+        InheritanceTest.class,
+        FramedElementTest.class,
+        FramedGraphTest.class,
+        LinkedEdgeTest.class,
+        LinkedVertexTest.class,
+        ManyToManyTest.class,
+        ManyToManyEdgeTest.class,
+        ManyToOneTest.class,
+        MultiPropertiesTest.class,
+        PropertyTest.class,
+        VertexPropertyTest.class
+})
 public class GraphTestSuite {
-
 
 }

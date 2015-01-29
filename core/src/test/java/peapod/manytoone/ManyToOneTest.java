@@ -63,16 +63,16 @@ public class ManyToOneTest extends GraphTest {
     public void init() {
         Vertex alice = g.addVertex(T.label, "Person", "name", "alice");
         Vertex bob = g.addVertex(T.label, "Person", "name", "bob");
-        Vertex london = g.addVertex(T.label, "city", "name", "london");
-        Vertex madrid = g.addVertex(T.label, "city", "name", "madrid");
+        Vertex london = g.addVertex(T.label, "City", "name", "london");
+        Vertex madrid = g.addVertex(T.label, "City", "name", "madrid");
 
         alice.addEdge("hometown", london);
 
-        FramedGraph graph = new FramedGraph(g);
-        this.alice = graph.v(alice.id(), Person.class);
-        this.bob = graph.v(bob.id(), Person.class);
-        this.london = graph.v(london.id(), City.class);
-        this.madrid = graph.v(madrid.id(), City.class);
+        FramedGraph graph = new FramedGraph(g, Person.class.getPackage());
+        this.alice = graph.v(alice.id());
+        this.bob = graph.v(bob.id());
+        this.london = graph.v(london.id());
+        this.madrid = graph.v(madrid.id());
     }
 
     @Test

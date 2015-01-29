@@ -57,24 +57,24 @@ public class ShowcaseCrewTest {
     @Test
     public void testGraph() {
         TinkerGraph g = TinkerFactory.createTheCrew();
-        FramedGraph graph = new FramedGraph(g);
+        FramedGraph graph = new FramedGraph(g, Person.class.getPackage());
 
-        Person marko = graph.v(1, Person.class);
+        Person marko = graph.v(1);
         assertEquals("marko", marko.getName());
 
-        Person stephen = graph.v(7, Person.class);
+        Person stephen = graph.v(7);
         assertEquals("stephen", stephen.getName());
 
-        Person matthias = graph.v(8, Person.class);
+        Person matthias = graph.v(8);
         assertEquals("matthias", matthias.getName());
 
-        Person daniel = graph.v(9, Person.class);
+        Person daniel = graph.v(9);
         assertEquals("daniel", daniel.getName());
 
-        Software gremlin = graph.v(10, Software.class);
+        Software gremlin = graph.v(10);
         assertEquals("gremlin", gremlin.getName());
 
-        Software tinkergraph = graph.v(11, Software.class);
+        Software tinkergraph = graph.v(11);
         assertEquals("tinkergraph", tinkergraph.getName());
 
         assertThat(marko.getDevelopedSoftware(), containsInAnyOrder(gremlin, tinkergraph));

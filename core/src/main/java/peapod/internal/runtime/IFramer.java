@@ -24,16 +24,17 @@ package peapod.internal.runtime;
 import com.tinkerpop.gremlin.structure.Element;
 import peapod.FramedGraph;
 
-import java.util.Collection;
-
 /**
  * A Framer implementation converts Tinkerpop {@link com.tinkerpop.gremlin.structure.Element} instance to framed objects.
  */
 public interface IFramer<E extends Element, F> {
 
+    Class<E> type();
+
+    Class<F> frameClass();
+
     String label();
 
-    Collection<String> subLabels();
-
     public F frame(E element, FramedGraph framedGraph);
+
 }

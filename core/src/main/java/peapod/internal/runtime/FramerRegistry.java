@@ -22,12 +22,8 @@
 package peapod.internal.runtime;
 
 import com.tinkerpop.gremlin.structure.Element;
-import peapod.annotations.Edge;
-import peapod.annotations.Vertex;
-import peapod.annotations.VertexProperty;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class FramerRegistry {
 
@@ -37,47 +33,64 @@ public class FramerRegistry {
 
     private final Map<Class<?>, IFramer<?, ?>> framers = new HashMap<>();
 
-    @SuppressWarnings("unchecked")
-    private <E extends Element, F> IFramer<E, F> register(Class<F> framed) {
-        try {
-            Class<?> framingClass = framed.getClassLoader().loadClass(framed.getName() + "$Impl");
-            IFramer<E, F> framer = (IFramer<E, F>) framingClass.getField("instance").get(null);
+    private final Map<Class<?>, List<String>> class2Labels = new HashMap<>();
 
-            if (framed.getAnnotation(Vertex.class) != null) {
-                vertexFramers.put(framer.label(), framer);
-            } else if (framed.getAnnotation(Edge.class) != null) {
-                edgeFramers.put(framer.label(), framer);
-            } else if (framed.getAnnotation(VertexProperty.class) != null) {
-                vertexPropertyFramers.put(framer.label(), framer);
+
+    @SuppressWarnings("unchecked")
+    public void register(Set<Class<?>> classes) {
+        classes.forEach(c -> {
+            try {
+                IFramer framer = (IFramer) c.newInstance();
+                framers.put(framer.frameClass(), framer);
+                if (com.tinkerpop.gremlin.structure.Vertex.class.equals(framer.type())) {
+                    vertexFramers.put(framer.label(), framer);
+                } else if (com.tinkerpop.gremlin.structure.Edge.class.equals(framer.type())) {
+                    edgeFramers.put(framer.label(), framer);
+                } else if (com.tinkerpop.gremlin.structure.VertexProperty.class.equals(framer.type())) {
+                    vertexPropertyFramers.put(framer.label(), framer);
+                }
+            } catch (InstantiationException | IllegalAccessException e) {
+                throw new RuntimeException(e);
             }
+        });
 
-            framers.put(framed, framer);
-            return framer;
-        } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public <E extends Element, F> IFramer<E, F> get(E e, Class<F> framingClass) {
-        IFramer<E, F> framer = get(e);
-        return framer == null ? get(framingClass) : framer;
-    }
-
-    @SuppressWarnings("unchecked")
-    public <E extends Element, F> IFramer<E, F> get(Class<F> framingClass) {
-        return (IFramer<E, F>) framers.getOrDefault(framingClass, register(framingClass));
+        framers.values().forEach(f -> {
+            String label = f.label();
+            Class<?> aClass = f.frameClass();
+            while (!Object.class.equals(aClass)) {
+                class2Labels.computeIfAbsent(aClass, c -> new ArrayList<>()).add(label);
+                aClass = aClass.getSuperclass();
+            }
+        });
     }
 
     @SuppressWarnings("unchecked")
     public <E extends Element, F> IFramer<E, F> get(E e) {
+        IFramer<E, F> framer = null;
         if (e instanceof com.tinkerpop.gremlin.structure.Vertex) {
-            return (IFramer<E, F>) vertexFramers.get(e.label());
+            framer = (IFramer<E, F>) vertexFramers.get(e.label());
         } else if (e instanceof com.tinkerpop.gremlin.structure.Edge) {
-            return (IFramer<E, F>) edgeFramers.get(e.label());
+            framer = (IFramer<E, F>) edgeFramers.get(e.label());
         } else if (e instanceof com.tinkerpop.gremlin.structure.VertexProperty) {
-            return (IFramer<E, F>) vertexPropertyFramers.get(e.label());
+            framer = (IFramer<E, F>) vertexPropertyFramers.get(e.label());
         }
-        return null;
+        if (framer == null) {
+            throw new RuntimeException("No framer found for " + e.getClass().getSimpleName() + " with label " + e.label());
+        }
+        return framer;
     }
+
+    @SuppressWarnings("unchecked")
+    public <E extends Element, F> IFramer<E, F> get(Class<F> clazz) {
+        IFramer<E, F> framer = (IFramer<E, F>) framers.get(clazz);
+        if (framer == null) {
+            throw new RuntimeException("No framer found for " + clazz);
+        }
+        return framer;
+    }
+
+    public <V> Collection<String> labels(Class<V> clazz) {
+        return class2Labels.get(clazz);
+    }
+
 }

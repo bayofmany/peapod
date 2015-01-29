@@ -68,7 +68,7 @@ public class ShowcaseClassicTest {
     @Before
     public void init() {
         TinkerGraph classic = TinkerFactory.createClassic();
-        graph = new FramedGraph(classic);
+        graph = new FramedGraph(classic, Person.class.getPackage());
 
         marko = graph.v(1, Person.class);
         vadas = graph.v(2, Person.class);

@@ -68,11 +68,11 @@ public class ManyToOneEdgeTest extends GraphTest {
 
         alice.addEdge("hometown", london);
 
-        FramedGraph graph = new FramedGraph(g);
-        this.alice = graph.v(alice.id(), Person.class);
-        this.bob = graph.v(bob.id(), Person.class);
-        this.london = graph.v(london.id(), City.class);
-        this.madrid = graph.v(madrid.id(), City.class);
+        FramedGraph graph = new FramedGraph(g, Person.class.getPackage());
+        this.alice = graph.v(alice.id());
+        this.bob = graph.v(bob.id());
+        this.london = graph.v(london.id());
+        this.madrid = graph.v(madrid.id());
     }
 
     @Test

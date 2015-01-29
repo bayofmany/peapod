@@ -47,7 +47,7 @@ public class FramedGraphTest extends GraphTest {
         Vertex c = g.addVertex(T.label, "Person", "name", "charlie");
         alice.addEdge("friend", b);
         alice.addEdge("friend", c);
-        graph = new FramedGraph(g);
+        graph = new FramedGraph(g, Person.class.getPackage());
     }
 
     @Test
@@ -72,7 +72,7 @@ public class FramedGraphTest extends GraphTest {
 
     @Test
     public void testV() throws Exception {
-        Person p = graph.v(alice.id(), Person.class);
+        Person p = graph.v(alice.id());
         assertEquals(alice.id(), p.vertex().id());
         assertEquals("alice", p.getName());
     }

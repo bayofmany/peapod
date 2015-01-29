@@ -53,6 +53,7 @@ import peapod.GraphTest;
 import java.util.Date;
 
 import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Test class to test primitive and object multiproperties.
@@ -64,10 +65,11 @@ public class DatePropertyTest extends GraphTest {
 
     @Before
     public void init() {
+        assumeTrue(g.features().vertex().properties().supportsSerializableValues());
         v = g.addVertex(T.label, "Person", "date", new Date(1000));
 
-        FramedGraph graph = new FramedGraph(g);
-        p = graph.v(v.id(), Person.class);
+        FramedGraph graph = new FramedGraph(g, Person.class.getPackage());
+        p = graph.v(v.id());
     }
 
 

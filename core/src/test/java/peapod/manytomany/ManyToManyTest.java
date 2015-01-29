@@ -47,10 +47,10 @@ public class ManyToManyTest extends GraphTest {
 
         alice.addEdge("friend", bob);
 
-        FramedGraph graph = new FramedGraph(g);
-        this.alice = graph.v(alice.id(), Person.class);
-        this.bob = graph.v(bob.id(), Person.class);
-        this.charlie = graph.v(charlie.id(), Person.class);
+        FramedGraph graph = new FramedGraph(g, Person.class.getPackage());
+        this.alice = graph.v(alice.id());
+        this.bob = graph.v(bob.id());
+        this.charlie = graph.v(charlie.id());
     }
 
     @Test

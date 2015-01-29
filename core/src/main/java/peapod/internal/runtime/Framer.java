@@ -41,50 +41,17 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package peapod.multiproperties;
-
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Before;
-import org.junit.Test;
-import peapod.FramedGraph;
-import peapod.GraphTest;
-
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assume.assumeTrue;
-
-public class MultiPropertiesTest extends GraphTest {
-
-    private Person alice;
-    private Vertex v;
-
-    @Before
-    public void init() {
-        assumeTrue(g.features().vertex().supportsMultiProperties());
-
-        v = g.addVertex(T.label, "Person", "name", "Alice", "name", "Alicia");
-
-        FramedGraph graph = new FramedGraph(g, Person.class.getPackage());
-        alice = graph.v(v.id());
-    }
-
-    @Test
-    public void testGetNames() {
-        assertThat(alice.getNames(), containsInAnyOrder("Alice", "Alicia"));
-    }
-
-    @Test
-    public void testAddName() {
-        alice.addName("Allison");
-        assertThat(v.values("name").toList(), containsInAnyOrder("Alice", "Alicia", "Allison"));
-    }
-
-    @Test
-    public void testRemoveName() {
-        alice.removeName("Alicia");
-        assertThat(v.values("name").toList(), containsInAnyOrder("Alice"));
-    }
+package peapod.internal.runtime;
 
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+@Retention(RUNTIME)
+@Target({FIELD, TYPE})
+public @interface Framer {
 }

@@ -22,6 +22,7 @@
 package peapod;
 
 import com.tinkerpop.gremlin.process.T;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Graph.Features;
@@ -29,11 +30,12 @@ import com.tinkerpop.gremlin.structure.Graph.Variables;
 import com.tinkerpop.gremlin.structure.Transaction;
 import com.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
+import org.reflections.Reflections;
+import peapod.internal.runtime.Framer;
 import peapod.internal.runtime.FramerRegistry;
 import peapod.internal.runtime.IFramer;
 
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 /**
  * <p>A framed instance of a Tinkerpop 3 graph.</p>
@@ -47,6 +49,7 @@ import java.util.Optional;
  *     List&lt;Person&gt; result = graph.V(Person.class).has("name", "alice").toList();
  *     assertEquals(1, result.size());
  * </pre>
+ *
  * @author Willem Salembier
  * @see com.tinkerpop.gremlin.structure.Graph
  * @since 0.1
@@ -58,8 +61,10 @@ public class FramedGraph implements AutoCloseable {
     private FramerRegistry registry = new FramerRegistry();
 
 
-    public FramedGraph(Graph graph) {
+    public FramedGraph(Graph graph, Package pakkage) {
         this.graph = graph;
+
+        this.registry.register(new Reflections(pakkage.getName() + ".").getTypesAnnotatedWith(Framer.class));
     }
 
     /**
@@ -71,7 +76,7 @@ public class FramedGraph implements AutoCloseable {
     public <F> F addVertex(Class<F> clazz) {
         IFramer<Element, F> framer = registry.get(clazz);
         Vertex v = graph.addVertex(framer.label());
-        return frame(v, clazz);
+        return frame(v);
     }
 
     /**
@@ -88,7 +93,19 @@ public class FramedGraph implements AutoCloseable {
 
     @SuppressWarnings("unchecked")
     public <S, V> FramedGraphTraversal<S, V> V(Class<V> clazz) {
-        return new FramedGraphTraversal(graph().V(), this).labels(clazz, registry.get(clazz).subLabels());
+        return new FramedGraphTraversal(graph().V(), this).labels(clazz, registry.labels(clazz));
+    }
+
+    /**
+     * Get a {@link Vertex} given its unique identifier.
+     *
+     * @param id The unique identifier of the linked vertex to locate
+     * @throws NoSuchElementException if the linked vertex is not found.
+     */
+    @SuppressWarnings("unchecked")
+    public <V> V v(Object id) throws NoSuchElementException {
+        GraphTraversal<Vertex, Vertex> tr = graph.V(id);
+        return tr.hasNext() ? frame(tr.next()) : null;
     }
 
     /**
@@ -99,15 +116,21 @@ public class FramedGraph implements AutoCloseable {
      */
     @SuppressWarnings("unchecked")
     public <V> V v(Object id, Class<V> clazz) throws NoSuchElementException {
-        Optional<Vertex> vertex = graph.V(id).tryNext();
-        return vertex.isPresent() ? frame(vertex.get(), clazz) : null;
+        GraphTraversal<Vertex, Vertex> tr = graph.V(id);
+        return tr.hasNext() ? frame(tr.next(), clazz) : null;
+    }
+
+    public <F, E extends Element> F frame(E e) {
+        IFramer<E, F> framer = registry.get(e);
+        return framer.frame(e, this);
     }
 
     public <F, E extends Element> F frame(E e, Class<F> clazz) {
-        return registry.get(e, clazz).frame(e, this);
+        IFramer<E, F> framer = registry.get(clazz);
+        return framer.frame(e, this);
     }
 
-    protected  <F, E extends Element> IFramer<E, F> framer(Class<F> clazz) {
+    protected <F, E extends Element> IFramer<E, F> framer(Class<F> clazz) {
         return registry.get(clazz);
     }
 

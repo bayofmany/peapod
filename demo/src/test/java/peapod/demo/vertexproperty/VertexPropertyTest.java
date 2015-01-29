@@ -54,7 +54,7 @@ public class VertexPropertyTest {
 
     @Test
     public void testVertexProperty() {
-        FramedGraph g = new FramedGraph(TinkerGraph.open());
+        FramedGraph g = new FramedGraph(TinkerGraph.open(), Person.class.getPackage());
 
         Person marko = g.addVertex(Person.class);
         marko.addName("marko");

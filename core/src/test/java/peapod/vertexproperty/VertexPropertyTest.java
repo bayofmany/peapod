@@ -48,8 +48,8 @@ public class VertexPropertyTest extends GraphTest {
         v.property("location", "Brussels", "startTime", 2010, "endTime", 2012);
         v.property("location", "Antwerp", "startTime", 2012);
 
-        FramedGraph graph = new FramedGraph(g);
-        this.alice = graph.v(v.id(), Person.class);
+        FramedGraph graph = new FramedGraph(g, Person.class.getPackage());
+        this.alice = graph.v(v.id());
     }
 
     @Test

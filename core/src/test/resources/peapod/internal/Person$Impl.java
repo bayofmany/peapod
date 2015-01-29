@@ -2,24 +2,21 @@ package peapod.internal;
 
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import peapod.FramedElement;
 import peapod.FramedGraph;
 import peapod.FramedVertex;
+import peapod.internal.runtime.Framer;
 import peapod.internal.runtime.IFramer;
 import java.util.List;
 
 public final class Person$Impl extends Person
         implements FramedVertex<Person> {
 
-    public static final String LABEL = "Person";
-
     private FramedGraph graph;
     private Vertex v;
     public Person$Impl(Vertex v, FramedGraph graph) {
-        this.v = v;
+        this.v  = v;
         this.graph = graph;
     }
     public FramedGraph graph() {
@@ -46,19 +43,20 @@ public final class Person$Impl extends Person
         return v.label() + "[" + v.id() + "]";
     }
 
-    public static final Framer instance = new Framer();
-
-    private static final class Framer
+    @Framer
+    public static final class PersonFramer
             implements IFramer<Vertex, Person> {
 
-        private static final Collection<String> subLabels = Collections.unmodifiableCollection(Arrays.asList(LABEL));
-
-        public String label() {
-            return LABEL;
+        public Class<Vertex> type() {
+            return Vertex.class;
         }
 
-        public Collection<String> subLabels() {
-            return subLabels;
+        public Class<Person> frameClass() {
+            return peapod.internal.Person.class;
+        }
+
+        public String label() {
+            return "Person";
         }
 
         public Person frame(Vertex v, FramedGraph graph) {
