@@ -6,7 +6,7 @@
     <parent>
         <artifactId>peapod</artifactId>
         <groupId>org.bayofmany.peapod</groupId>
-        <version>0.1.0-SNAPSHOT</version>
+        <version>0.1.0</version>
     </parent>
 
     <artifactId>peapod-org.bayofmany.peapod.titan</artifactId>
@@ -16,12 +16,12 @@
         <dependency>
             <groupId>org.bayofmany.peapod</groupId>
             <artifactId>peapod-core</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <version>0.1.0</version>
         </dependency>
         <dependency>
             <groupId>org.bayofmany.peapod</groupId>
             <artifactId>peapod-core</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <version>0.1.0</version>
             <type>test-jar</type>
         </dependency>
         <dependency>
