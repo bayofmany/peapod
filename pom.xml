@@ -101,5 +101,9 @@
         </dependency>
     </dependencies>
 
+    <prerequisites>
+        <maven>3.0.1</maven>
+    </prerequisites>
+
 
 </project>
