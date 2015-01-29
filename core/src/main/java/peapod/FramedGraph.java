@@ -41,7 +41,7 @@ import java.util.NoSuchElementException;
  * <p>A framed instance of a Tinkerpop 3 graph.</p>
  * <p>Allows to query the graph and return framed objects instead of Tinkerpop 3 {@code vertices} and {@code edges}</p>
  * <pre>
- *     FramedGraph graph = new FramedGraph(TinkerGraph.open());
+ *     FramedGraph graph = new FramedGraph(TinkerGraph.open(), Person.class.getPackage());
  *
  *     Person person = graph.addVertex(1, Person.class);
  *     person.setName("alice");
