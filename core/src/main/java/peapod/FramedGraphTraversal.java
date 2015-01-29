@@ -189,7 +189,7 @@ public class FramedGraphTraversal<S, E> {
     public FramedGraphTraversal<S, Long> count() {
         this.lastFramingClass = null;
 
-        GraphTraversal<S, Long> count = traversal.count();
+        traversal.count();
         return (FramedGraphTraversal<S, Long>) this;
     }
 

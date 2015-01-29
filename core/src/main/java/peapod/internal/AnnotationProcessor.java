@@ -36,6 +36,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -101,7 +102,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
         messager.printMessage(OTHER, "Generating " + type.getQualifiedName() + "$Impl");
 
-        try (PrintWriter out = new PrintWriter(filer.createSourceFile(type.getQualifiedName() + "$Impl").openOutputStream())) {
+        try (PrintWriter out = new PrintWriter(new OutputStreamWriter(filer.createSourceFile(type.getQualifiedName() + "$Impl").openOutputStream(), "UTF-8"))) {
             JavaWriterExt writer = new JavaWriterExt(out);
             PackageElement packageEl = (PackageElement) type.getEnclosingElement();
             writer.emitPackage(packageEl.getQualifiedName().toString())
@@ -144,7 +145,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
         DeclaredType vertexPropertyInterface = (DeclaredType) vertexPropertyClass.get();
         TypeMirror propertyType = vertexPropertyInterface.getTypeArguments().get(0);
 
-        try (PrintWriter out = new PrintWriter(filer.createSourceFile(type.getQualifiedName() + "$Impl").openOutputStream())) {
+        try (PrintWriter out = new PrintWriter(new OutputStreamWriter(filer.createSourceFile(type.getQualifiedName() + "$Impl").openOutputStream(), "UTF-8"))) {
             JavaWriterExt writer = new JavaWriterExt(out);
             PackageElement packageEl = (PackageElement) type.getEnclosingElement();
             writer.emitPackage(packageEl.getQualifiedName().toString())
