@@ -40,6 +40,7 @@ import java.util.NoSuchElementException;
 /**
  * <p>A framed instance of a Tinkerpop 3 graph.</p>
  * <p>Allows to query the graph and return framed objects instead of Tinkerpop 3 {@code vertices} and {@code edges}</p>
+ * <p>The provided package is used to recursively scan all {@code @Vertex}, {@code @VertexProperties} and {@code @Edge} classes.</p>
  * <pre>
  *     FramedGraph graph = new FramedGraph(TinkerGraph.open(), Person.class.getPackage());
  *
@@ -63,7 +64,6 @@ public class FramedGraph implements AutoCloseable {
 
     public FramedGraph(Graph graph, Package pakkage) {
         this.graph = graph;
-
         this.registry.register(new Reflections(pakkage.getName() + ".").getTypesAnnotatedWith(Framer.class));
     }
 
