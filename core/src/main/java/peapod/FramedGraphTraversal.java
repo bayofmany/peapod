@@ -208,7 +208,7 @@ public class FramedGraphTraversal<S, E> {
         }
 
         MapStep<Vertex, F> mapStep = new MapStep<>(traversal);
-        mapStep.setFunction(v -> graph.frame(v.get()));
+        mapStep.setFunction(v -> graph.frame(v.get(), framingClass));
         traversal.asAdmin().addStep(mapStep);
     }
 

@@ -171,6 +171,11 @@ public class ShowcaseClassicTest {
         // tada!
     }
 
+    @Test
+    public void testTraversals() {
+        assertThat(marko.getKnowsPersonsOlderThan(30), contains(josh));
+    }
+
     private void clear() {
         // removes all vertices
         graph.graph().V().remove();
