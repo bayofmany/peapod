@@ -9,7 +9,7 @@
         <version>0.1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>peapod-org.bayofmany.peapod.titan</artifactId>
+    <artifactId>peapod-titan</artifactId>
     <name>Peapod Titan</name>
 
     <dependencies>
