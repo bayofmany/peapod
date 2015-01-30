@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.bayofmany.peapod</groupId>
-        <artifactId>peapod</artifactId>
-        <version>0.1.1-SNAPSHOT</version>
+        <artifactId>peapod-parent</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>peapod-core</artifactId>
+    <artifactId>peapod</artifactId>
     <name>Peapod Core</name>
 
     <build>

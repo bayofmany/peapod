@@ -12,12 +12,12 @@ This project is similar to the [Totorom](https://github.com/BrynCooke/totorom) l
 * In a next iteration, the peapod generator will generate a full DSL to traverse your domain model using the [Traversal API in Tinkerpop 3](http://www.tinkerpop.com/docs/3.0.0.M7/#_domain_specific_languages)
 
 To integrate peapod in your project, include the following dependency. <br /> 
-(Still working towards a first working release, for now use the [CloudBees snapshot repository](http://repository-bayofmany.forge.cloudbees.com/snapshot)).
+(Disclaimer: The 0.1.0 version is an experimental initial release).
 
     <dependency>
         <groupId>org.bayofmany.peapod</groupId>
-        <artifactId>peapod-core</artifactId>
-        <version>0.1.0-SNAPSHOT</version>
+        <artifactId>peapod</artifactId>
+        <version>0.1.0</version>
     </dependency>
 
 <img src="http://www.tinkerpop.com/docs/3.0.0.M7/images/tinkerpop-classic.png" width="400" >
