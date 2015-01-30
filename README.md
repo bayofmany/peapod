@@ -3,7 +3,7 @@
 > The project's name refers to the java class encapsulation of graph vertices. <br />
 > It's a just like peapods wrapping peas.
 
-An object-graph wrapper (OGW) for the Tinkerpop 3 graph stack. This project has been created as an alternative to the Frames module in Tinkerpop 2. Complete documentation can be found [here](bayofmany.github.io).
+An object-graph wrapper (OGW) for the Tinkerpop 3 graph stack. This project has been created as an alternative to the Frames module in Tinkerpop 2. Complete documentation can be found [here](http://bayofmany.github.io).
 
 
 This project is similar to the [Totorom](https://github.com/BrynCooke/totorom) library created by Bryn Cook and the [Ferma](https://github.com/Syncleus/Ferma) library created by Jeffrey Phillips Freeman. The main differences are:
