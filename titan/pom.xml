@@ -6,22 +6,35 @@
     <parent>
         <artifactId>peapod</artifactId>
         <groupId>org.bayofmany.peapod</groupId>
-        <version>0.1.0-SNAPSHOT</version>
+        <version>0.1.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>peapod-titan</artifactId>
     <name>Peapod Titan</name>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.8.2</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>org.bayofmany.peapod</groupId>
             <artifactId>peapod-core</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <version>0.1.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.bayofmany.peapod</groupId>
             <artifactId>peapod-core</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <version>0.1.1-SNAPSHOT</version>
             <type>test-jar</type>
         </dependency>
         <dependency>
