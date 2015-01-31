@@ -121,12 +121,12 @@ public class FramedGraph implements AutoCloseable {
     }
 
     public <F, E extends Element> F frame(E e) {
-        IFramer<E, F> framer = registry.get(e);
+        IFramer<E, F> framer = registry.get(e, null);
         return framer.frame(e, this);
     }
 
     public <F, E extends Element> F frame(E e, Class<F> clazz) {
-        IFramer<E, F> framer = registry.get(clazz);
+        IFramer<E, F> framer = registry.get(e, clazz);
         return framer.frame(e, this);
     }
 

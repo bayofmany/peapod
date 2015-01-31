@@ -65,7 +65,7 @@ public class FramerRegistry {
     }
 
     @SuppressWarnings("unchecked")
-    public <E extends Element, F> IFramer<E, F> get(E e) {
+    public <E extends Element, F> IFramer<E, F> get(E e, Class<F> clazz) {
         IFramer<E, F> framer = null;
         if (e instanceof com.tinkerpop.gremlin.structure.Vertex) {
             framer = (IFramer<E, F>) vertexFramers.get(e.label());
@@ -73,6 +73,9 @@ public class FramerRegistry {
             framer = (IFramer<E, F>) edgeFramers.get(e.label());
         } else if (e instanceof com.tinkerpop.gremlin.structure.VertexProperty) {
             framer = (IFramer<E, F>) vertexPropertyFramers.get(e.label());
+        }
+        if (framer == null) {
+            framer = (IFramer<E, F>) framers.get(clazz);
         }
         if (framer == null) {
             throw new RuntimeException("No framer found for " + e.getClass().getSimpleName() + " with label " + e.label());
