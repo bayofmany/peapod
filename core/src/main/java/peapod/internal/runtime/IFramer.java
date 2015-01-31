@@ -37,4 +37,6 @@ public interface IFramer<E extends Element, F> {
 
     public F frame(E element, FramedGraph framedGraph);
 
+    public F frameNew(E element, FramedGraph framedGraph);
+
 }

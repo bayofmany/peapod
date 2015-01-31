@@ -29,6 +29,7 @@ import peapod.internal.runtime.DefaultIterable;
 import peapod.internal.runtime.Framer;
 import peapod.internal.runtime.IFramer;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
@@ -125,7 +126,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
                     .endMethod();
 
             implementAbstractMethods(description, writer, elementType);
-            implementFramerMethods(type, writer, elementType);
+            implementFramerMethods(type, writer, elementType, description.getPostContructMethods());
 
             writer.endType();
         } catch (IOException e) {
@@ -184,7 +185,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
             writer.endMethod();
 
             implementAbstractMethods(description, writer, ElementType.VertexProperty);
-            implementFramerMethods(type, writer, ElementType.VertexProperty);
+            implementFramerMethods(type, writer, ElementType.VertexProperty, description.getPostContructMethods());
 
             writer.endType();
         } catch (IOException e) {
@@ -357,7 +358,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
         writer.endMethod();
     }
 
-    private void implementFramerMethods(TypeElement type, JavaWriterExt writer, ElementType elementType) throws IOException {
+    private void implementFramerMethods(TypeElement type, JavaWriterExt writer, ElementType elementType, List<ExecutableElement> postContructMethods) throws IOException {
         String fieldName = elementType.getFieldName();
 
         writer.beginMethod("int", "hashCode", EnumSet.of(PUBLIC))
@@ -394,7 +395,19 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 .beginMethod(type.toString(), "frame", Collections.singleton(PUBLIC), elementType.toString(), fieldName, "FramedGraph", "graph")
                 .emitStatement("return new %s$Impl(%s, graph)", type.getSimpleName(), fieldName)
                 .endMethod()
-                .endType();
+                .emitEmptyLine()
+                .beginMethod(type.toString(), "frameNew", Collections.singleton(PUBLIC), elementType.toString(), fieldName, "FramedGraph", "graph");
+        if (postContructMethods.isEmpty()) {
+            writer.emitStatement("return new %s$Impl(%s, graph)", type.getSimpleName(), fieldName);
+        } else {
+            writer.emitStatement("%s f = new %s$Impl(%s, graph)", type.getSimpleName(), type.getSimpleName(), fieldName);
+            for (ExecutableElement m : postContructMethods) {
+                writer.emitStatement("f.%s()", m.getSimpleName());
+            }
+            writer.emitStatement("return f");
+        }
+
+        writer.endMethod().endType();
 
 
     }
@@ -415,10 +428,12 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
     private ClassDescription parse(TypeElement type) {
         List<ExecutableElement> elements = new ArrayList<>();
+        List<ExecutableElement> postContructs = new ArrayList<>();
 
         TypeElement t = type;
         do {
             t.getEnclosedElements().stream().filter(e -> e.getKind() == METHOD && e.getModifiers().contains(Modifier.ABSTRACT)).forEach(e -> elements.add((ExecutableElement) e));
+            t.getEnclosedElements().stream().filter(e -> e.getKind() == METHOD && e.getAnnotation(PostConstruct.class) != null).forEach(e -> postContructs.add((ExecutableElement) e));
             if (t.getSuperclass().getKind() == DECLARED) {
                 t = (TypeElement) types.asElement(t.getSuperclass());
             } else {
@@ -427,7 +442,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
         }
         while (t != null);
 
-        ClassDescription description = new ClassDescription(type, elements);
+        ClassDescription description = new ClassDescription(type, elements, postContructs);
 
         Map<String, List<ExecutableElement>> property2Methods = elements.stream().collect(Collectors.groupingBy(this::extractProperty));
         property2Methods.forEach((p, l) -> parse(description, p, l));

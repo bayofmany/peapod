@@ -76,7 +76,7 @@ public class FramedGraph implements AutoCloseable {
     public <F> F addVertex(Class<F> clazz) {
         IFramer<Element, F> framer = registry.get(clazz);
         Vertex v = graph.addVertex(framer.label());
-        return frame(v);
+        return framer.frameNew(v, this);
     }
 
     /**
@@ -88,7 +88,7 @@ public class FramedGraph implements AutoCloseable {
     public <V> V addVertex(Class<V> clazz, Object id) {
         IFramer<Element, V> framer = registry.get(clazz);
         Vertex v = graph.addVertex(T.id, id, T.label, framer.label());
-        return framer.frame(v, this);
+        return framer.frameNew(v, this);
     }
 
     @SuppressWarnings("unchecked")

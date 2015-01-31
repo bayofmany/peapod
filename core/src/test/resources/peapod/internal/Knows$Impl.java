@@ -62,5 +62,9 @@ public final class Knows$Impl extends Knows
         public Knows frame(Edge e, FramedGraph graph) {
             return new Knows$Impl(e, graph);
         }
+
+        public Knows frameNew(Edge e, FramedGraph graph) {
+            return new Knows$Impl(e, graph);
+        }
     }
 }

@@ -62,5 +62,9 @@ public final class Person$Impl extends Person
         public Person frame(Vertex v, FramedGraph graph) {
             return new Person$Impl(v, graph);
         }
+
+        public Person frameNew(Vertex v, FramedGraph graph) {
+            return new Person$Impl(v, graph);
+        }
     }
 }

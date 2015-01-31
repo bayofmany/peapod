@@ -57,6 +57,7 @@ import java.util.*;
 public class ClassDescription {
 
     private final List<ExecutableElement> methods;
+    private List<ExecutableElement> postContructs;
 
     private ElementType elementType;
 
@@ -68,8 +69,9 @@ public class ClassDescription {
 
     private final Set<String> imports = new HashSet<>();
 
-    public ClassDescription(TypeElement t, List<ExecutableElement> elements) {
-        methods = elements;
+    public ClassDescription(TypeElement t, List<ExecutableElement> elements, List<ExecutableElement> postContructs) {
+        this.methods = elements;
+        this.postContructs = postContructs;
 
         packageName = ((PackageElement) t.getEnclosingElement()).getQualifiedName().toString();
         if (t.getAnnotation(Vertex.class) != null) {
@@ -102,6 +104,10 @@ public class ClassDescription {
 
     public List<ExecutableElement> getMethods() {
         return methods;
+    }
+
+    public List<ExecutableElement> getPostContructMethods() {
+        return postContructs;
     }
 
     public String getLabel(ExecutableElement method) {
