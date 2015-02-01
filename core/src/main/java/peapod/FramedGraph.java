@@ -68,13 +68,14 @@ public class FramedGraph implements AutoCloseable {
     }
 
     /**
-     * Add a linked vertex of type {@link F} to the graph. The value will be the lowercase value of the class.
+     * Add a linked vertex of type {@link V} to the graph. The value will be the lowercase value of the class.
      *
      * @param clazz a class implementing {@link FramedVertex} and annotated with {@link com.tinkerpop.gremlin.structure.Vertex}
+     * @param <V> Framing class annotated with  {@link peapod.annotations.Vertex}
      * @return The newly created labeled linked vertex
      */
-    public <F> F addVertex(Class<F> clazz) {
-        IFramer<Element, F> framer = registry.get(clazz);
+    public <V> V addVertex(Class<V> clazz) {
+        IFramer<Element, V> framer = registry.get(clazz);
         Vertex v = graph.addVertex(framer.label());
         return framer.frameNew(v, this);
     }
@@ -83,6 +84,7 @@ public class FramedGraph implements AutoCloseable {
      * Add a linked vertex of type {@link V} and given id to the graph. The value will be the lowercase value of the class.
      *
      * @param clazz a class implementing {@link FramedVertex} and annotated with {@link com.tinkerpop.gremlin.structure.Vertex}
+     * @param <V> Framing class annotated with  {@link peapod.annotations.Vertex}
      * @return The newly created labeled linked vertex
      */
     public <V> V addVertex(Class<V> clazz, Object id) {
@@ -100,6 +102,7 @@ public class FramedGraph implements AutoCloseable {
      * Get a {@link Vertex} given its unique identifier.
      *
      * @param id The unique identifier of the linked vertex to locate
+     * @param <V> Framing class annotated with  {@link peapod.annotations.Vertex}
      * @throws NoSuchElementException if the linked vertex is not found.
      */
     @SuppressWarnings("unchecked")
@@ -112,6 +115,7 @@ public class FramedGraph implements AutoCloseable {
      * Get a {@link Vertex} given its unique identifier.
      *
      * @param id The unique identifier of the linked vertex to locate
+     * @param <V> Framing class annotated with  {@link peapod.annotations.Vertex}
      * @throws NoSuchElementException if the linked vertex is not found.
      */
     @SuppressWarnings("unchecked")
@@ -135,6 +139,8 @@ public class FramedGraph implements AutoCloseable {
     }
 
     /**
+     * Configure and control the transactions for those graphs that support this feature.
+     * @return the transaction
      * @see com.tinkerpop.gremlin.structure.Graph#tx()
      */
     public Transaction tx() {
@@ -142,6 +148,10 @@ public class FramedGraph implements AutoCloseable {
     }
 
     /**
+     * A collection of global {@link Variables} associated with the graph.
+     * Variables are used for storing metadata about the graph.
+     *
+     * @return The variables associated with this graph
      * @see com.tinkerpop.gremlin.structure.Graph#variables()
      */
     public Variables variables() {
@@ -149,6 +159,11 @@ public class FramedGraph implements AutoCloseable {
     }
 
     /**
+     * Get the {@link org.apache.commons.configuration.Configuration} associated with the construction of this graph.
+     * Whatever configuration was passed to {@link com.tinkerpop.gremlin.structure.util.GraphFactory#open(org.apache.commons.configuration.Configuration)}
+     * is what should be returned by this method.
+     *
+     * @return the configuration used during graph construction.
      * @see com.tinkerpop.gremlin.structure.Graph#configuration()
      */
     public Configuration configuration() {
@@ -156,6 +171,9 @@ public class FramedGraph implements AutoCloseable {
     }
 
     /**
+     * Gets the {@link Features} exposed by the underlying {@code Graph} implementation.
+     *
+     * @return a features object
      * @see com.tinkerpop.gremlin.structure.Graph#features()
      */
     public Features features() {

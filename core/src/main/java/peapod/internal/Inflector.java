@@ -138,10 +138,8 @@ public class Inflector {
     // ------------------------------------------------------------------------------------------------
 
     /**
-     * Returns the plural form of the word in the string.
-     * <p/>
-     * Examples:
-     * <p/>
+     * <p>Returns the plural form of the word in the string.</p>
+     * <p>Examples:</p>
      * <pre>
      *   inflector.pluralize(&quot;post&quot;)               #=&gt; &quot;posts&quot;
      *   inflector.pluralize(&quot;octopus&quot;)            #=&gt; &quot;octopi&quot;
@@ -150,10 +148,7 @@ public class Inflector {
      *   inflector.pluralize(&quot;the blue mailman&quot;)   #=&gt; &quot;the blue mailmen&quot;
      *   inflector.pluralize(&quot;CamelOctopus&quot;)       #=&gt; &quot;CamelOctopi&quot;
      * </pre>
-     * <p/>
-     * <p/>
-     * <p/>
-     * Note that if the {@link Object#toString()} is called on the supplied object, so this method works for non-strings, too.
+     * <p>Note that if the {@link Object#toString()} is called on the supplied object, so this method works for non-strings, too.</p>
      *
      * @param word the word that is to be pluralized.
      * @return the pluralized form of the word, or the word itself if it could not be pluralized
@@ -181,10 +176,8 @@ public class Inflector {
     }
 
     /**
-     * Returns the singular form of the word in the string.
-     * <p/>
-     * Examples:
-     * <p/>
+     * <p>Returns the singular form of the word in the string.</p>
+     * <p>Examples:</p>
      * <pre>
      *   inflector.singularize(&quot;posts&quot;)             #=&gt; &quot;post&quot;
      *   inflector.singularize(&quot;octopi&quot;)            #=&gt; &quot;octopus&quot;
@@ -193,10 +186,7 @@ public class Inflector {
      *   inflector.singularize(&quot;the blue mailmen&quot;)  #=&gt; &quot;the blue mailman&quot;
      *   inflector.singularize(&quot;CamelOctopi&quot;)       #=&gt; &quot;CamelOctopus&quot;
      * </pre>
-     * <p/>
-     * <p/>
-     * <p/>
-     * Note that if the {@link Object#toString()} is called on the supplied object, so this method works for non-strings, too.
+     * <p>Note that if the {@link Object#toString()} is called on the supplied object, so this method works for non-strings, too.</p>
      *
      * @param word the word that is to be pluralized.
      * @return the pluralized form of the word, or the word itself if it could not be pluralized
@@ -215,10 +205,8 @@ public class Inflector {
     }
 
     /**
-     * Converts strings to lowerCamelCase. This method will also use any extra delimiter characters to identify word boundaries.
-     * <p/>
-     * Examples:
-     * <p/>
+     * <p>Converts strings to lowerCamelCase. This method will also use any extra delimiter characters to identify word boundaries.</p>
+     * <p>Examples:</p>
      * <pre>
      *   inflector.lowerCamelCase(&quot;active_record&quot;)       #=&gt; &quot;activeRecord&quot;
      *   inflector.lowerCamelCase(&quot;first_name&quot;)          #=&gt; &quot;firstName&quot;
@@ -239,10 +227,8 @@ public class Inflector {
     }
 
     /**
-     * Converts strings to UpperCamelCase. This method will also use any extra delimiter characters to identify word boundaries.
-     * <p/>
-     * Examples:
-     * <p/>
+     * <p>Converts strings to UpperCamelCase. This method will also use any extra delimiter characters to identify word boundaries.</p>
+     * <p>Examples:</p>
      * <pre>
      *   inflector.upperCamelCase(&quot;active_record&quot;)       #=&gt; &quot;ActiveRecord&quot;
      *   inflector.upperCamelCase(&quot;first_name&quot;)          #=&gt; &quot;FirstName&quot;
@@ -263,12 +249,10 @@ public class Inflector {
     }
 
     /**
-     * By default, this method converts strings to UpperCamelCase. If the <code>uppercaseFirstLetter</code> argument to false,
+     * <p>By default, this method converts strings to UpperCamelCase. If the <code>uppercaseFirstLetter</code> argument to false,
      * then this method produces lowerCamelCase. This method will also use any extra delimiter characters to identify word
-     * boundaries.
-     * <p/>
-     * Examples:
-     * <p/>
+     * boundaries.</p>
+     * <p>Examples:</p>
      * <pre>
      *   inflector.camelCase(&quot;active_record&quot;,false)    #=&gt; &quot;activeRecord&quot;
      *   inflector.camelCase(&quot;active_record&quot;,true)     #=&gt; &quot;ActiveRecord&quot;
@@ -311,11 +295,9 @@ public class Inflector {
     }
 
     /**
-     * Makes an underscored form from the expression in the string (the reverse of the {@link #camelCase(String, boolean, char[])
-     * camelCase} method. Also changes any characters that match the supplied delimiters into underscore.
-     * <p/>
-     * Examples:
-     * <p/>
+     * <p>Makes an underscored form from the expression in the string (the reverse of the {@link #camelCase(String, boolean, char[])
+     * camelCase} method. Also changes any characters that match the supplied delimiters into underscore.</p>
+     * <p>Examples:</p>
      * <pre>
      *   inflector.underscore(&quot;activeRecord&quot;)     #=&gt; &quot;active_record&quot;
      *   inflector.underscore(&quot;ActiveRecord&quot;)     #=&gt; &quot;active_record&quot;
@@ -360,11 +342,9 @@ public class Inflector {
     }
 
     /**
-     * Capitalizes the first word and turns underscores into spaces and strips trailing "_id" and any supplied removable tokens.
-     * Like {@link #titleCase(String, String[])}, this is meant for creating pretty output.
-     * <p/>
-     * Examples:
-     * <p/>
+     * <p>Capitalizes the first word and turns underscores into spaces and strips trailing "_id" and any supplied removable tokens.
+     * Like {@link #titleCase(String, String[])}, this is meant for creating pretty output.</p>
+     * <p>Examples:</p>
      * <pre>
      *   inflector.humanize(&quot;employee_salary&quot;)       #=&gt; &quot;Employee salary&quot;
      *   inflector.humanize(&quot;author_id&quot;)             #=&gt; &quot;Author&quot;
@@ -393,12 +373,10 @@ public class Inflector {
     }
 
     /**
-     * Capitalizes all the words and replaces some characters in the string to create a nicer looking title. Underscores are
+     * <p>Capitalizes all the words and replaces some characters in the string to create a nicer looking title. Underscores are
      * changed to spaces, a trailing "_id" is removed, and any of the supplied tokens are removed. Like
-     * {@link #humanize(String, String[])}, this is meant for creating pretty output.
-     * <p/>
-     * Examples:
-     * <p/>
+     * {@link #humanize(String, String[])}, this is meant for creating pretty output.</p>
+     * <p>Examples:</p>
      * <pre>
      *   inflector.titleCase(&quot;man from the boondocks&quot;)       #=&gt; &quot;Man From The Boondocks&quot;
      *   inflector.titleCase(&quot;x-men: the last stand&quot;)        #=&gt; &quot;X Men: The Last Stand&quot;
@@ -488,9 +466,8 @@ public class Inflector {
     }
 
     /**
-     * Utility method to replace all occurrences given by the specific backreference with its uppercased form, and remove all
-     * other backreferences.
-     * <p/>
+     * <p>Utility method to replace all occurrences given by the specific backreference with its uppercased form, and remove all
+     * other backreferences.</p>
      * The Java {@link Pattern regular expression processing} does not use the preprocessing directives <code>\l</code>,
      * <code>&#92;u</code>, <code>\L</code>, and <code>\U</code>. If so, such directives could be used in the replacement string
      * to uppercase or lowercase the backreferences. For example, <code>\L1</code> would lowercase the first backreference, and
