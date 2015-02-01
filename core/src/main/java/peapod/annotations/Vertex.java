@@ -13,9 +13,9 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  *
- * This project is derived from code in the Tinkerpop project under the following license:
+ * This project is derived from code in the TinkerPop project under the following license:
  *
- *    Tinkerpop3
+ *    TinkerPop3
  *    http://www.apache.org/licenses/LICENSE-2.0
  */
 
@@ -28,7 +28,7 @@ import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * <p>Marks class as a wrapper class for a Tinkerpop 3 vertex. The wrapper class is obligatory {@code abstract}.
+ * <p>Marks class as a wrapper class for a TinkerPop 3 vertex. The wrapper class is obligatory {@code abstract}.
  * Peapod will generate its implementation class at compile-time.</p>
  * <pre>
  * &#64;Vertex

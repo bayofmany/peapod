@@ -13,24 +13,22 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  *
- * This project is derived from code in the Tinkerpop project under the following license:
+ * This project is derived from code in the TinkerPop project under the following license:
  *
- *    Tinkerpop3
+ *    TinkerPop3
  *    http://www.apache.org/licenses/LICENSE-2.0
  */
 
 package peapod.demo.crew;
 
 import peapod.FramedVertexProperty;
+import peapod.annotations.VertexProperty;
 
+@VertexProperty
 public abstract class Location implements FramedVertexProperty<String> {
 
     public abstract Integer getStartTime();
 
-    public abstract void setStartTime(Integer startTime);
-
     public abstract Integer getEndTime();
-
-    public abstract void setEndTime(Integer startTime);
 
 }

@@ -13,9 +13,9 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  *
- * This project is derived from code in the Tinkerpop project under the following license:
+ * This project is derived from code in the TinkerPop project under the following license:
  *
- *    Tinkerpop3
+ *    TinkerPop3
  *    http://www.apache.org/licenses/LICENSE-2.0
  */
 
@@ -33,7 +33,7 @@ import peapod.GraphTestSuite;
 
 import java.io.IOException;
 
-@Ignore("Titan 0.9.0-M1 follows Tinkerpop 3.0.0.M6")
+@Ignore("Titan 0.9.0-M1 follows TinkerPop 3.0.0.M6")
 public class TitanSuite extends GraphTestSuite {
 
     @ClassRule

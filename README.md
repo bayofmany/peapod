@@ -1,15 +1,15 @@
-# Peapod for Tinkerpop 3 <a href="https://bayofmany.ci.cloudbees.com/"><img src="https://www.cloudbees.com/sites/default/files/styles/large/public/Button-Built-on-CB-1.png" width="150" align="right"></a>
+# Peapod for TinkerPop 3 <a href="https://bayofmany.ci.cloudbees.com/"><img src="https://www.cloudbees.com/sites/default/files/styles/large/public/Button-Built-on-CB-1.png" width="150" align="right"></a>
 
 > The project's name refers to the java class encapsulation of graph vertices. <br />
 > It's a just like peapods wrapping peas.
 
-An object-graph wrapper (OGW) for the Tinkerpop 3 graph stack. This project has been created as an alternative to the Frames module in Tinkerpop 2. Complete documentation can be found [here](http://bayofmany.github.io).
+An object-graph wrapper (OGW) for the TinkerPop 3 graph stack. This project has been created as an alternative to the Frames module in TinkerPop 2. Complete documentation can be found [here](http://bayofmany.github.io).
 
 
 This project is similar to the [Totorom](https://github.com/BrynCooke/totorom) library created by Bryn Cook and the [Ferma](https://github.com/Syncleus/Ferma) library created by Jeffrey Phillips Freeman. The main differences are:
-* Peapod is based upon Tinkerpop 3.
-* Like Tinkerpop 2 Frames, Peapod uses code generation to implement the framed vertex and edge classes. Unlike Frames and Ferma, the code is generated at compile-time using annotation processors. The generated java source code is completely transparent. There is no code generation at runtime, so no additional startup cost, and the use of reflection is limited in order to have minimal performance overhead.
-* In a next iteration, the peapod generator will generate a full DSL to traverse your domain model using the [Traversal API in Tinkerpop 3](http://www.tinkerpop.com/docs/3.0.0.M7/#_domain_specific_languages)
+* Peapod is based upon TinkerPop 3.
+* Like TinkerPop 2 Frames, Peapod uses code generation to implement the framed vertex and edge classes. Unlike Frames and Ferma, the code is generated at compile-time using annotation processors. The generated java source code is completely transparent. There is no code generation at runtime, so no additional startup cost, and the use of reflection is limited in order to have minimal performance overhead.
+* In a next iteration, the peapod generator will generate a full DSL to traverse your domain model using the [Traversal API in TinkerPop 3](http://www.tinkerpop.com/docs/3.0.0.M7/#_domain_specific_languages)
 
 To integrate peapod in your project, include the following dependency. <br /> 
 (Disclaimer: The 0.1.0 version is an experimental initial release).
@@ -60,4 +60,4 @@ And this way you query for and interact with the framed objects:
         assertThat(marko.getKnows(), containsInAnyOrder(vadas, josh));
     }
     
-This project uses code derived from the [Tinkerpop](http://www.tinkerpop.com/) project under the Apache license and/or Tinkerpop license.
+This project uses code derived from the [TinkerPop](http://www.tinkerpop.com/) project under the Apache license and/or TinkerPop license.

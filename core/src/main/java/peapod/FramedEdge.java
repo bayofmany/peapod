@@ -13,9 +13,9 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  *
- * This project is derived from code in the Tinkerpop project under the following license:
+ * This project is derived from code in the TinkerPop project under the following license:
  *
- *    Tinkerpop3
+ *    TinkerPop3
  *    http://www.apache.org/licenses/LICENSE-2.0
  */
 
@@ -25,7 +25,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 
 /**
  * <p>All generated {@code @Edge} classes implement the {@code FramedEdge} interface. It can be optionally
- * defined on the abstract class to get a reference to the wrapped Tinkerpop 3 {@code edge}.</p>
+ * defined on the abstract class to get a reference to the wrapped TinkerPop 3 {@code edge}.</p>
  * <pre>
  * &#64;Edge
  * public abstract class Develops implements FramedEdge {}</pre>

@@ -13,9 +13,9 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  *
- * This project is derived from code in the Tinkerpop project under the following license:
+ * This project is derived from code in the TinkerPop project under the following license:
  *
- *    Tinkerpop3
+ *    TinkerPop3
  *    http://www.apache.org/licenses/LICENSE-2.0
  */
 
@@ -38,8 +38,8 @@ import peapod.internal.runtime.IFramer;
 import java.util.NoSuchElementException;
 
 /**
- * <p>A framed instance of a Tinkerpop 3 graph.</p>
- * <p>Allows to query the graph and return framed objects instead of Tinkerpop 3 {@code vertices} and {@code edges}</p>
+ * <p>A framed instance of a TinkerPop 3 graph.</p>
+ * <p>Allows to query the graph and return framed objects instead of TinkerPop 3 {@code vertices} and {@code edges}</p>
  * <p>The provided package is used to recursively scan all {@code @Vertex}, {@code @VertexProperties} and {@code @Edge} classes.</p>
  * <pre>
  *     FramedGraph graph = new FramedGraph(TinkerGraph.open(), Person.class.getPackage());

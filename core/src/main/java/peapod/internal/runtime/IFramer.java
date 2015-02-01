@@ -13,9 +13,9 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  *
- * This project is derived from code in the Tinkerpop project under the following license:
+ * This project is derived from code in the TinkerPop project under the following license:
  *
- *    Tinkerpop3
+ *    TinkerPop3
  *    http://www.apache.org/licenses/LICENSE-2.0
  */
 
@@ -25,7 +25,7 @@ import com.tinkerpop.gremlin.structure.Element;
 import peapod.FramedGraph;
 
 /**
- * A Framer implementation converts Tinkerpop {@link com.tinkerpop.gremlin.structure.Element} instance to framed objects.
+ * A Framer implementation converts TinkerPop {@link com.tinkerpop.gremlin.structure.Element} instance to framed objects.
  */
 public interface IFramer<E extends Element, F> {
 

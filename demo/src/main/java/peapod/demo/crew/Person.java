@@ -13,9 +13,9 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  *
- * This project is derived from code in the Tinkerpop project under the following license:
+ * This project is derived from code in the TinkerPop project under the following license:
  *
- *    Tinkerpop3
+ *    TinkerPop3
  *    http://www.apache.org/licenses/LICENSE-2.0
  */
 
@@ -23,6 +23,7 @@ package peapod.demo.crew;
 
 import peapod.FramedVertex;
 import peapod.annotations.Edge;
+import peapod.annotations.Property;
 import peapod.annotations.Vertex;
 
 import java.util.List;
@@ -31,6 +32,13 @@ import java.util.List;
 public abstract class Person implements FramedVertex<Person> {
 
     public abstract String getName();
+
+    public abstract List<Location> getLocations();
+
+    @Property("location")
+    public abstract List<String> getLocationNames();
+
+    public abstract Location getLocation(String location);
 
     @Edge("develops")
     public abstract List<Software> getDevelopedSoftware();

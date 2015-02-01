@@ -13,9 +13,9 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  *
- * This project is derived from code in the Tinkerpop project under the following licenses:
+ * This project is derived from code in the TinkerPop project under the following licenses:
  *
- * Tinkerpop3
+ * TinkerPop3
  * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,7 @@ import peapod.FramedGraph;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 public class ShowcaseCrewTest {
@@ -79,6 +80,16 @@ public class ShowcaseCrewTest {
 
         assertThat(marko.getDevelopedSoftware(), containsInAnyOrder(gremlin, tinkergraph));
         assertEquals(2010, marko.getDevelops(tinkergraph).getSince());
+        assertEquals(marko, marko.getDevelops(tinkergraph).getDeveloper());
+
+        assertEquals(4, marko.getLocations().size());
+        assertThat(marko.getLocationNames(), containsInAnyOrder("san diego", "santa cruz", "brussels", "santa fe"));
+
+        Location location = marko.getLocation("brussels");
+        assertNotNull(location);
+        assertEquals("brussels", location.getValue());
+        assertEquals(new Integer(2004), location.getStartTime());
+        assertEquals(new Integer(2005), location.getEndTime());
 
     }
 }
