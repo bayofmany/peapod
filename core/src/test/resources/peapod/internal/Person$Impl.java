@@ -2,12 +2,13 @@ package peapod.internal;
 
 import com.tinkerpop.gremlin.structure.Element;
 import com.tinkerpop.gremlin.structure.Vertex;
-import java.util.Collections;
 import peapod.FramedElement;
 import peapod.FramedGraph;
 import peapod.FramedVertex;
 import peapod.internal.runtime.Framer;
 import peapod.internal.runtime.IFramer;
+import com.tinkerpop.gremlin.structure.Edge;
+import java.util.Collections;
 import java.util.List;
 
 public final class Person$Impl extends Person
@@ -29,7 +30,7 @@ public final class Person$Impl extends Person
         return v.<String>property("name").orElse(null);
     }
     public List<Knows> getKnows() {
-        return Collections.unmodifiableList(v.outE("knows").map(v -> (peapod.internal.Knows) new peapod.internal.Knows$Impl(v.get(), graph)).toList());
+        return Collections.unmodifiableList(v.outE("knows").map(it -> graph.<Knows, Edge>frame(it.get())).toList());
     }
     public int hashCode() {
         return v.hashCode();
@@ -64,7 +65,7 @@ public final class Person$Impl extends Person
         }
 
         public Person frameNew(Vertex v, FramedGraph graph) {
-            return new Person$Impl(v, graph);
+            return frame(v, graph);
         }
     }
 }

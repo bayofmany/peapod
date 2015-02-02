@@ -2,7 +2,6 @@ package peapod.internal;
 
 import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Element;
-import java.util.Collections;
 import peapod.FramedEdge;
 import peapod.FramedElement;
 import peapod.FramedGraph;
@@ -64,7 +63,7 @@ public final class Knows$Impl extends Knows
         }
 
         public Knows frameNew(Edge e, FramedGraph graph) {
-            return new Knows$Impl(e, graph);
+            return frame(e, graph);
         }
     }
 }

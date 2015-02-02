@@ -35,8 +35,6 @@ import peapod.internal.runtime.Framer;
 import peapod.internal.runtime.FramerRegistry;
 import peapod.internal.runtime.IFramer;
 
-import java.util.NoSuchElementException;
-
 /**
  * <p>A framed instance of a TinkerPop 3 graph.</p>
  * <p>Allows to query the graph and return framed objects instead of TinkerPop 3 {@code vertices} and {@code edges}</p>
@@ -70,8 +68,8 @@ public class FramedGraph implements AutoCloseable {
     /**
      * Add a linked vertex of type {@link V} to the graph. The value will be the lowercase value of the class.
      *
-     * @param clazz a class implementing {@link FramedVertex} and annotated with {@link com.tinkerpop.gremlin.structure.Vertex}
-     * @param <V> Framing class annotated with  {@link peapod.annotations.Vertex}
+     * @param <V>   Framing class annotated with  {@link peapod.annotations.Vertex}
+     * @param clazz a framing class annotated with {@link peapod.annotations.Vertex}
      * @return The newly created labeled linked vertex
      */
     public <V> V addVertex(Class<V> clazz) {
@@ -83,9 +81,11 @@ public class FramedGraph implements AutoCloseable {
     /**
      * Add a linked vertex of type {@link V} and given id to the graph. The value will be the lowercase value of the class.
      *
-     * @param clazz a class implementing {@link FramedVertex} and annotated with {@link com.tinkerpop.gremlin.structure.Vertex}
-     * @param <V> Framing class annotated with  {@link peapod.annotations.Vertex}
+     * @param <V>   Framing class annotated with  {@link peapod.annotations.Vertex}
+     * @param clazz a framing class annotated with {@link peapod.annotations.Vertex}
+     * @param id    the user-supplied identifier of the vertex. Attention, not all databases support this feature.
      * @return The newly created labeled linked vertex
+     * @see com.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures#supportsUserSuppliedIds()
      */
     public <V> V addVertex(Class<V> clazz, Object id) {
         IFramer<Element, V> framer = registry.get(clazz);
@@ -101,12 +101,12 @@ public class FramedGraph implements AutoCloseable {
     /**
      * Get a {@link Vertex} given its unique identifier.
      *
-     * @param id The unique identifier of the linked vertex to locate
      * @param <V> Framing class annotated with  {@link peapod.annotations.Vertex}
-     * @throws NoSuchElementException if the linked vertex is not found.
+     * @param id  The unique identifier of the linked vertex to locate
+     * @return the framed vertex or {@code null} when not found
      */
     @SuppressWarnings("unchecked")
-    public <V> V v(Object id) throws NoSuchElementException {
+    public <V> V v(Object id) {
         GraphTraversal<Vertex, Vertex> tr = graph.V(id);
         return tr.hasNext() ? frame(tr.next()) : null;
     }
@@ -114,12 +114,13 @@ public class FramedGraph implements AutoCloseable {
     /**
      * Get a {@link Vertex} given its unique identifier.
      *
-     * @param id The unique identifier of the linked vertex to locate
      * @param <V> Framing class annotated with  {@link peapod.annotations.Vertex}
-     * @throws NoSuchElementException if the linked vertex is not found.
+     * @param id  The unique identifier of the linked vertex to locate
+     * @param clazz a framing class annotated with {@link peapod.annotations.Vertex}
+     * @return the framed vertex or {@code null} when not found
      */
     @SuppressWarnings("unchecked")
-    public <V> V v(Object id, Class<V> clazz) throws NoSuchElementException {
+    public <V> V v(Object id, Class<V> clazz) {
         GraphTraversal<Vertex, Vertex> tr = graph.V(id);
         return tr.hasNext() ? frame(tr.next(), clazz) : null;
     }
@@ -140,6 +141,7 @@ public class FramedGraph implements AutoCloseable {
 
     /**
      * Configure and control the transactions for those graphs that support this feature.
+     *
      * @return the transaction
      * @see com.tinkerpop.gremlin.structure.Graph#tx()
      */
