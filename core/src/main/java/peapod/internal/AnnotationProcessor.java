@@ -110,6 +110,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
                     .emitImports(imports)
                     .emitImports(description.getImports())
                     .emitEmptyLine()
+                    .emitAnnotation("SuppressWarnings", "\"unused\"")
                     .beginType(type.getQualifiedName() + "$Impl", "class", EnumSet.of(PUBLIC, Modifier.FINAL), type.getQualifiedName().toString(), implementsType)
                     .emitEmptyLine();
             writer.emitField(peapod.FramedGraph.class.getName(), "graph", EnumSet.of(PRIVATE))
@@ -150,8 +151,9 @@ public final class AnnotationProcessor extends AbstractProcessor {
             JavaWriterExt writer = new JavaWriterExt(out);
             PackageElement packageEl = (PackageElement) type.getEnclosingElement();
             writer.emitPackage(packageEl.getQualifiedName().toString())
-                    .emitImports(com.tinkerpop.gremlin.structure.VertexProperty.class, com.tinkerpop.gremlin.structure.Element.class, FramedElement.class, FramedGraph.class, FramedVertexProperty.class, Collections.class, IFramer.class, Framer.class)
+                    .emitImports(com.tinkerpop.gremlin.structure.VertexProperty.class, com.tinkerpop.gremlin.structure.Element.class, FramedElement.class, FramedGraph.class, IFramer.class, Framer.class)
                     .emitEmptyLine()
+                    .emitAnnotation("SuppressWarnings", "\"unused\"")
                     .beginType(type.getQualifiedName() + "$Impl", "class", EnumSet.of(PUBLIC, Modifier.FINAL), type.getQualifiedName().toString()/*, FramedVertexProperty.class.getSimpleName()*/)
                     .emitEmptyLine();
 
@@ -238,7 +240,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 }
             }
         } else if (methodType == MethodType.FILTERED_GETTER && isVertexProperty(method.getReturnType())) {
-            writer.emitStatement("GraphTraversal<Vertex, %s> traversal = v.properties(\"%s\").<VertexProperty>has(T.value, %s)%s", writer.compressType(method.getReturnType()), label, parameterName, generateMap(method.getReturnType(), ElementType.VertexProperty, writer))
+            writer.emitStatement("%s<Vertex, %s> traversal = v.properties(\"%s\").<VertexProperty>has(T.value, %s)%s", writer.compressType(GraphTraversal.class), writer.compressType(method.getReturnType()), label, parameterName, generateMap(method.getReturnType(), ElementType.VertexProperty, writer))
                     .emitStatement("return traversal.hasNext()? traversal.next() : null");
         } else if (methodType == MethodType.SETTER) {
             if (method.getParameters().get(0).asType().getKind().isPrimitive()) {
@@ -315,7 +317,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
                         .emitStatement("return traversal.hasNext()? traversal.next() : null");
             } else if (isVertex(method.getReturnType()) && elementType != ElementType.Vertex) {
                 boolean in = method.getAnnotation(In.class) != null;
-                writer.emitStatement("return %s.%sV()%s.next()", elementName, (in ? "in" : "out"), generateMap(method.getReturnType(), ElementType.Vertex,writer));
+                writer.emitStatement("return %s.%sV()%s.next()", elementName, (in ? "in" : "out"), generateMap(method.getReturnType(), ElementType.Vertex, writer));
             } else {
                 generateNotSupportedStatement("003", method, writer);
             }
@@ -485,12 +487,12 @@ public final class AnnotationProcessor extends AbstractProcessor {
                     continue;
                 }
 
-                if (type == MethodType.GETTER) {
-                    if (isVertex) {
-                        description.addImport(GraphTraversal.class);
-                    } else if (isEdge) {
-                        description.addImport(com.tinkerpop.gremlin.structure.Edge.class);
-                    }
+                if ((type == MethodType.GETTER || type == MethodType.FILTERED_GETTER) && collectionType == null && description.getElementType() == ElementType.Vertex) {
+                    description.addImport(GraphTraversal.class);
+                }
+
+                if (type == MethodType.GETTER && isEdge) {
+                    description.addImport(com.tinkerpop.gremlin.structure.Edge.class);
                 }
 
                 if (isVertex) {

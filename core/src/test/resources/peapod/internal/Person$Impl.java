@@ -11,6 +11,7 @@ import com.tinkerpop.gremlin.structure.Edge;
 import java.util.Collections;
 import java.util.List;
 
+@SuppressWarnings("unused")
 public final class Person$Impl extends Person
         implements FramedVertex<Person> {
 

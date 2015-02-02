@@ -7,8 +7,8 @@ import peapod.FramedElement;
 import peapod.FramedGraph;
 import peapod.internal.runtime.Framer;
 import peapod.internal.runtime.IFramer;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 
+@SuppressWarnings("unused")
 public final class Knows$Impl extends Knows
         implements FramedEdge {
 
