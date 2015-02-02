@@ -154,7 +154,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
                     .emitImports(com.tinkerpop.gremlin.structure.VertexProperty.class, com.tinkerpop.gremlin.structure.Element.class, FramedElement.class, FramedGraph.class, IFramer.class, Framer.class)
                     .emitEmptyLine()
                     .emitAnnotation("SuppressWarnings", "\"unused\"")
-                    .beginType(type.getQualifiedName() + "$Impl", "class", EnumSet.of(PUBLIC, Modifier.FINAL), type.getQualifiedName().toString()/*, FramedVertexProperty.class.getSimpleName()*/)
+                    .beginType(type.getQualifiedName() + "$Impl", "class", EnumSet.of(PUBLIC, Modifier.FINAL), type.getQualifiedName().toString())
                     .emitEmptyLine();
 
             String label = getLabel(type);
@@ -259,7 +259,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
         } else if (methodType == MethodType.REMOVER && parameterClass != null && returnClass == null) {
             writer.emitStatement("v.properties(\"%s\").has(com.tinkerpop.gremlin.process.T.value, %s).remove()", label, parameterName);
         } else {
-            generateNotSupportedStatement("unsupported-property-method", method, writer);
+            generateNotSupportedStatement("nonstandard-property", method, writer);
         }
         writer.endMethod();
     }
@@ -300,7 +300,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
                     String statement = String.format("%s.%sE(\"%s\")%s", elementName, direction.toMethod(), label, generateMap(collectionContent, ElementType.Edge, writer));
                     writer.emitStatement("return " + collectionType.wrap(statement));
                 } else {
-                    generateNotSupportedStatement("001", method, writer);
+                    generateNotSupportedStatement("get-collection-no-vertex-or-edge", method, writer);
                 }
             } else if (isVertex(method.getReturnType()) && elementType == ElementType.Vertex) {
                 writer.emitStatement("%s<Vertex, %s> traversal = %s.%s(\"%s\")%s",
@@ -309,7 +309,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
             } else if (isEdge(method.getReturnType()) && elementType == ElementType.Vertex) {
                 String filter = "";
                 if (parameterName != null) {
-                    filter = String.format(".as(\"X\").inV().retain(((FramedVertex) " + parameterName + ").vertex()).<%s>back(\"X\")", writer.compressType(com.tinkerpop.gremlin.structure.Edge.class));
+                    filter = String.format(".as(\"X\").inV().retain(((FramedVertex) %s).vertex()).<%s>back(\"X\")", parameterName, writer.compressType(com.tinkerpop.gremlin.structure.Edge.class));
                 }
 
                 writer.emitStatement("%s<Vertex, %s> traversal = %s.%sE(\"%s\")%s%s",
@@ -319,7 +319,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 boolean in = method.getAnnotation(In.class) != null;
                 writer.emitStatement("return %s.%sV()%s.next()", elementName, (in ? "in" : "out"), generateMap(method.getReturnType(), ElementType.Vertex, writer));
             } else {
-                generateNotSupportedStatement("003", method, writer);
+                generateNotSupportedStatement("get-no-vertex-or-edge", method, writer);
             }
         } else if (methodType == MethodType.SETTER) {
             String statement = String.format("v.addEdge(\"%s\", ((FramedVertex)%s).vertex())", label, parameterName);
@@ -344,7 +344,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
                 writer.emitStatement(statement);
             } else {
-                generateNotSupportedStatement("002", method, writer);
+                generateNotSupportedStatement("added-without-vertex-parameter", method, writer);
             }
         } else if (methodType == MethodType.REMOVER && parameterClass != null) {
             if (parameterClass.getAnnotation(Vertex.class) != null) {
@@ -413,6 +413,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
     private void generateNotSupportedStatement(String code, ExecutableElement method, JavaWriterExt writer) throws IOException {
         messager.printMessage(WARNING, "Abstract method not yet supported: " + method, method.getEnclosingElement());
+        writer.emitSingleLineComment("TODO: this method cannot be generated and should be implemented");
         writer.emitStatement("throw new RuntimeException(\"" + code + ": not yet supported\")");
     }
 
@@ -483,7 +484,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
                     messager.printMessage(ERROR, "@Edge classes cannot have vertex update methods: " + method);
                     continue;
                 } else if ((description.getElementType() == ElementType.VertexProperty)) {
-                    messager.printMessage(ERROR, "@VertexProperty classes cannot only have property methods: " + method);
+                    messager.printMessage(ERROR, "@VertexProperty classes can only have property methods: " + method);
                     continue;
                 }
 
@@ -533,8 +534,8 @@ public final class AnnotationProcessor extends AbstractProcessor {
     private String extractProperty(ExecutableElement method) {
         MethodType type = MethodType.getType(method);
         if (type == null) {
-            messager.printMessage(ERROR, "Unsupported abstract method: " + method.getEnclosingElement() + "::" + method);
-            return null;
+            messager.printMessage(WARNING, "Unsupported abstract method: " + method.getEnclosingElement() + "::" + method);
+            return "";
         }
 
         String property = type.getPropertyName(method);
