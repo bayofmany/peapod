@@ -3,8 +3,9 @@
 > The project's name refers to the java class encapsulation of graph vertices. <br />
 > It's a just like peapods wrapping peas.
 
-An object-graph wrapper (OGW) for the TinkerPop 3 graph stack. This project has been created as an alternative to the Frames module in TinkerPop 2. Complete documentation can be found [here](http://bayofmany.github.io).
+An object-graph wrapper (OGW) for the TinkerPop 3 graph stack. This project has been created as an alternative to the Frames module in TinkerPop 2. 
 
+**Complete documentation can be found [here](http://bayofmany.github.io).**
 
 This project is similar to the [Totorom](https://github.com/BrynCooke/totorom) library created by Bryn Cook and the [Ferma](https://github.com/Syncleus/Ferma) library created by Jeffrey Phillips Freeman. The main differences are:
 * Peapod is based upon TinkerPop 3.
@@ -46,7 +47,7 @@ And this way you query for and interact with the framed objects:
     
     public void testClassic() {
         Graph g = TinkerFactory.createClassic();
-        FramedGraph graph = new FramedGraph(g);
+        FramedGraph graph = new FramedGraph(g, Person.class.getPackage());
 
         Person marko = graph.v(1, Person.class);
         assertEquals("marko", marko.getName());
