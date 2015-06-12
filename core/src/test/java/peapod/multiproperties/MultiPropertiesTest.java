@@ -43,8 +43,9 @@
 
 package peapod.multiproperties;
 
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.structure.Vertex;
+import com.google.common.collect.Lists;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
@@ -63,7 +64,7 @@ public class MultiPropertiesTest extends GraphTest {
     public void init() {
         assumeTrue(g.features().vertex().supportsMultiProperties());
 
-        v = g.addVertex(T.label, "Person", "name", "Alice", "name", "Alicia");
+        v = g.addVertex(T.label, "Person", "firstName", "Alice", "firstName", "Alicia");
 
         FramedGraph graph = new FramedGraph(g, Person.class.getPackage());
         alice = graph.v(v.id());
@@ -71,19 +72,19 @@ public class MultiPropertiesTest extends GraphTest {
 
     @Test
     public void testGetNames() {
-        assertThat(alice.getNames(), containsInAnyOrder("Alice", "Alicia"));
+        assertThat(alice.getFirstNames(), containsInAnyOrder("Alice", "Alicia"));
     }
 
     @Test
     public void testAddName() {
-        alice.addName("Allison");
-        assertThat(v.values("name").toList(), containsInAnyOrder("Alice", "Alicia", "Allison"));
+        alice.addFirstName("Allison");
+        assertThat(Lists.newArrayList(v.values("firstName")), containsInAnyOrder("Alice", "Alicia", "Allison"));
     }
 
     @Test
     public void testRemoveName() {
-        alice.removeName("Alicia");
-        assertThat(v.values("name").toList(), containsInAnyOrder("Alice"));
+        alice.removeFirstName("Alicia");
+        assertThat(Lists.newArrayList(v.values("firstName")), containsInAnyOrder("Alice"));
     }
 
 

@@ -48,7 +48,8 @@ import org.junit.Test;
 import peapod.FramedGraph;
 import peapod.GraphTest;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
+
 
 /**
  * Test class to test primitive and object multiproperties.

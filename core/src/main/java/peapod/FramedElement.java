@@ -21,14 +21,14 @@
 
 package peapod;
 
-import com.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Element;
 
 /**
  * <p>All generated {@code @Vertex} and {@code @Edge} classes implement {@code FramedElement}
  * to get a reference to the framed graph and TinkerPop 3 {@code element}.</p>
  *
  * @author Willem Salembier
- * @see com.tinkerpop.gremlin.structure.Element
+ * @see org.apache.tinkerpop.gremlin.structure.Element
  * @since 0.1
  */
 public interface FramedElement {

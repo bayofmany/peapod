@@ -21,8 +21,8 @@
 
 package peapod;
 
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.model.Person;
@@ -62,7 +62,7 @@ public class FramedElementTest extends GraphTest {
     @Test
     public void testRemove() throws Exception {
         person.remove();
-        assertTrue(!g.V(Person.class).hasNext());
+        assertTrue(!g.traversal().V(Person.class).hasNext());
     }
 
     @Test

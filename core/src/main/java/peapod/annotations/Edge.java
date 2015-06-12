@@ -50,7 +50,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * public abstract class Develops implements FramedEdge {}</pre>
  *
  * @author Willem Salembier
- * @see com.tinkerpop.gremlin.structure.Edge
+ * @see org.apache.tinkerpop.gremlin.structure.Edge
  * @see peapod.FramedEdge
  * @since 0.1
  */

@@ -43,8 +43,8 @@
 
 package peapod.demo.classic;
 
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
@@ -178,7 +178,7 @@ public class ShowcaseClassicTest {
 
     private void clear() {
         // removes all vertices
-        graph.graph().V().remove();
+        graph.graph().traversal().V().drop();
     }
 
     private void assertEqualCount(long expected, FramedGraphTraversal<?, Long> traversal) {

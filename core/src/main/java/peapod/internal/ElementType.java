@@ -21,11 +21,11 @@
 
 package peapod.internal;
 
-import com.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Element;
 
 enum ElementType {
 
-    Vertex(com.tinkerpop.gremlin.structure.Vertex.class, "v"), VertexProperty(com.tinkerpop.gremlin.structure.VertexProperty.class, "vp"), Edge(com.tinkerpop.gremlin.structure.Edge.class, "e");
+    Vertex(org.apache.tinkerpop.gremlin.structure.Vertex.class, "v"), VertexProperty(org.apache.tinkerpop.gremlin.structure.VertexProperty.class, "vp"), Edge(org.apache.tinkerpop.gremlin.structure.Edge.class, "e");
 
     private Class<? extends Element> clazz;
     private String field;

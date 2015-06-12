@@ -50,10 +50,10 @@ import java.util.List;
 @Vertex
 public abstract class Person {
 
-    public abstract List<String> getNames();
+    public abstract List<String> getFirstNames();
 
-    public abstract void addName(String name);
+    public abstract void addFirstName(String name);
 
-    public abstract void removeName(String name);
+    public abstract void removeFirstName(String name);
 
 }

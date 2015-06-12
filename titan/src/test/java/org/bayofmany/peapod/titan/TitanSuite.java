@@ -21,11 +21,13 @@
 
 package org.bayofmany.peapod.titan;
 
+import com.thinkaurelius.titan.core.Cardinality;
 import com.thinkaurelius.titan.core.TitanFactory;
-import com.tinkerpop.gremlin.structure.Graph;
+import com.thinkaurelius.titan.core.TitanGraph;
+import com.thinkaurelius.titan.core.schema.TitanManagement;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.rules.TemporaryFolder;
 import peapod.GraphProvider;
 import peapod.GraphTest;
@@ -33,7 +35,6 @@ import peapod.GraphTestSuite;
 
 import java.io.IOException;
 
-@Ignore("Titan 0.9.0-M1 follows TinkerPop 3.0.0.M6")
 public class TitanSuite extends GraphTestSuite {
 
     @ClassRule
@@ -42,11 +43,16 @@ public class TitanSuite extends GraphTestSuite {
     @BeforeClass
     public static void setGraphProvider() throws IOException {
         GraphTest.graphProvider = new GraphProvider() {
-            @Override
             public Graph getGraph() throws IOException {
-                return TitanFactory.build().set("storage.backend", "inmemory").open();
+                TitanGraph graph = TitanFactory.build().set("storage.backend", "inmemory").open();
+                TitanManagement management = graph.openManagement();
+                management.makePropertyKey("location").dataType(String.class).cardinality(Cardinality.LIST).make();
+                management.makePropertyKey("firstName").dataType(String.class).cardinality(Cardinality.LIST).make();
+                management.commit();
+                return graph;
             }
         };
+
     }
 
 }

@@ -43,14 +43,16 @@
 
 package peapod.manytoone;
 
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
 import peapod.GraphTest;
 
 import static org.junit.Assert.*;
+import static peapod.TinkerPopHelper.out;
+import static peapod.TinkerPopHelper.in;
 
 public class ManyToOneTest extends GraphTest {
 
@@ -88,20 +90,20 @@ public class ManyToOneTest extends GraphTest {
     @Test
     public void testSet() {
         bob.setHometown(madrid);
-        assertTrue(bob.vertex().out("hometown").has("name", "madrid").hasNext());
+        assertEquals("madrid", out(bob.vertex(), "hometown").get(0).value("name"));
     }
 
     @Test
     public void testSetDifferent() {
         alice.setHometown(madrid);
-        assertTrue(alice.vertex().out("hometown").has("name", "madrid").hasNext());
-        assertTrue(london.vertex().in("hometown").toList().isEmpty());
+        assertEquals("madrid", out(alice.vertex(), "hometown").get(0).value("name"));
+        assertTrue(in(london.vertex(), "hometown").isEmpty());
     }
 
     @Test
     public void testSetNull() {
         alice.setHometown(null);
-        assertTrue(alice.vertex().out("hometown").toList().isEmpty());
-        assertTrue(london.vertex().in("hometown").toList().isEmpty());
+        assertTrue(out(alice.vertex(), "hometown").isEmpty());
+        assertTrue(in(london.vertex(), "hometown").isEmpty());
     }
 }

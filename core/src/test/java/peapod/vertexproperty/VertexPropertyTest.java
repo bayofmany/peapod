@@ -21,15 +21,17 @@
 
 package peapod.vertexproperty;
 
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.VertexProperty;
+import com.google.common.collect.Lists;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import peapod.FramedGraph;
 import peapod.GraphTest;
 
-import java.util.Optional;
+import java.util.Iterator;
 
 import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
 import static org.junit.Assert.*;
@@ -45,8 +47,8 @@ public class VertexPropertyTest extends GraphTest {
         assumeTrue(g.features().vertex().supportsMetaProperties());
 
         v = g.addVertex(T.label, "Person", "name", "Alice");
-        v.property("location", "Brussels", "startTime", 2010, "endTime", 2012);
-        v.property("location", "Antwerp", "startTime", 2012);
+        v.property(VertexProperty.Cardinality.list, "location", "Brussels", "startTime", 2010, "endTime", 2012);
+        v.property(VertexProperty.Cardinality.list, "location", "Antwerp", "startTime", 2012);
 
         FramedGraph graph = new FramedGraph(g, Person.class.getPackage());
         this.alice = graph.v(v.id());
@@ -77,14 +79,21 @@ public class VertexPropertyTest extends GraphTest {
 
         location.setStartTime(2015);
 
-        Optional<VertexProperty<Integer>> vp = v.properties("location").<VertexProperty<Integer>>has(T.value, "London").tryNext();
-        assertTrue(vp.isPresent());
-        assertEquals(new Integer(2015), vp.get().<Integer>value("startTime"));
+        Iterator<VertexProperty<String>> it = v.properties("location");
+        VertexProperty london = null;
+        while (it.hasNext()) {
+            VertexProperty property = it.next();
+            if (property.value().equals("London")) {
+                london = property;
+            }
+        }
+        assertNotNull("London", london);
+        assertEquals(new Integer(2015), london.value("startTime"));
     }
 
     @Test
     public void testRemoveLocation() {
         alice.removeLocation("Brussels");
-        assertFalse(v.properties("location").has(T.value, "Brussels").hasNext());
+        assertFalse(Lists.newArrayList(v.values("location")).contains("Brussels"));
     }
 }

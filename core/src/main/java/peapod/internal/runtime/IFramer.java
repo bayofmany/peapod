@@ -21,11 +21,11 @@
 
 package peapod.internal.runtime;
 
-import com.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import peapod.FramedGraph;
 
 /**
- * A Framer implementation converts TinkerPop {@link com.tinkerpop.gremlin.structure.Element} instance to framed objects.
+ * A Framer implementation converts TinkerPop {@link org.apache.tinkerpop.gremlin.structure.Element} instance to framed objects.
  */
 public interface IFramer<E extends Element, F> {
 

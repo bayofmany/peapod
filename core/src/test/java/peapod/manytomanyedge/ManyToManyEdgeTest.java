@@ -21,8 +21,8 @@
 
 package peapod.manytomanyedge;
 
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
@@ -32,6 +32,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.*;
+import static peapod.TinkerPopHelper.out;
 
 public class ManyToManyEdgeTest extends GraphTest {
 
@@ -74,7 +75,7 @@ public class ManyToManyEdgeTest extends GraphTest {
         assertEquals(alice, friend.getPerson());
         assertEquals(charlie, friend.getFriend());
 
-        List<Vertex> f = alice.vertex().out("friend").toList();
+        List<Vertex> f = out(alice.vertex(), "friend");
         assertThat(f, containsInAnyOrder(bob.vertex(), charlie.vertex()));
     }
 

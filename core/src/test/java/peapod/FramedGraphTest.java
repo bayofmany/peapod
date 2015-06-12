@@ -21,16 +21,18 @@
 
 package peapod;
 
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.model.Person;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
@@ -81,6 +83,7 @@ public class FramedGraphTest extends GraphTest {
     public void testFindAll() throws Exception {
         List<Person> result = graph.V(Person.class).toList();
         assertEquals(3, result.size());
+        assertThat(result.stream().map(Person::getName).collect(Collectors.toList()), containsInAnyOrder("alice", "bob", "charlie"));
         assertEquals("alice", result.get(0).getName());
     }
 
@@ -102,12 +105,12 @@ public class FramedGraphTest extends GraphTest {
 
     @Test
     public void testConfiguration() throws Exception {
-        assertEquals(g.configuration(), graph.configuration());
+        assertNotNull(graph.configuration());
     }
 
     @Test
     public void testVariables() throws Exception {
-        assertEquals(g.variables(), graph.variables());
+        assertEquals(g.variables().keys(), graph.variables().keys());
     }
 
     @Test

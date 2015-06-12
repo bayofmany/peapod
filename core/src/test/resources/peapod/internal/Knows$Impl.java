@@ -1,7 +1,7 @@
 package peapod.internal;
 
-import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import peapod.FramedEdge;
 import peapod.FramedElement;
 import peapod.FramedGraph;
@@ -25,10 +25,12 @@ public final class Knows$Impl extends Knows
         return e;
     }
     public Person getPerson() {
-        return e.outV().map(v -> new Person$Impl(v.get(), graph)).next();
+        // edge-getter-vertex
+        return graph().frame(e.outVertex(), Person.class);
     }
     public Person getOtherPerson() {
-        return e.inV().map(v -> new Person$Impl(v.get(), graph)).next();
+        // edge-getter-vertex
+        return graph().frame(e.inVertex(), Person.class);
     }
     public int hashCode() {
         return e.hashCode();

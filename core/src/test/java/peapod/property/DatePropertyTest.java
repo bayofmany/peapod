@@ -43,8 +43,8 @@
 
 package peapod.property;
 
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
@@ -65,7 +65,6 @@ public class DatePropertyTest extends GraphTest {
 
     @Before
     public void init() {
-        assumeTrue(g.features().vertex().properties().supportsSerializableValues());
         v = g.addVertex(T.label, "Person", "date", new Date(1000));
 
         FramedGraph graph = new FramedGraph(g, Person.class.getPackage());

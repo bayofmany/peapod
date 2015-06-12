@@ -43,8 +43,8 @@
 
 package peapod.annotation;
 
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
@@ -54,6 +54,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.*;
+import static peapod.TinkerPopHelper.out;
 
 public class AnnotationTest extends GraphTest {
 
@@ -94,7 +95,7 @@ public class AnnotationTest extends GraphTest {
     @Test
     public void testAdd() {
         alice.addFriend(charlie);
-        List<Vertex> f = alice.vertex().out("e-friend").toList();
+        List<Vertex> f = out(alice.vertex(), "e-friend");
         assertThat(f, containsInAnyOrder(bob.vertex(), charlie.vertex()));
     }
 

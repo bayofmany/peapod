@@ -21,7 +21,7 @@
 
 package peapod;
 
-import com.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 /**
  * <p>All generated {@code @Vertex} classes implement the {@code FramedVertex} interface. It can be optionally
@@ -31,7 +31,7 @@ import com.tinkerpop.gremlin.structure.Vertex;
  * public abstract class Person implements FramedVertex&lt;Person&gt; {}</pre>
  *
  * @author Willem Salembier
- * @see com.tinkerpop.gremlin.structure.Vertex
+ * @see org.apache.tinkerpop.gremlin.structure.Vertex
  * @since 0.1
  */
 public interface FramedVertex<V> extends FramedElement, FramedVertexTraversal<V> {
@@ -42,7 +42,7 @@ public interface FramedVertex<V> extends FramedElement, FramedVertexTraversal<V>
 
     @SuppressWarnings("unchecked")
     default FramedGraphTraversal<V, V> start() {
-        return new FramedGraphTraversal(vertex().start(), graph());
+        return new FramedGraphTraversal(vertex().graph().traversal().V(id()), graph());
     }
 
 

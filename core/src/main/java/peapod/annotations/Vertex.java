@@ -44,7 +44,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * public abstract class Person implements FramedVertex&lt;Person&gt; {}</pre>
  *
  * @author Willem Salembier
- * @see com.tinkerpop.gremlin.structure.Vertex
+ * @see org.apache.tinkerpop.gremlin.structure.Vertex
  * @see peapod.FramedVertex
  * @since 0.1
  */

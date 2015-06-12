@@ -43,7 +43,7 @@
 
 package peapod;
 
-import com.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -81,7 +81,8 @@ public abstract class GraphTest {
         if (supportsTransactions) {
             g.tx().rollback();
         } else {
-            g.V().remove();
+            g.traversal().E().drop().iterate();
+            g.traversal().V().drop().iterate();
         }
 
     }

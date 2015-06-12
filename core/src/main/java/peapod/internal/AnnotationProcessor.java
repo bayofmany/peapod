@@ -21,11 +21,12 @@
 
 package peapod.internal;
 
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import peapod.*;
 import peapod.annotations.*;
 import peapod.internal.runtime.DefaultIterable;
+import peapod.internal.runtime.FrameHelper;
 import peapod.internal.runtime.Framer;
 import peapod.internal.runtime.IFramer;
 
@@ -79,7 +80,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
             Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(Vertex.class);
             messager.printMessage(OTHER, elements.size() + " elements with annotation @Vertex");
 
-            Class<?>[] vImports = {com.tinkerpop.gremlin.structure.Vertex.class, com.tinkerpop.gremlin.structure.Element.class, FramedVertex.class, FramedElement.class, FramedGraph.class, IFramer.class, Framer.class};
+            Class<?>[] vImports = {org.apache.tinkerpop.gremlin.structure.Vertex.class, org.apache.tinkerpop.gremlin.structure.Element.class, FramedVertex.class, FramedElement.class, FramedGraph.class, IFramer.class, Framer.class, FrameHelper.class, org.apache.tinkerpop.gremlin.structure.Direction.class, Iterator.class};
             elements.stream().forEach(e -> generateImplementationClass((TypeElement) e, ElementType.Vertex, "FramedVertex<" + getBaseType((TypeElement) e).getSimpleName() + ">", vImports));
 
             elements = roundEnv.getElementsAnnotatedWith(VertexProperty.class);
@@ -88,7 +89,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
             elements = roundEnv.getElementsAnnotatedWith(Edge.class);
             messager.printMessage(OTHER, elements.size() + " elements with annotation @Edge");
-            Class<?>[] eImports = {com.tinkerpop.gremlin.structure.Edge.class, com.tinkerpop.gremlin.structure.Element.class, FramedEdge.class, FramedElement.class, FramedGraph.class, IFramer.class, Framer.class};
+            Class<?>[] eImports = {org.apache.tinkerpop.gremlin.structure.Edge.class, org.apache.tinkerpop.gremlin.structure.Element.class, FramedEdge.class, FramedElement.class, FramedGraph.class, IFramer.class, Framer.class};
             elements.stream().filter(e -> e.getKind().isClass()).forEach(e -> generateImplementationClass((TypeElement) e, ElementType.Edge, FramedEdge.class.getSimpleName(), eImports));
 
             return true;
@@ -151,7 +152,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
             JavaWriterExt writer = new JavaWriterExt(out);
             PackageElement packageEl = (PackageElement) type.getEnclosingElement();
             writer.emitPackage(packageEl.getQualifiedName().toString())
-                    .emitImports(com.tinkerpop.gremlin.structure.VertexProperty.class, com.tinkerpop.gremlin.structure.Element.class, FramedElement.class, FramedGraph.class, IFramer.class, Framer.class)
+                    .emitImports(org.apache.tinkerpop.gremlin.structure.VertexProperty.class, org.apache.tinkerpop.gremlin.structure.Element.class, FramedElement.class, FramedGraph.class, IFramer.class, Framer.class, Iterator.class)
                     .emitEmptyLine()
                     .emitAnnotation("SuppressWarnings", "\"unused\"")
                     .beginType(type.getQualifiedName() + "$Impl", "class", EnumSet.of(PUBLIC, Modifier.FINAL), type.getQualifiedName().toString())
@@ -208,7 +209,6 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
     private void implementAbstractPropertyMethod(ExecutableElement method, MethodType methodType, String label, JavaWriterExt writer, ElementType elementType) throws IOException {
         String fieldName = elementType.getFieldName();
-        boolean vertex = elementType == ElementType.Vertex;
 
         Set<Modifier> modifiers = new HashSet<>(method.getModifiers());
         modifiers.remove(ABSTRACT);
@@ -234,30 +234,29 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 TypeMirror singularizedType = getSingularizedType(method.getReturnType());
 
                 if (isVertexProperty(singularizedType)) {
-                    writer.emitStatement("return " + collectionType.wrap("v.properties(\"%s\")%s"), label, generateMap(singularizedType, ElementType.VertexProperty, writer));
+                    writer.emitStatement("return graph().frame(v.properties(\"%s\"), %s.class)", label, writer.compressType(singularizedType));
                 } else {
-                    writer.emitStatement("return " + collectionType.wrap("v.<%s>values(\"%s\")"), writer.compressType(singularizedType), label);
+                    writer.emitStatement("return FrameHelper.toList(v.values(\"%s\"))", label);
                 }
             }
         } else if (methodType == MethodType.FILTERED_GETTER && isVertexProperty(method.getReturnType())) {
-            writer.emitStatement("%s<Vertex, %s> traversal = v.properties(\"%s\").<VertexProperty>has(T.value, %s)%s", writer.compressType(GraphTraversal.class), writer.compressType(method.getReturnType()), label, parameterName, generateMap(method.getReturnType(), ElementType.VertexProperty, writer))
-                    .emitStatement("return traversal.hasNext()? traversal.next() : null");
+            writer.emitStatement("return FrameHelper.filterVertexProperty(this, \"%s\", %s, %s.class)", label, parameterName, writer.compressType(method.getReturnType()));
         } else if (methodType == MethodType.SETTER) {
             if (method.getParameters().get(0).asType().getKind().isPrimitive()) {
-                writer.emitStatement(fieldName + ".%s(\"%s\", %s)", vertex ? "singleProperty" : "property", label, parameterName);
+                writer.emitStatement(fieldName + ".%s(\"%s\", %s)", "property", label, parameterName);
             } else {
                 writer.beginControlFlow("if (%s == null)", parameterName)
                         .emitStatement(fieldName + ".property(\"%s\").remove()", label)
                         .nextControlFlow("else")
-                        .emitStatement(fieldName + ".%s(\"%s\", %s)", vertex ? "singleProperty" : "property", label, parameterName)
+                        .emitStatement(fieldName + ".%s(\"%s\", %s)", "property", label, parameterName)
                         .endControlFlow();
             }
         } else if (methodType == MethodType.ADDER && parameterClass != null && returnClass == null) {
-            writer.emitStatement("v.property(\"%s\", %s)", label, parameterName);
+            writer.emitStatement("v.property(org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality.list, \"%s\", %s)", label, parameterName);
         } else if (methodType == MethodType.ADDER && parameterClass != null && isVertexProperty(method.getReturnType())) {
-            writer.emitStatement("return graph.frame(v.property(\"%s\", %s), %s.class)", label, parameterName, writer.compressType(method.getReturnType()));
+            writer.emitStatement("return graph.frame(v.property(org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality.list, \"%s\", %s), %s.class)", label, parameterName, writer.compressType(method.getReturnType()));
         } else if (methodType == MethodType.REMOVER && parameterClass != null && returnClass == null) {
-            writer.emitStatement("v.properties(\"%s\").has(com.tinkerpop.gremlin.process.T.value, %s).remove()", label, parameterName);
+            writer.emitStatement("FrameHelper.removeVertexProperty(this, \"%s\", %s)", label, parameterName);
         } else {
             generateNotSupportedStatement("nonstandard-property", method, writer);
         }
@@ -294,40 +293,36 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 Edge edgeAnnotation = element.getAnnotation(Edge.class);
 
                 if (vertexAnnotation != null) {
-                    String statement = String.format("%s.%s(\"%s\")%s", elementName, direction.toMethod(), label, generateMap(collectionContent, ElementType.Vertex, writer));
-                    writer.emitStatement("return " + collectionType.wrap(statement));
+                    writer.emitSingleLineComment("getter-vertex-collection");
+                    writer.emitStatement("return graph().frame(%s.vertices(Direction.%s, \"%s\"), %s.class)", elementName, direction.toString(), label, writer.compressType(collectionContent));
                 } else if (edgeAnnotation != null) {
-                    String statement = String.format("%s.%sE(\"%s\")%s", elementName, direction.toMethod(), label, generateMap(collectionContent, ElementType.Edge, writer));
-                    writer.emitStatement("return " + collectionType.wrap(statement));
+                    writer.emitSingleLineComment("getter-edge-collection");
+                    writer.emitStatement("return graph.frame(%s.edges(Direction.%s, \"%s\"), %s.class)", elementName, direction, label, writer.compressType(collectionContent));
                 } else {
                     generateNotSupportedStatement("get-collection-no-vertex-or-edge", method, writer);
                 }
             } else if (isVertex(method.getReturnType()) && elementType == ElementType.Vertex) {
-                writer.emitStatement("%s<Vertex, %s> traversal = %s.%s(\"%s\")%s",
-                        writer.compressType(GraphTraversal.class), writer.compressType(method.getReturnType()), elementName, direction.toMethod(), label, generateMap(method.getReturnType(), ElementType.Vertex, writer))
-                        .emitStatement("return traversal.hasNext()? traversal.next() : null");
-            } else if (isEdge(method.getReturnType()) && elementType == ElementType.Vertex) {
-                String filter = "";
-                if (parameterName != null) {
-                    filter = String.format(".as(\"X\").inV().retain(((FramedVertex) %s).vertex()).<%s>back(\"X\")", parameterName, writer.compressType(com.tinkerpop.gremlin.structure.Edge.class));
-                }
-
-                writer.emitStatement("%s<Vertex, %s> traversal = %s.%sE(\"%s\")%s%s",
-                        writer.compressType(GraphTraversal.class), writer.compressType(method.getReturnType()), elementName, direction.toMethod(), label, filter, generateMap(method.getReturnType(), ElementType.Edge, writer))
-                        .emitStatement("return traversal.hasNext()? traversal.next() : null");
+                writer.emitSingleLineComment("vertex-getter-vertex");
+                writer.emitStatement("Iterator<Vertex> it = v.vertices(Direction.%s, \"%s\");", direction, label)
+                        .emitStatement("return it.hasNext() ? graph.frame(it.next(), %s.class) : null", writer.compressType(method.getReturnType()));
             } else if (isVertex(method.getReturnType()) && elementType != ElementType.Vertex) {
+                writer.emitSingleLineComment("edge-getter-vertex");
                 boolean in = method.getAnnotation(In.class) != null;
-                writer.emitStatement("return %s.%sV()%s.next()", elementName, (in ? "in" : "out"), generateMap(method.getReturnType(), ElementType.Vertex, writer));
+                writer.emitStatement("return graph().frame(%s.%sVertex(), %s.class)", elementName, in ? "in" : "out", writer.compressType(method.getReturnType()));
+            } else if (isEdge(method.getReturnType()) && elementType == ElementType.Vertex) {
+                writer.emitSingleLineComment("vertex-getter-edge");
+                writer.emitStatement("return FrameHelper.filterEdge(this, \"%s\", %s, %s.class)", label, parameterName, writer.compressType(method.getReturnType()));
             } else {
                 generateNotSupportedStatement("get-no-vertex-or-edge", method, writer);
             }
         } else if (methodType == MethodType.SETTER) {
+            writer.emitSingleLineComment("vertex-setter-vertex");
             String statement = String.format("v.addEdge(\"%s\", ((FramedVertex)%s).vertex())", label, parameterName);
             if (returnClass != null && returnClass.getAnnotation(Edge.class) != null) {
                 statement = String.format("return graph.frame(%s, %s.class)", statement, writer.compressType(method.getReturnType()));
             }
 
-            writer.emitStatement("v.outE(\"%s\").remove()", label)
+            writer.emitStatement("v.edges(Direction.OUT, \"%s\").forEachRemaining(e -> e.remove())", label)
                     .beginControlFlow("if (%s != null)", parameterName)
                     .emitStatement(statement);
             if (method.getReturnType().getKind() != VOID) {
@@ -348,7 +343,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
             }
         } else if (methodType == MethodType.REMOVER && parameterClass != null) {
             if (parameterClass.getAnnotation(Vertex.class) != null) {
-                writer.emitStatement("v.outE(\"%s\").as(\"X\").inV().retain(((FramedVertex)%s).vertex()).back(\"X\").remove()", label, parameterName);
+                writer.emitStatement("FrameHelper.removeEdge(v, Direction.OUT, \"%s\", %s.vertex())", label, parameterName);
             } else if (parameterClass.getAnnotation(Edge.class) != null) {
                 writer.emitStatement("((FramedElement)%s).remove()", parameterName);
             }
@@ -415,10 +410,6 @@ public final class AnnotationProcessor extends AbstractProcessor {
         messager.printMessage(WARNING, "Abstract method not yet supported: " + method, method.getEnclosingElement());
         writer.emitSingleLineComment("TODO: this method cannot be generated and should be implemented");
         writer.emitStatement("throw new RuntimeException(\"" + code + ": not yet supported\")");
-    }
-
-    private String generateMap(TypeMirror type, ElementType elementType, JavaWriterExt writer) {
-        return String.format(".map(it -> graph.<%s, %s>frame(it.get(), %s.class))", writer.compressType(type), writer.compressType(elementType.getClazz()), writer.compressType(type));
     }
 
     private TypeElement getBaseType(TypeElement type) {
@@ -493,7 +484,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 }
 
                 if (type == MethodType.GETTER && isEdge) {
-                    description.addImport(com.tinkerpop.gremlin.structure.Edge.class);
+                    description.addImport(org.apache.tinkerpop.gremlin.structure.Edge.class);
                 }
 
                 if (isVertex) {
@@ -516,7 +507,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 if (type == MethodType.FILTERED_GETTER) {
                     description.addImport(GraphTraversal.class);
                     description.addImport(T.class);
-                    description.addImport(com.tinkerpop.gremlin.structure.VertexProperty.class);
+                    description.addImport(org.apache.tinkerpop.gremlin.structure.VertexProperty.class);
                 }
             }
         }
@@ -672,23 +663,15 @@ public final class AnnotationProcessor extends AbstractProcessor {
     }
 
     private enum CollectionType {
-        LIST("Collections.unmodifiableList(", ".toList())", List.class, Collections.class),
-        COLLECTION("Collections.unmodifiableCollection(", ".toList())", Collection.class, Collections.class),
-        SET("Collections.unmodifiableSet(", ".toSet())", Set.class, Collections.class),
-        ITERABLE("new DefaultIterable(", ".iterate())", DefaultIterable.class);
+        LIST(List.class, Collections.class),
+        COLLECTION(Collection.class, Collections.class),
+        SET(Set.class, Collections.class),
+        ITERABLE(DefaultIterable.class);
 
-        private final String prefix;
-        private final String suffix;
         private final Class<?>[] importClass;
 
-        CollectionType(String prefix, String suffix, Class<?>... importClass) {
-            this.prefix = prefix;
-            this.suffix = suffix;
+        CollectionType( Class<?>... importClass) {
             this.importClass = importClass;
-        }
-
-        public String wrap(String variable) {
-            return prefix + variable + suffix;
         }
 
         public Class<?>[] getImport() {

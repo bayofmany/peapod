@@ -21,7 +21,7 @@
 
 package peapod;
 
-import com.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 
 /**
  * <p>All generated {@code @Edge} classes implement the {@code FramedEdge} interface. It can be optionally
@@ -31,7 +31,7 @@ import com.tinkerpop.gremlin.structure.Edge;
  * public abstract class Develops implements FramedEdge {}</pre>
  *
  * @author Willem Salembier
- * @see com.tinkerpop.gremlin.structure.Edge
+ * @see org.apache.tinkerpop.gremlin.structure.Edge
  * @since 0.1
  */
 public interface FramedEdge extends FramedElement {

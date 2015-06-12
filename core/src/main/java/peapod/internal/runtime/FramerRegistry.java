@@ -21,7 +21,7 @@
 
 package peapod.internal.runtime;
 
-import com.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Element;
 
 import java.util.*;
 
@@ -42,11 +42,11 @@ public class FramerRegistry {
             try {
                 IFramer framer = (IFramer) c.newInstance();
                 framers.put(framer.frameClass(), framer);
-                if (com.tinkerpop.gremlin.structure.Vertex.class.equals(framer.type())) {
+                if (org.apache.tinkerpop.gremlin.structure.Vertex.class.equals(framer.type())) {
                     vertexFramers.put(framer.label(), framer);
-                } else if (com.tinkerpop.gremlin.structure.Edge.class.equals(framer.type())) {
+                } else if (org.apache.tinkerpop.gremlin.structure.Edge.class.equals(framer.type())) {
                     edgeFramers.put(framer.label(), framer);
-                } else if (com.tinkerpop.gremlin.structure.VertexProperty.class.equals(framer.type())) {
+                } else if (org.apache.tinkerpop.gremlin.structure.VertexProperty.class.equals(framer.type())) {
                     vertexPropertyFramers.put(framer.label(), framer);
                 }
             } catch (InstantiationException | IllegalAccessException e) {
@@ -67,11 +67,11 @@ public class FramerRegistry {
     @SuppressWarnings("unchecked")
     public <E extends Element, F> IFramer<E, F> get(E e, Class<F> clazz) {
         IFramer<E, F> framer = null;
-        if (e instanceof com.tinkerpop.gremlin.structure.Vertex) {
+        if (e instanceof org.apache.tinkerpop.gremlin.structure.Vertex) {
             framer = (IFramer<E, F>) vertexFramers.get(e.label());
-        } else if (e instanceof com.tinkerpop.gremlin.structure.Edge) {
+        } else if (e instanceof org.apache.tinkerpop.gremlin.structure.Edge) {
             framer = (IFramer<E, F>) edgeFramers.get(e.label());
-        } else if (e instanceof com.tinkerpop.gremlin.structure.VertexProperty) {
+        } else if (e instanceof org.apache.tinkerpop.gremlin.structure.VertexProperty) {
             framer = (IFramer<E, F>) vertexPropertyFramers.get(e.label());
         }
         if (framer == null) {

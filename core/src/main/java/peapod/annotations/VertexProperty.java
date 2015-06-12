@@ -46,9 +46,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * public abstract class Name implements FramedVertexProperty&lt;String&gt; {}</pre>
  *
  * @author Willem Salembier
- * @see com.tinkerpop.gremlin.structure.VertexProperty
+ * @see org.apache.tinkerpop.gremlin.structure.VertexProperty
  * @see peapod.FramedVertexProperty
- * @see com.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures#supportsMetaProperties()
+ * @see org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures#supportsMetaProperties()
  * @since 0.1
  */
 @Retention(RUNTIME)

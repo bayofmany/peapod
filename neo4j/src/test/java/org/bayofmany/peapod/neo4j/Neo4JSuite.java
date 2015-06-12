@@ -43,8 +43,8 @@
 
 package org.bayofmany.peapod.neo4j;
 
-import com.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
-import com.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.rules.TemporaryFolder;
@@ -62,7 +62,6 @@ public class Neo4JSuite extends GraphTestSuite {
     @BeforeClass
     public static void setGraphProvider() throws IOException {
         GraphTest.graphProvider = new GraphProvider() {
-            @Override
             public Graph getGraph() throws IOException {
                 return Neo4jGraph.open(folder.newFolder().getAbsolutePath());
             }

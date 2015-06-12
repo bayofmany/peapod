@@ -21,19 +21,23 @@
 
 package peapod;
 
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Graph.Features;
-import com.tinkerpop.gremlin.structure.Graph.Variables;
-import com.tinkerpop.gremlin.structure.Transaction;
-import com.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Graph.Features;
+import org.apache.tinkerpop.gremlin.structure.Graph.Variables;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.commons.configuration.Configuration;
 import org.reflections.Reflections;
 import peapod.internal.runtime.Framer;
 import peapod.internal.runtime.FramerRegistry;
 import peapod.internal.runtime.IFramer;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * <p>A framed instance of a TinkerPop 3 graph.</p>
@@ -50,7 +54,7 @@ import peapod.internal.runtime.IFramer;
  * </pre>
  *
  * @author Willem Salembier
- * @see com.tinkerpop.gremlin.structure.Graph
+ * @see org.apache.tinkerpop.gremlin.structure.Graph
  * @since 0.1
  */
 public class FramedGraph implements AutoCloseable {
@@ -85,7 +89,7 @@ public class FramedGraph implements AutoCloseable {
      * @param clazz a framing class annotated with {@link peapod.annotations.Vertex}
      * @param id    the user-supplied identifier of the vertex. Attention, not all databases support this feature.
      * @return The newly created labeled linked vertex
-     * @see com.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures#supportsUserSuppliedIds()
+     * @see org.apache.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures#supportsUserSuppliedIds()
      */
     public <V> V addVertex(Class<V> clazz, Object id) {
         IFramer<Element, V> framer = registry.get(clazz);
@@ -95,7 +99,7 @@ public class FramedGraph implements AutoCloseable {
 
     @SuppressWarnings("unchecked")
     public <S, V> FramedGraphTraversal<S, V> V(Class<V> clazz) {
-        return new FramedGraphTraversal(graph().V(), this).labels(clazz, registry.labels(clazz));
+        return new FramedGraphTraversal(graph().traversal().V(), this).labels(clazz, registry.labels(clazz));
     }
 
     /**
@@ -107,8 +111,8 @@ public class FramedGraph implements AutoCloseable {
      */
     @SuppressWarnings("unchecked")
     public <V> V v(Object id) {
-        GraphTraversal<Vertex, Vertex> tr = graph.V(id);
-        return tr.hasNext() ? frame(tr.next()) : null;
+        Iterator<Vertex> it = graph.vertices(id);
+        return it.hasNext() ? frame(it.next()) : null;
     }
 
     /**
@@ -121,7 +125,7 @@ public class FramedGraph implements AutoCloseable {
      */
     @SuppressWarnings("unchecked")
     public <V> V v(Object id, Class<V> clazz) {
-        GraphTraversal<Vertex, Vertex> tr = graph.V(id);
+        Iterator<Vertex> tr = graph.vertices(id);
         return tr.hasNext() ? frame(tr.next(), clazz) : null;
     }
 
@@ -135,6 +139,15 @@ public class FramedGraph implements AutoCloseable {
         return framer.frame(e, this);
     }
 
+    public <F, E extends Element> List<F> frame(Iterator<E> it, Class<F> clazz) {
+        List<F> result = new ArrayList<>();
+        it.forEachRemaining(e -> {
+            IFramer<E, F> framer = registry.get(e, clazz);
+            result.add(framer.frame(e, this));
+        });
+        return Collections.unmodifiableList(result);
+    }
+
     protected <F, E extends Element> IFramer<E, F> framer(Class<F> clazz) {
         return registry.get(clazz);
     }
@@ -143,7 +156,7 @@ public class FramedGraph implements AutoCloseable {
      * Configure and control the transactions for those graphs that support this feature.
      *
      * @return the transaction
-     * @see com.tinkerpop.gremlin.structure.Graph#tx()
+     * @see org.apache.tinkerpop.gremlin.structure.Graph#tx()
      */
     public Transaction tx() {
         return graph.tx();
@@ -154,7 +167,7 @@ public class FramedGraph implements AutoCloseable {
      * Variables are used for storing metadata about the graph.
      *
      * @return The variables associated with this graph
-     * @see com.tinkerpop.gremlin.structure.Graph#variables()
+     * @see org.apache.tinkerpop.gremlin.structure.Graph#variables()
      */
     public Variables variables() {
         return graph.variables();
@@ -162,11 +175,11 @@ public class FramedGraph implements AutoCloseable {
 
     /**
      * Get the {@link org.apache.commons.configuration.Configuration} associated with the construction of this graph.
-     * Whatever configuration was passed to {@link com.tinkerpop.gremlin.structure.util.GraphFactory#open(org.apache.commons.configuration.Configuration)}
+     * Whatever configuration was passed to {@link org.apache.tinkerpop.gremlin.structure.util.GraphFactory#open(org.apache.commons.configuration.Configuration)}
      * is what should be returned by this method.
      *
      * @return the configuration used during graph construction.
-     * @see com.tinkerpop.gremlin.structure.Graph#configuration()
+     * @see org.apache.tinkerpop.gremlin.structure.Graph#configuration()
      */
     public Configuration configuration() {
         return graph.configuration();
@@ -176,14 +189,14 @@ public class FramedGraph implements AutoCloseable {
      * Gets the {@link Features} exposed by the underlying {@code Graph} implementation.
      *
      * @return a features object
-     * @see com.tinkerpop.gremlin.structure.Graph#features()
+     * @see org.apache.tinkerpop.gremlin.structure.Graph#features()
      */
     public Features features() {
         return graph.features();
     }
 
     /**
-     * @return the underlying {@link com.tinkerpop.gremlin.structure.Graph}
+     * @return the underlying {@link org.apache.tinkerpop.gremlin.structure.Graph}
      */
     public Graph graph() {
         return graph;

@@ -21,12 +21,14 @@
 
 package peapod;
 
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.process.Traverser;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.step.map.MapStep;
-import com.tinkerpop.gremlin.structure.Contains;
-import com.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.process.traversal.Contains;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapStep;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.*;
 import java.util.function.BiPredicate;
@@ -37,7 +39,7 @@ import java.util.stream.Collectors;
  * Defines the framed graph traversals and keeps track of the traversed framed classes.
  *
  * @author Willem Salembier
- * @see com.tinkerpop.gremlin.process.graph.GraphTraversal
+ * @see org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
  * @since 0.1
  */
 @SuppressWarnings({"unchecked", "unused"})
@@ -57,7 +59,7 @@ public class FramedGraphTraversal<S, E> {
 
     protected FramedGraphTraversal<S, E> labels(Class clazz, Collection<String> labels) {
         this.lastFramingClass = clazz;
-        traversal.has(T.label, Contains.within, labels);
+        traversal.has(T.label, P.within(labels));
         return this;
     }
 
@@ -76,23 +78,8 @@ public class FramedGraphTraversal<S, E> {
         return this;
     }
 
-    public FramedGraphTraversal<S, E> has(final String key, final BiPredicate predicate, final Object value) {
-        traversal.has(key, predicate, value);
-        return this;
-    }
-
-    public FramedGraphTraversal<S, E> has(final T accessor, final BiPredicate predicate, final Object value) {
-        traversal.has(accessor, predicate, value);
-        return this;
-    }
-
     public FramedGraphTraversal<S, E> has(final String label, final String key, final Object value) {
         traversal.has(label, key, value);
-        return this;
-    }
-
-    public FramedGraphTraversal<S, E> has(final String label, final String key, final BiPredicate predicate, final Object value) {
-        traversal.has(label, key, predicate, value);
         return this;
     }
 
@@ -142,7 +129,7 @@ public class FramedGraphTraversal<S, E> {
 
     public <E2> FramedGraphTraversal<S, E2> back(final String label) {
         lastFramingClass = stepLabel2FrameClass.get(label);
-        traversal.back(label);
+        traversal.select(label);
         return (FramedGraphTraversal<S, E2>) this;
     }
 
@@ -151,7 +138,7 @@ public class FramedGraphTraversal<S, E> {
         return this;
     }
 
-    public FramedGraphTraversal<S, E> except(String variable) {
+    /*public FramedGraphTraversal<S, E> except(String variable) {
         traversal.except(variable);
         return this;
     }
@@ -164,7 +151,7 @@ public class FramedGraphTraversal<S, E> {
     public FramedGraphTraversal<S, E> except(Collection<E> exceptionCollection) {
         traversal.except(exceptionCollection.stream().map(e -> e instanceof FramedElement ? (E) ((FramedElement) e).element() : e).collect(Collectors.toList()));
         return this;
-    }
+    }*/
 
     public List<E> toList() {
         addFrameStep(lastFramingClass);
@@ -207,8 +194,7 @@ public class FramedGraphTraversal<S, E> {
             return;
         }
 
-        MapStep<Vertex, F> mapStep = new MapStep<>(traversal);
-        mapStep.setFunction(v -> graph.frame(v.get(), framingClass));
+        MapStep<Vertex, F> mapStep = new LambdaMapStep<>(traversal.asAdmin(), v -> graph.frame(v.get(), framingClass));
         traversal.asAdmin().addStep(mapStep);
     }
 

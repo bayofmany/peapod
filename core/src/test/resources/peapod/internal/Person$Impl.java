@@ -1,15 +1,18 @@
 package peapod.internal;
 
-import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Vertex;
+import java.util.Iterator;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import peapod.FramedElement;
 import peapod.FramedGraph;
 import peapod.FramedVertex;
+import peapod.internal.runtime.FrameHelper;
 import peapod.internal.runtime.Framer;
 import peapod.internal.runtime.IFramer;
-import com.tinkerpop.gremlin.structure.Edge;
 import java.util.Collections;
 import java.util.List;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 
 @SuppressWarnings("unused")
 public final class Person$Impl extends Person
@@ -31,7 +34,8 @@ public final class Person$Impl extends Person
         return v.<String>property("name").orElse(null);
     }
     public List<Knows> getKnows() {
-        return Collections.unmodifiableList(v.outE("knows").map(it -> graph.<Knows, Edge>frame(it.get())).toList());
+        // getter-edge-collection
+        return graph.frame(v.edges(Direction.OUT, "knows"), Knows.class);
     }
     public int hashCode() {
         return v.hashCode();

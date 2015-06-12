@@ -43,14 +43,18 @@
 
 package peapod.manytooneedge;
 
-import com.tinkerpop.gremlin.process.T;
-import com.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 import peapod.FramedGraph;
 import peapod.GraphTest;
 
+import java.util.List;
+
 import static org.junit.Assert.*;
+import static peapod.TinkerPopHelper.out;
 
 public class ManyToOneEdgeTest extends GraphTest {
 
@@ -93,21 +97,27 @@ public class ManyToOneEdgeTest extends GraphTest {
 
         hometown.setFromYear(2012);
 
-        assertTrue(bob.vertex().out("hometown").has("name", "madrid").hasNext());
-        assertTrue(bob.vertex().outE("hometown").has("fromYear", 2012).hasNext());
+        List<Vertex> vertices = out(bob.vertex(), "hometown");
+        assertEquals("madrid", vertices.get(0).value("name"));
+
+        bob.vertex().edges(Direction.OUT, "hometown").forEachRemaining(h ->
+                        assertEquals((Integer) 2012, h.value("fromYear"))
+        );
     }
 
     @Test
     public void testSetDifferent() {
         alice.setHometown(madrid);
-        assertTrue(alice.vertex().out("hometown").has("name", "madrid").hasNext());
-        assertTrue(london.vertex().in("hometown").toList().isEmpty());
+        alice.vertex().vertices(Direction.OUT, "hometown").forEachRemaining(h ->
+                        assertEquals("madrid", h.value("name"))
+        );
+        assertFalse(london.vertex().edges(Direction.IN, "hometown").hasNext());
     }
 
     @Test
     public void testSetNull() {
         alice.setHometown(null);
-        assertTrue(alice.vertex().out("hometown").toList().isEmpty());
-        assertTrue(london.vertex().in("hometown").toList().isEmpty());
+        assertFalse(alice.vertex().vertices(Direction.OUT, "hometown").hasNext());
+        assertFalse(london.vertex().vertices(Direction.IN, "hometown").hasNext());
     }
 }

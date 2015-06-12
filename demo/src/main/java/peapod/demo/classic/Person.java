@@ -21,7 +21,7 @@
 
 package peapod.demo.classic;
 
-import com.tinkerpop.gremlin.structure.Compare;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import peapod.FramedVertex;
 import peapod.annotations.Edge;
 import peapod.annotations.Vertex;
@@ -48,7 +48,7 @@ public abstract class Person implements FramedVertex<Person> {
     public abstract List<Created> getCreated();
 
     public List<Person> getKnowsPersonsOlderThan(int age) {
-        return out("knows", Person.class).has("age", Compare.gt, age).toList();
+        return out("knows", Person.class).has("age", P.gt(age)).toList();
     }
 
 }

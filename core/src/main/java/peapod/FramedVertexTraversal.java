@@ -21,7 +21,7 @@
 
 package peapod;
 
-import com.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 /**
  * Defines the traversals supported on framed vertices.

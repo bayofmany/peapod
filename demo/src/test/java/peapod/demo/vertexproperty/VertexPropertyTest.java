@@ -43,7 +43,7 @@
 
 package peapod.demo.vertexproperty;
 
-import com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Test;
 import peapod.FramedGraph;
 

@@ -32,7 +32,7 @@ import peapod.annotations.VertexProperty;
  * }</pre>
  *
  * @author Willem Salembier
- * @see com.tinkerpop.gremlin.structure.VertexProperty
+ * @see org.apache.tinkerpop.gremlin.structure.VertexProperty
  * @see peapod.annotations.VertexProperty
  * @since 0.1
  */
