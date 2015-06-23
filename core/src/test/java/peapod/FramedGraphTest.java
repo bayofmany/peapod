@@ -84,7 +84,6 @@ public class FramedGraphTest extends GraphTest {
         List<Person> result = graph.V(Person.class).toList();
         assertEquals(3, result.size());
         assertThat(result.stream().map(Person::getName).collect(Collectors.toList()), containsInAnyOrder("alice", "bob", "charlie"));
-        assertEquals("alice", result.get(0).getName());
     }
 
     @Test
