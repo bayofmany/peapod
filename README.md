@@ -18,7 +18,7 @@ To integrate peapod in your project, include the following dependency. <br />
     <dependency>
         <groupId>org.bayofmany.peapod</groupId>
         <artifactId>peapod</artifactId>
-        <version>0.1.0</version>
+        <version>0.2.0</version>
     </dependency>
 
 <img src="http://www.tinkerpop.com/docs/3.0.0.M7/images/tinkerpop-classic.png" width="400" >
