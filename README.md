@@ -8,12 +8,12 @@ An object-graph wrapper (OGW) for the TinkerPop 3 graph stack. This project has 
 **Complete documentation can be found [here](http://bayofmany.github.io).**
 
 This project is similar to the [Totorom](https://github.com/BrynCooke/totorom) library created by Bryn Cook and the [Ferma](https://github.com/Syncleus/Ferma) library created by Jeffrey Phillips Freeman. The main differences are:
-* Peapod is based upon TinkerPop 3.
+* Peapod is based upon TinkerPop 3 (Totorom and Ferma will support TinkerPop 3 in their next versions).
 * Like TinkerPop 2 Frames, Peapod uses code generation to implement the framed vertex and edge classes. Unlike Frames and Ferma, the code is generated at compile-time using annotation processors. The generated java source code is completely transparent. There is no code generation at runtime, so no additional startup cost, and the use of reflection is limited in order to have minimal performance overhead.
-* In a next iteration, the peapod generator will generate a full DSL to traverse your domain model using the [Traversal API in TinkerPop 3](http://www.tinkerpop.com/docs/3.0.0.M7/#_domain_specific_languages)
+* In a next iteration, the goal is to generate traversal classes based on your graph topology.
 
 To integrate peapod in your project, include the following dependency. <br /> 
-(Disclaimer: The 0.1.0 version is an experimental initial release).
+(Disclaimer: The 0.2.0 version is still an experimental release using Apache Tinkerpop 3.0.0.M9-incubating).
 
     <dependency>
         <groupId>org.bayofmany.peapod</groupId>
