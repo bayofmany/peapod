@@ -39,7 +39,7 @@ public class AnnotationProcessorTest {
     public CompilationRule compilationRule = new CompilationRule();
 
     @Test
-    public void testCompile() {
+    public void testCompileForAbstractClasses() {
         List<JavaFileObject> input = new ArrayList<>();
         input.add(JavaFileObjects.forResource("peapod/internal/Person.java"));
         input.add(JavaFileObjects.forResource("peapod/internal/Knows.java"));
@@ -51,5 +51,20 @@ public class AnnotationProcessorTest {
                 .processedWith(new AnnotationProcessor())
                 .compilesWithoutError()
                 .and().generatesSources(framedVertex, framedEdge);
+    }
+
+    @Test
+    public void testCompileForInterfaces() {
+        List<JavaFileObject> input = new ArrayList<>();
+        input.add(JavaFileObjects.forResource("peapod/internal/PersonInterface.java"));
+        input.add(JavaFileObjects.forResource("peapod/internal/KnowsInterface.java"));
+        input.add(JavaFileObjects.forResource("peapod/internal/ProgrammerInterface.java"));
+        //JavaFileObject framedVertex = JavaFileObjects.forResource("peapod/internal/Person$Impl.java");
+
+        assert_().about(javaSources())
+                .that(input)
+                .processedWith(new AnnotationProcessor())
+                .compilesWithoutError();
+                //.and().generatesSources(framedVertex);
     }
 }

@@ -57,7 +57,7 @@ public class FramerRegistry {
         framers.values().forEach(f -> {
             String label = f.label();
             Class<?> aClass = f.frameClass();
-            while (!Object.class.equals(aClass)) {
+            while (aClass!=null && !Object.class.equals(aClass)) {
                 class2Labels.computeIfAbsent(aClass, c -> new ArrayList<>()).add(label);
                 aClass = aClass.getSuperclass();
             }
