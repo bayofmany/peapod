@@ -19,21 +19,31 @@
  *    http://www.apache.org/licenses/LICENSE-2.0
  */
 
-package peapod.demo.iclassic.extended;
+package peapod.demo.extended;
 
 import peapod.annotations.Edge;
 import peapod.annotations.In;
-import peapod.annotations.Out;
+import peapod.annotations.Vertex;
 
-@Edge
-public interface Knows extends BaseEdge {
+import java.util.List;
 
-    public abstract Float getWeight();
+@Vertex
+public interface Software extends BaseVertex  {
 
-    @Out
-    public abstract Person getPerson();
+    public  String getName();
+
+    public  void setName(String name);
+
+    public  void setCreated(Integer created);
+
+    public  String getLang();
 
     @In
-    public abstract Person getOtherPerson();
+    @Edge("created")
+    public  List<Person> getCreatedBy();
 
+    public  void addDependsOn(Software software);
+
+    public  void addEncapsulates(Software software);
 }
+

@@ -41,7 +41,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package peapod.demo.iclassic.extended;
+package peapod.demo.extended;
 
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -115,8 +115,8 @@ public class ShowcaseIClassicExtendedTest {
 
     @Test
     public void testNearEdges() {
-        assertThat(marko.getCreated(), hasSize(1));
-        Created created = marko.getCreated().get(0);
+        assertThat(marko.getECreated(), hasSize(1));
+        Created created = marko.getECreated().get(0);
         assertEquals(new Float(0.4), created.getWeight());
         assertEquals(marko, created.getPerson());
         assertEquals(lop, created.getSoftware());
@@ -133,7 +133,6 @@ public class ShowcaseIClassicExtendedTest {
         assertEquals(josh, knowsJosh.getOtherPerson());
         assertEquals(new Float(1.0), knowsJosh.getWeight());
     }
-
     @Test
     public void testMutations() {
         clear();

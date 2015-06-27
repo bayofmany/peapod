@@ -1,4 +1,4 @@
-package peapod.demo.iclassic.extended;
+package peapod.demo.extended;
 
 /**
  * Created by bsmtaa on 27/06/2015.
