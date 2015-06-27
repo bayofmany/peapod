@@ -56,7 +56,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.*;
 import static peapod.TinkerPopHelper.out;
-@Ignore
+
 public class AnnotationInterfaceTest extends GraphTest {
 
     private PersonInterface alice;

@@ -1,4 +1,4 @@
-package peapod.demo.iclassic.extended;
+package peapod.demo.extended;
 
 import peapod.annotations.Vertex;
 

@@ -50,9 +50,7 @@ import org.junit.Test;
 import peapod.FramedGraph;
 import peapod.FramedGraphTraversal;
 import peapod.FramedVertex;
-import peapod.demo.iclassic.Created;
-import peapod.demo.iclassic.Person;
-import peapod.demo.iclassic.Software;
+
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
