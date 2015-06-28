@@ -96,6 +96,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
             return true;
         } catch (Exception e) {
             e.printStackTrace();
+            messager.printMessage(ERROR, "PEAPOD: an error has occurred while generating code.. "+e.getMessage()+" "+e.getStackTrace());
             return false;
         }
     }
