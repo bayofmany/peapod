@@ -153,7 +153,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
         Set<String> results=new HashSet<String>(10);
         for (TypeMirror tmp:type.getInterfaces()){
             TypeElement typeElement = (TypeElement) ((DeclaredType)tmp).asElement();
-            results.add(typeElement.getSimpleName().toString());
+            results.add(typeElement.getQualifiedName().toString());
         }
         return results;
     }
