@@ -21,8 +21,6 @@
 
 package peapod.demo.iclassic;
 
-import org.apache.tinkerpop.gremlin.process.traversal.P;
-import peapod.FramedVertex;
 import peapod.annotations.Edge;
 import peapod.annotations.Vertex;
 

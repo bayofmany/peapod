@@ -21,7 +21,6 @@
 
 package peapod.demo.iclassic;
 
-import peapod.FramedVertex;
 import peapod.annotations.Edge;
 import peapod.annotations.In;
 import peapod.annotations.Vertex;

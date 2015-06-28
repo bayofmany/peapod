@@ -110,12 +110,33 @@ public final class AnnotationProcessor extends AbstractProcessor {
             PackageElement packageEl = (PackageElement) type.getEnclosingElement();
             writer.emitPackage(packageEl.getQualifiedName().toString())
                     .emitImports(imports)
-                    .emitImports(description.getImports())
-                    .emitEmptyLine()
-                    .emitAnnotation("SuppressWarnings", "\"unused\"");
+                    .emitImports(description.getImports());
+
 
             if (type.getKind().equals(INTERFACE)){
-                Set<String> interfacesNamesArr=getAllIDirectInterfaces(type); // add all interfaces extended by this interface
+                Set<TypeElement> interfaces=getAllIDirectInterfaces(type); // add all interfaces extended by this interface
+                /**
+                 *
+                  //add all imports of these interfaces to writer
+
+                 interfaces.forEach(e->{
+                 ClassDescription cs=parse(e);
+
+                 cs.getImports().forEach(x -> {
+                 try {
+                 writer.emitImports(Collections.singletonList(x));
+                 } catch (IOException e1) {
+                 //that import was a duplicate in the class, ignore it.
+                 //e1.printStackTrace();
+                 }
+                 });
+
+                 });
+                 */
+                writer.emitEmptyLine()
+                        .emitAnnotation("SuppressWarnings", "\"unused\"");
+                HashSet<String> interfacesNamesArr = new HashSet<String>();
+                interfaces.forEach(e->interfacesNamesArr.add(e.getQualifiedName().toString()));
                 interfacesNamesArr.add(implementsType); // add the necessary interface
                 interfacesNamesArr.add(type.getSimpleName().toString()); // add the interface itself
                 String[] implementsArr=new String[]{implementsType, };
@@ -123,6 +144,8 @@ public final class AnnotationProcessor extends AbstractProcessor {
                         .emitEmptyLine();
 
             }else{ // it's a class or abstract class
+                writer.emitEmptyLine()
+                        .emitAnnotation("SuppressWarnings", "\"unused\"");
                 writer.beginType(type.getQualifiedName() + "$Impl", "class", EnumSet.of(PUBLIC, Modifier.FINAL), type.getQualifiedName().toString(), implementsType)
                         .emitEmptyLine();
             }
@@ -149,11 +172,11 @@ public final class AnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    private Set<String> getAllIDirectInterfaces(TypeElement type) {
-        Set<String> results=new HashSet<String>(10);
+    private Set<TypeElement> getAllIDirectInterfaces(TypeElement type) {
+        Set<TypeElement> results=new HashSet<TypeElement>(10);
         for (TypeMirror tmp:type.getInterfaces()){
             TypeElement typeElement = (TypeElement) ((DeclaredType)tmp).asElement();
-            results.add(typeElement.getQualifiedName().toString());
+            results.add(typeElement);
         }
         return results;
     }
