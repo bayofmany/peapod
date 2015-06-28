@@ -67,4 +67,18 @@ public class AnnotationProcessorTest {
                 .compilesWithoutError();
                 //.and().generatesSources(framedVertex);
     }
+    @Test
+    public void testCompileForInterfaces2() {
+        List<JavaFileObject> input = new ArrayList<>();
+        //input.add(JavaFileObjects.forResource("peapod/demo/sport/Base.java"));
+        input.add(JavaFileObjects.forResource("peapod/demo/sport/classes/BaseClass.java"));
+        input.add(JavaFileObjects.forResource("peapod/demo/sport/classes/Entity.java"));
+        //JavaFileObject framedVertex = JavaFileObjects.forResource("peapod/internal/Person$Impl.java");
+
+        assert_().about(javaSources())
+                .that(input)
+                .processedWith(new AnnotationProcessor())
+                .compilesWithoutError();
+                //.and().generatesSources(framedVertex);
+    }
 }
