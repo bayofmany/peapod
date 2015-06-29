@@ -36,6 +36,7 @@ import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import java.io.IOException;
@@ -96,7 +97,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
             return true;
         } catch (Exception e) {
             e.printStackTrace();
-            messager.printMessage(WARNING, "PEAPOD: an error has occurred while generating code.. "+e.getMessage()+" "+Arrays.toString(e.getStackTrace()));
+            messager.printMessage(WARNING, "PEAPOD: "+e.getMessage()+" "+Arrays.toString(e.getStackTrace()).replace(",",",\n"));
             return false;
         }
     }
@@ -169,7 +170,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
             writer.endType();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error occurred while generating implementation for "+type.getQualifiedName(), e);
         }
     }
 
@@ -238,6 +239,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
             writer.endType();
         } catch (IOException e) {
+            messager.printMessage(WARNING, "An exception occurred while generating " + type.getQualifiedName() + "$Impl");
             throw new RuntimeException(e);
         }
     }
@@ -468,36 +470,46 @@ public final class AnnotationProcessor extends AbstractProcessor {
     }
 
     private ClassDescription parse(TypeElement type) {
-        List<ExecutableElement> elements = new ArrayList<>();
-        List<ExecutableElement> postContructs = new ArrayList<>();
+        ClassDescription description;
+        try {
+            List<ExecutableElement> elements = new ArrayList<>();
+            List<ExecutableElement> postContructs = new ArrayList<>();
 
-        Stack<TypeElement> stack=new Stack<>();
-        stack.push(type);
+            Stack<TypeElement> stack = new Stack<>();
+            stack.push(type);
 
-        TypeElement t =null;
-        do {
-            t = stack.pop();
-            if (t.getKind().equals(INTERFACE)){
-                t.getEnclosedElements().stream().filter(e -> e.getKind() == METHOD && !e.getModifiers().contains(Modifier.DEFAULT)).forEach(e -> elements.add((ExecutableElement) e));
-                t.getEnclosedElements().stream().filter(e -> e.getKind() == METHOD && e.getAnnotation(PostConstruct.class) != null).forEach(e -> postContructs.add((ExecutableElement) e));
-            }else{
-                t.getEnclosedElements().stream().filter(e -> e.getKind() == METHOD && e.getModifiers().contains(Modifier.ABSTRACT)).forEach(e -> elements.add((ExecutableElement) e));
-                t.getEnclosedElements().stream().filter(e -> e.getKind() == METHOD && e.getAnnotation(PostConstruct.class) != null).forEach(e -> postContructs.add((ExecutableElement) e));
+            TypeElement t = null;
+            do {
+                t = stack.pop();
+                String s=t.getQualifiedName().toString();
+                if (!t.getQualifiedName().toString().startsWith(FramedElement.class.getPackage().getName()+".Framed")) {
+
+                    if (t.getKind().equals(INTERFACE)) {
+                        t.getEnclosedElements().stream().filter(e -> e.getKind() == METHOD && !e.getModifiers().contains(Modifier.DEFAULT)).forEach(e -> elements.add((ExecutableElement) e));
+                    } else {
+                        t.getEnclosedElements().stream().filter(e -> e.getKind() == METHOD && e.getModifiers().contains(Modifier.ABSTRACT)).forEach(e -> elements.add((ExecutableElement) e));
+                    }
+                    t.getEnclosedElements().stream().filter(e -> e.getKind() == METHOD && e.getAnnotation(PostConstruct.class) != null).forEach(e -> postContructs.add((ExecutableElement) e));
+
+                    if (t.getSuperclass().getKind() == DECLARED) {
+                        t = (TypeElement) types.asElement(t.getSuperclass());
+                        stack.push(t);
+                    }
+                }
+                t.getInterfaces().forEach(e -> {
+                    TypeElement typeElement = (TypeElement) ((DeclaredType) e).asElement();
+                    stack.push(typeElement);
+                });
             }
-            if (t.getSuperclass().getKind() == DECLARED) {
-                t = (TypeElement) types.asElement(t.getSuperclass());
-            }
-            t.getInterfaces().forEach(e -> {
-                TypeElement typeElement = (TypeElement) ((DeclaredType) e).asElement();
-                stack.push(typeElement);
-            });
+            while (!stack.empty());
+
+            description = new ClassDescription(type, elements, postContructs);
+
+            Map<String, List<ExecutableElement>> property2Methods = elements.stream().collect(Collectors.groupingBy(this::extractProperty));
+            property2Methods.forEach((p, l) -> parse(description, p, l));
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage()+" occurred while generating "+type.getQualifiedName(), e);
         }
-        while (!stack.empty());
-
-        ClassDescription description = new ClassDescription(type, elements, postContructs);
-
-        Map<String, List<ExecutableElement>> property2Methods = elements.stream().collect(Collectors.groupingBy(this::extractProperty));
-        property2Methods.forEach((p, l) -> parse(description, p, l));
 
         return description;
     }
