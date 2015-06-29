@@ -21,8 +21,6 @@
 
 package peapod;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Contains;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
@@ -31,9 +29,8 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.*;
-import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * Defines the framed graph traversals and keeps track of the traversed framed classes.
@@ -43,12 +40,14 @@ import java.util.stream.Collectors;
  * @since 0.1
  */
 @SuppressWarnings({"unchecked", "unused"})
-public class FramedGraphTraversal<S, E> {
+public class FramedGraphTraversal<S, E> implements Iterator<E> {
 
     private GraphTraversal<S, E> traversal;
     private FramedGraph graph;
 
     private Class<?> lastFramingClass;
+
+    private boolean framed;
 
     private Map<String, Class<?>> stepLabel2FrameClass = new HashMap<>();
 
@@ -57,9 +56,9 @@ public class FramedGraphTraversal<S, E> {
         this.graph = graph;
     }
 
-    protected FramedGraphTraversal<S, E> labels(Class clazz, Collection<String> labels) {
+    protected FramedGraphTraversal<S, E> labels(Class clazz, String[] labels) {
         this.lastFramingClass = clazz;
-        traversal.has(T.label, P.within(labels));
+        traversal.hasLabel(labels);
         return this;
     }
 
@@ -163,9 +162,26 @@ public class FramedGraphTraversal<S, E> {
         return traversal.toSet();
     }
 
+    @Override
+    public boolean hasNext() {
+        addFrameStep(lastFramingClass);
+        return traversal.hasNext();
+    }
+
     public E next() {
         addFrameStep(lastFramingClass);
         return traversal.next();
+    }
+
+    @Override
+    public void remove() {
+        throw new RuntimeException("Iterator::remove not supported");
+    }
+
+    @Override
+    public void forEachRemaining(Consumer<? super E> action) {
+        addFrameStep(lastFramingClass);
+        traversal.forEachRemaining(action);
     }
 
     public Optional<E> tryNext() {
@@ -190,12 +206,13 @@ public class FramedGraphTraversal<S, E> {
 
 
     private <F> void addFrameStep(Class<F> framingClass) {
-        if (framingClass == null) {
+        if (framingClass == null || framed) {
             return;
         }
 
         MapStep<Vertex, F> mapStep = new LambdaMapStep<>(traversal.asAdmin(), v -> graph.frame(v.get(), framingClass));
         traversal.asAdmin().addStep(mapStep);
+        framed = true;
     }
 
 

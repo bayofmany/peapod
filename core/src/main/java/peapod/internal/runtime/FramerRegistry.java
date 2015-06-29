@@ -33,7 +33,7 @@ public class FramerRegistry {
 
     private final Map<Class<?>, IFramer<?, ?>> framers = new HashMap<>();
 
-    private final Map<Class<?>, List<String>> class2Labels = new HashMap<>();
+    private final Map<Class<?>, String[]> class2Labels = new HashMap<>();
 
 
     @SuppressWarnings("unchecked")
@@ -54,14 +54,16 @@ public class FramerRegistry {
             }
         });
 
+        Map<Class<?>, HashSet<String>> tmpClass2Labels = new HashMap<>();
         framers.values().forEach(f -> {
             String label = f.label();
             Class<?> aClass = f.frameClass();
             while (!Object.class.equals(aClass)) {
-                class2Labels.computeIfAbsent(aClass, c -> new ArrayList<>()).add(label);
+                tmpClass2Labels.computeIfAbsent(aClass, c -> new HashSet<>()).add(label);
                 aClass = aClass.getSuperclass();
             }
         });
+        tmpClass2Labels.forEach(((aClass, labels) -> class2Labels.put(aClass, labels.toArray(new String[labels.size()]))));
     }
 
     @SuppressWarnings("unchecked")
@@ -92,7 +94,7 @@ public class FramerRegistry {
         return framer;
     }
 
-    public <V> Collection<String> labels(Class<V> clazz) {
+    public <V> String[] labels(Class<V> clazz) {
         return class2Labels.get(clazz);
     }
 
