@@ -1,4 +1,4 @@
-# Peapod for TinkerPop 3 <a href="https://bayofmany.ci.cloudbees.com/"><img src="https://www.cloudbees.com/sites/default/files/styles/large/public/Button-Built-on-CB-1.png" width="150" align="right"></a>
+# Peapod for TinkerPop 3 <a href="http://www.ej-technologies.com/products/jprofiler/overview.html"><img src="https://www.ej-technologies.com/images/product_banners/jprofiler_large.png" align="right" height="42"></a><a href="https://bayofmany.ci.cloudbees.com/"><img src="https://www.cloudbees.com/sites/default/files/styles/large/public/Button-Built-on-CB-1.png" width="150" align="right"></a>
 
 > The project's name refers to the java class encapsulation of graph vertices. <br />
 > It's a just like peapods wrapping peas.
