@@ -23,6 +23,7 @@ package peapod.internal;
 
 import com.google.testing.compile.CompilationRule;
 import com.google.testing.compile.JavaFileObjects;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
