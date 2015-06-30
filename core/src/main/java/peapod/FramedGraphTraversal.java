@@ -21,10 +21,11 @@
 
 package peapod;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapStep;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -210,8 +211,7 @@ public class FramedGraphTraversal<S, E> implements Iterator<E> {
             return;
         }
 
-        MapStep<Vertex, F> mapStep = new LambdaMapStep<>(traversal.asAdmin(), v -> graph.frame(v.get(), framingClass));
-        traversal.asAdmin().addStep(mapStep);
+        traversal.asAdmin().addStep(new FrameMapStep(traversal.asAdmin(), graph, framingClass));
         framed = true;
     }
 
@@ -219,5 +219,21 @@ public class FramedGraphTraversal<S, E> implements Iterator<E> {
     public <E2> FramedGraphTraversal<S, E2> value() {
         traversal.value();
         return (FramedGraphTraversal<S, E2>) this;
+    }
+
+    private static class FrameMapStep<F> extends MapStep {
+        private FramedGraph graph;
+        private final Class<F> framingClass;
+
+        public FrameMapStep(Traversal.Admin traversal, FramedGraph graph, Class<F> framingClass) {
+            super(traversal);
+            this.graph = graph;
+            this.framingClass = framingClass;
+        }
+
+        @Override
+        protected F map(Traverser.Admin traverser) {
+            return graph.frame((Element) traverser.get(), framingClass);
+        }
     }
 }
