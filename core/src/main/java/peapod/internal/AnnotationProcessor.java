@@ -707,7 +707,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
         }
 
         private boolean isMethodType(ExecutableElement method) {
-            return prefix.equals(method.getSimpleName().subSequence(0, prefix.length())) && method.getParameters().size() == noParams;
+            return method.getSimpleName().toString().startsWith(prefix) && method.getParameters().size() == noParams;
         }
 
         public String getPropertyName(ExecutableElement method) {
