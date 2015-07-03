@@ -423,12 +423,12 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
     private ClassDescription parse(TypeElement type) {
         List<ExecutableElement> elements = new ArrayList<>();
-        List<ExecutableElement> postContructs = new ArrayList<>();
+        List<ExecutableElement> postConstructs = new ArrayList<>();
 
         TypeElement t = type;
         do {
             t.getEnclosedElements().stream().filter(e -> e.getKind() == METHOD && e.getModifiers().contains(Modifier.ABSTRACT)).forEach(e -> elements.add((ExecutableElement) e));
-            t.getEnclosedElements().stream().filter(e -> e.getKind() == METHOD && e.getAnnotation(PostConstruct.class) != null).forEach(e -> postContructs.add((ExecutableElement) e));
+            t.getEnclosedElements().stream().filter(e -> e.getKind() == METHOD && e.getAnnotation(PostConstruct.class) != null).forEach(e -> postConstructs.add((ExecutableElement) e));
             if (t.getSuperclass().getKind() == DECLARED) {
                 t = (TypeElement) types.asElement(t.getSuperclass());
             } else {
@@ -437,7 +437,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
         }
         while (t != null);
 
-        ClassDescription description = new ClassDescription(type, elements, postContructs);
+        ClassDescription description = new ClassDescription(type, elements, postConstructs);
 
         Map<String, List<ExecutableElement>> property2Methods = elements.stream().collect(Collectors.groupingBy(this::extractProperty));
         property2Methods.forEach((p, l) -> parse(description, p, l));
