@@ -41,38 +41,28 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package peapod;
+package peapod.classes;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import peapod.classes.AnnotatedClassTest;
-import peapod.inheritance.InheritanceTest;
-import peapod.linkededge.LinkedEdgeTest;
-import peapod.linkedvertex.LinkedVertexTest;
-import peapod.manytomany.ManyToManyTest;
-import peapod.manytomanyedge.ManyToManyEdgeTest;
-import peapod.manytoone.ManyToOneTest;
-import peapod.multiproperties.MultiPropertiesTest;
-import peapod.property.DatePropertyTest;
-import peapod.property.PropertyTest;
-import peapod.vertexproperty.VertexPropertyTest;
+import peapod.FramedVertex;
+import peapod.annotations.Edge;
+import peapod.annotations.Property;
+import peapod.annotations.Vertex;
 
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-        AnnotatedClassTest.class,
-        DatePropertyTest.class,
-        InheritanceTest.class,
-        FramedElementTest.class,
-        FramedGraphTest.class,
-        LinkedEdgeTest.class,
-        LinkedVertexTest.class,
-        ManyToManyTest.class,
-        ManyToManyEdgeTest.class,
-        ManyToOneTest.class,
-        MultiPropertiesTest.class,
-        PropertyTest.class,
-        VertexPropertyTest.class
-})
-public class GraphTestSuite {
+import java.util.List;
+
+@Vertex
+public abstract class Person implements FramedVertex<Person> {
+
+    @Property("p-name")
+    public abstract String getName();
+
+    public abstract void setName(String name);
+
+    @Edge("e-friend")
+    public abstract void addFriend(Person person);
+
+    public abstract void removeFriend(Person person);
+
+    public abstract List<Person> getFriends();
 
 }

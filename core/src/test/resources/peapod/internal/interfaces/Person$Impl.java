@@ -1,4 +1,4 @@
-package peapod.internal;
+package peapod.internal.interfaces;
 
 import java.util.Iterator;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -15,8 +15,8 @@ import java.util.List;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 
 @SuppressWarnings("unused")
-public final class Person$Impl extends Person
-        implements FramedVertex<Person> {
+public final class Person$Impl
+        implements FramedVertex<Person>, Person {
 
     private FramedGraph graph;
     private Vertex v;
@@ -58,7 +58,7 @@ public final class Person$Impl extends Person
         }
 
         public Class<Person> frameClass() {
-            return peapod.internal.Person.class;
+            return Person.class;
         }
 
         public String label() {

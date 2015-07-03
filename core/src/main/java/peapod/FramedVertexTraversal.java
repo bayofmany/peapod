@@ -32,25 +32,25 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 @SuppressWarnings({"unchecked", "unused"})
 public interface FramedVertexTraversal<S> {
 
-    public FramedGraphTraversal<S, S> start();
+    FramedGraphTraversal<S, S> start();
 
-    public default FramedGraphTraversal<S, Vertex> out(final String... edgeLabel) {
+    default FramedGraphTraversal<S, Vertex> out(final String... edgeLabel) {
         return start().out(edgeLabel);
     }
 
-    public default <E> FramedGraphTraversal<S, E> out(final String edgeLabel, Class<E> clazz) {
+    default <E> FramedGraphTraversal<S, E> out(final String edgeLabel, Class<E> clazz) {
         return start().out(edgeLabel, clazz);
     }
 
-    public default FramedGraphTraversal<S, Vertex> in(final String... edgeLabel) {
+    default FramedGraphTraversal<S, Vertex> in(final String... edgeLabel) {
         return start().in(edgeLabel);
     }
 
-    public default <E2> FramedGraphTraversal<S, E2> in(final String edgeLabel, Class<E2> clazz) {
+    default <E2> FramedGraphTraversal<S, E2> in(final String edgeLabel, Class<E2> clazz) {
         return start().in(edgeLabel, clazz);
     }
 
-    public default <E2> FramedGraphTraversal<S, E2> properties(Class<E2> clazz) {
+    default <E2> FramedGraphTraversal<S, E2> properties(Class<E2> clazz) {
         return this.start().properties(clazz);
     }
 

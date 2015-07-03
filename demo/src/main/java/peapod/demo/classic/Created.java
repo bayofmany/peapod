@@ -26,14 +26,14 @@ import peapod.annotations.In;
 import peapod.annotations.Out;
 
 @Edge
-public abstract class Created {
+public interface Created {
 
-    public abstract Float getWeight();
+    Float getWeight();
 
     @Out
-    public abstract Person getPerson();
+    Person getPerson();
 
     @In
-    public abstract Software getSoftware();
+    Software getSoftware();
 
 }

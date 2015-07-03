@@ -21,8 +21,8 @@
 
 package peapod.internal;
 
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.T;
 import peapod.*;
 import peapod.annotations.*;
 import peapod.internal.runtime.DefaultIterable;
@@ -40,6 +40,7 @@ import javax.lang.model.util.Types;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -78,24 +79,30 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
         try {
             Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(Vertex.class);
-            messager.printMessage(OTHER, elements.size() + " elements with annotation @Vertex");
+            messager.printMessage(OTHER, elements.size() + " elements with classes @Vertex");
 
             Class<?>[] vImports = {org.apache.tinkerpop.gremlin.structure.Vertex.class, org.apache.tinkerpop.gremlin.structure.Element.class, FramedVertex.class, FramedElement.class, FramedGraph.class, IFramer.class, Framer.class, FrameHelper.class, org.apache.tinkerpop.gremlin.structure.Direction.class, Iterator.class};
             elements.stream().forEach(e -> generateImplementationClass((TypeElement) e, ElementType.Vertex, "FramedVertex<" + getBaseType((TypeElement) e).getSimpleName() + ">", vImports));
 
             elements = roundEnv.getElementsAnnotatedWith(VertexProperty.class);
-            messager.printMessage(OTHER, elements.size() + " elements with annotation @VertexProperty");
+            messager.printMessage(OTHER, elements.size() + " elements with classes @VertexProperty");
             elements.stream().filter(e -> e.getKind().isClass()).forEach(e -> generateVertexPropertyImplementationClass((TypeElement) e));
 
             elements = roundEnv.getElementsAnnotatedWith(Edge.class);
-            messager.printMessage(OTHER, elements.size() + " elements with annotation @Edge");
+            messager.printMessage(OTHER, elements.size() + " elements with classes @Edge");
             Class<?>[] eImports = {org.apache.tinkerpop.gremlin.structure.Edge.class, org.apache.tinkerpop.gremlin.structure.Element.class, FramedEdge.class, FramedElement.class, FramedGraph.class, IFramer.class, Framer.class};
-            elements.stream().filter(e -> e.getKind().isClass()).forEach(e -> generateImplementationClass((TypeElement) e, ElementType.Edge, FramedEdge.class.getSimpleName(), eImports));
+            elements.stream().filter(e -> e.getKind().isClass() || e.getKind().isInterface()).forEach(e -> generateImplementationClass((TypeElement) e, ElementType.Edge, FramedEdge.class.getSimpleName(), eImports));
 
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+            try (StringWriter sw = new StringWriter(); PrintWriter out = new PrintWriter(sw)) {
+                e.printStackTrace(out);
+                messager.printMessage(ERROR, "Error while generating code: " + sw.toString());
+                return false;
+            } catch (IOException e1) {
+                // ignore
+                return false;
+            }
         }
     }
 
@@ -111,10 +118,28 @@ public final class AnnotationProcessor extends AbstractProcessor {
                     .emitImports(imports)
                     .emitImports(description.getImports())
                     .emitEmptyLine()
-                    .emitAnnotation("SuppressWarnings", "\"unused\"")
-                    .beginType(type.getQualifiedName() + "$Impl", "class", EnumSet.of(PUBLIC, Modifier.FINAL), type.getQualifiedName().toString(), implementsType)
-                    .emitEmptyLine();
-            writer.emitField(peapod.FramedGraph.class.getName(), "graph", EnumSet.of(PRIVATE))
+                    .emitAnnotation("SuppressWarnings", "\"unused\"");
+
+            String extendsType;
+            String[] implementsInterfaces;
+
+            if (type.getKind().equals(INTERFACE)) {
+                extendsType = null;
+
+                Set<TypeElement> implementingInterfaces = getAllImplementingInterfaces(type); // add all interfaces extended by this interface
+                Set<String> implementsSet = new HashSet<>();
+                implementingInterfaces.forEach(i -> implementsSet.add(i.getQualifiedName().toString()));
+                implementsSet.add(implementsType); // add the necessary interface
+                implementsSet.add(type.getSimpleName().toString()); // add the interface itself
+                implementsInterfaces = implementsSet.toArray(new String[implementsSet.size()]);
+            } else { // it's a class or abstract class
+                extendsType = type.getQualifiedName().toString();
+                implementsInterfaces = new String[]{implementsType};
+            }
+
+            writer.beginType(type.getQualifiedName() + "$Impl", "class", EnumSet.of(PUBLIC, Modifier.FINAL), extendsType, implementsInterfaces)
+                    .emitEmptyLine()
+                    .emitField(peapod.FramedGraph.class.getName(), "graph", EnumSet.of(PRIVATE))
                     .emitField(elementType.getClazz().getName(), elementType.getFieldName(), EnumSet.of(PRIVATE))
                     .beginConstructor(EnumSet.of(PUBLIC), elementType.toString(), elementType.getFieldName(), FramedGraph.class.getSimpleName(), "graph")
                     .emitStatement("this.%s  = %s", elementType.getFieldName(), elementType.getFieldName())
@@ -128,12 +153,21 @@ public final class AnnotationProcessor extends AbstractProcessor {
                     .endMethod();
 
             implementAbstractMethods(description, writer, elementType);
-            implementFramerMethods(type, writer, elementType, description.getPostContructMethods());
+            implementFramerMethods(type, writer, elementType, description.getPostConstructMethods());
 
             writer.endType();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error occurred while generating implementation for " + type.getQualifiedName(), e);
         }
+    }
+
+    private Set<TypeElement> getAllImplementingInterfaces(TypeElement type) {
+        Set<TypeElement> results = new HashSet<>();
+        for (TypeMirror tmp : type.getInterfaces()) {
+            TypeElement typeElement = (TypeElement) ((DeclaredType) tmp).asElement();
+            results.add(typeElement);
+        }
+        return results;
     }
 
     private void generateVertexPropertyImplementationClass(TypeElement type) {
@@ -188,10 +222,11 @@ public final class AnnotationProcessor extends AbstractProcessor {
             writer.endMethod();
 
             implementAbstractMethods(description, writer, ElementType.VertexProperty);
-            implementFramerMethods(type, writer, ElementType.VertexProperty, description.getPostContructMethods());
+            implementFramerMethods(type, writer, ElementType.VertexProperty, description.getPostConstructMethods());
 
             writer.endType();
         } catch (IOException e) {
+            messager.printMessage(WARNING, "An exception occurred while generating " + type.getQualifiedName() + "$Impl");
             throw new RuntimeException(e);
         }
     }
@@ -311,7 +346,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 writer.emitStatement("return graph().frame(%s.%sVertex(), %s.class)", elementName, in ? "in" : "out", writer.compressType(method.getReturnType()));
             } else if (isEdge(method.getReturnType()) && elementType == ElementType.Vertex) {
                 writer.emitSingleLineComment("vertex-getter-edge");
-                writer.emitStatement("return FrameHelper.filterEdge(this, \"%s\", %s, %s.class)", label, parameterName, writer.compressType(method.getReturnType()));
+                writer.emitStatement("return FrameHelper.filterEdge(this, \"%s\", ((FramedVertex)%s), %s.class)", label, parameterName, writer.compressType(method.getReturnType()));
             } else {
                 generateNotSupportedStatement("get-no-vertex-or-edge", method, writer);
             }
@@ -331,6 +366,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
             }
             writer.endControlFlow();
         } else if (methodType == MethodType.ADDER) {
+            writer.emitSingleLineComment("vertex-adder-vertex");
             if (parameterClass != null && parameterClass.getAnnotation(Vertex.class) != null) {
                 String statement = String.format("v.addEdge(\"%s\", ((FramedVertex) %s).vertex())", label, parameterName);
                 if (returnClass != null && returnClass.getAnnotation(Edge.class) != null) {
@@ -342,8 +378,9 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 generateNotSupportedStatement("added-without-vertex-parameter", method, writer);
             }
         } else if (methodType == MethodType.REMOVER && parameterClass != null) {
+            writer.emitSingleLineComment("vertex-remover-vertex");
             if (parameterClass.getAnnotation(Vertex.class) != null) {
-                writer.emitStatement("FrameHelper.removeEdge(v, Direction.OUT, \"%s\", %s.vertex())", label, parameterName);
+                writer.emitStatement("FrameHelper.removeEdge(v, Direction.OUT, \"%s\", ((FramedVertex)%s).vertex())", label, parameterName);
             } else if (parameterClass.getAnnotation(Edge.class) != null) {
                 writer.emitStatement("((FramedElement)%s).remove()", parameterName);
             }
@@ -379,7 +416,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 .endMethod()
                 .emitEmptyLine()
                 .beginMethod("Class<" + type + ">", "frameClass", Collections.singleton(PUBLIC))
-                .emitStatement("return %s.class", type)
+                .emitStatement("return %s.class", writer.compressType(type.toString()))
                 .endMethod()
                 .emitEmptyLine()
                 .beginMethod("String", "label", Collections.singleton(PUBLIC))
@@ -422,20 +459,38 @@ public final class AnnotationProcessor extends AbstractProcessor {
     }
 
     private ClassDescription parse(TypeElement type) {
+
         List<ExecutableElement> elements = new ArrayList<>();
         List<ExecutableElement> postConstructs = new ArrayList<>();
 
-        TypeElement t = type;
+        Stack<TypeElement> stack = new Stack<>();
+        stack.push(type);
+
+        TypeElement t;
         do {
-            t.getEnclosedElements().stream().filter(e -> e.getKind() == METHOD && e.getModifiers().contains(Modifier.ABSTRACT)).forEach(e -> elements.add((ExecutableElement) e));
+            t = stack.pop();
+
+            if (t.getQualifiedName().toString().matches("peapod.Framed(Element|Vertex|Edge|VertexProperty)")) {
+                continue;
+            }
+
+            if (t.getKind().equals(INTERFACE)) {
+                t.getEnclosedElements().stream().filter(e -> e.getKind() == METHOD && !e.getModifiers().contains(Modifier.DEFAULT)).forEach(e -> elements.add((ExecutableElement) e));
+            } else {
+                t.getEnclosedElements().stream().filter(e -> e.getKind() == METHOD && e.getModifiers().contains(Modifier.ABSTRACT)).forEach(e -> elements.add((ExecutableElement) e));
+            }
             t.getEnclosedElements().stream().filter(e -> e.getKind() == METHOD && e.getAnnotation(PostConstruct.class) != null).forEach(e -> postConstructs.add((ExecutableElement) e));
+
             if (t.getSuperclass().getKind() == DECLARED) {
                 t = (TypeElement) types.asElement(t.getSuperclass());
-            } else {
-                t = null;
+                stack.push(t);
             }
+            t.getInterfaces().forEach(e -> {
+                TypeElement typeElement = (TypeElement) ((DeclaredType) e).asElement();
+                stack.push(typeElement);
+            });
         }
-        while (t != null);
+        while (!stack.empty());
 
         ClassDescription description = new ClassDescription(type, elements, postConstructs);
 
@@ -670,7 +725,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
         private final Class<?>[] importClass;
 
-        CollectionType( Class<?>... importClass) {
+        CollectionType(Class<?>... importClass) {
             this.importClass = importClass;
         }
 

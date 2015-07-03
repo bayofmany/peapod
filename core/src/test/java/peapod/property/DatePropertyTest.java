@@ -53,7 +53,6 @@ import peapod.GraphTest;
 import java.util.Date;
 
 import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assume.assumeTrue;
 
 /**
  * Test class to test primitive and object multiproperties.

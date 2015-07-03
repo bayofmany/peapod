@@ -23,7 +23,10 @@ package peapod.internal.runtime;
 
 import org.apache.tinkerpop.gremlin.structure.Element;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class FramerRegistry {
 
@@ -58,7 +61,7 @@ public class FramerRegistry {
         framers.values().forEach(f -> {
             String label = f.label();
             Class<?> aClass = f.frameClass();
-            while (!Object.class.equals(aClass)) {
+            while (aClass != null && !Object.class.equals(aClass)) {
                 tmpClass2Labels.computeIfAbsent(aClass, c -> new HashSet<>()).add(label);
                 aClass = aClass.getSuperclass();
             }

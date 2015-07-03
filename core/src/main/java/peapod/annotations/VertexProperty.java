@@ -40,7 +40,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  *   public abstract String getAcl();
  *   public abstract void setAcl(String acl);
  * }</pre>
- * <p>By default the class simple name will define the property name, but this can be changed via the annotation value.</p>
+ * <p>By default the class simple name will define the property name, but this can be changed via the classes value.</p>
  * <pre>
  * &#64;VertexProperty("denomination")
  * public abstract class Name implements FramedVertexProperty&lt;String&gt; {}</pre>

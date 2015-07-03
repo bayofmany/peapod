@@ -69,9 +69,9 @@ public class ClassDescription {
 
     private final Set<String> imports = new HashSet<>();
 
-    public ClassDescription(TypeElement t, List<ExecutableElement> elements, List<ExecutableElement> postContructs) {
-        this.methods = elements;
-        this.postContructs = postContructs;
+    public ClassDescription(TypeElement t, List<ExecutableElement> methods, List<ExecutableElement> postConstructs) {
+        this.methods = methods;
+        this.postContructs = postConstructs;
 
         packageName = ((PackageElement) t.getEnclosingElement()).getQualifiedName().toString();
         if (t.getAnnotation(Vertex.class) != null) {
@@ -96,7 +96,6 @@ public class ClassDescription {
             properties.add(element);
         }
 
-        //     addImport(element.getReturnType());
         for (VariableElement param : element.getParameters()) {
             addImport(param.asType());
         }
@@ -106,7 +105,7 @@ public class ClassDescription {
         return methods;
     }
 
-    public List<ExecutableElement> getPostContructMethods() {
+    public List<ExecutableElement> getPostConstructMethods() {
         return postContructs;
     }
 

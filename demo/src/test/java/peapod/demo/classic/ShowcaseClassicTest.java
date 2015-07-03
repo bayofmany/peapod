@@ -54,6 +54,9 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+/**
+ * This test shows some basic object graph mapping using the TinkerPop3 classic graph. Graph vertices and edges can be modelled using classes or interfaces.
+ */
 public class ShowcaseClassicTest {
 
     private FramedGraph graph;

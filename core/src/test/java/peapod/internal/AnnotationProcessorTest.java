@@ -39,12 +39,12 @@ public class AnnotationProcessorTest {
     public CompilationRule compilationRule = new CompilationRule();
 
     @Test
-    public void testCompile() {
+    public void testCompileForAbstractClasses() {
         List<JavaFileObject> input = new ArrayList<>();
-        input.add(JavaFileObjects.forResource("peapod/internal/Person.java"));
-        input.add(JavaFileObjects.forResource("peapod/internal/Knows.java"));
-        JavaFileObject framedVertex = JavaFileObjects.forResource("peapod/internal/Person$Impl.java");
-        JavaFileObject framedEdge = JavaFileObjects.forResource("peapod/internal/Knows$Impl.java");
+        input.add(JavaFileObjects.forResource("peapod/internal/classes/Person.java"));
+        input.add(JavaFileObjects.forResource("peapod/internal/classes/Knows.java"));
+        JavaFileObject framedVertex = JavaFileObjects.forResource("peapod/internal/classes/Person$Impl.java");
+        JavaFileObject framedEdge = JavaFileObjects.forResource("peapod/internal/classes/Knows$Impl.java");
 
         assert_().about(javaSources())
                 .that(input)
@@ -52,4 +52,22 @@ public class AnnotationProcessorTest {
                 .compilesWithoutError()
                 .and().generatesSources(framedVertex, framedEdge);
     }
+
+    @Test
+    public void testCompileForInterfaces() {
+        List<JavaFileObject> input = new ArrayList<>();
+        input.add(JavaFileObjects.forResource("peapod/internal/interfaces/Person.java"));
+        input.add(JavaFileObjects.forResource("peapod/internal/interfaces/Knows.java"));
+        input.add(JavaFileObjects.forResource("peapod/internal/interfaces/Programmer.java"));
+        JavaFileObject framedVertex = JavaFileObjects.forResource("peapod/internal/interfaces/Person$Impl.java");
+        JavaFileObject framedSubVertex = JavaFileObjects.forResource("peapod/internal/interfaces/Programmer$Impl.java");
+        JavaFileObject framedEdge = JavaFileObjects.forResource("peapod/internal/interfaces/Knows$Impl.java");
+
+        assert_().about(javaSources())
+                .that(input)
+                .processedWith(new AnnotationProcessor())
+                .compilesWithoutError()
+                .and().generatesSources(framedVertex, framedSubVertex, framedEdge);
+    }
+
 }

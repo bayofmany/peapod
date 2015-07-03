@@ -1,4 +1,4 @@
-package peapod.internal;
+package peapod.internal.classes;
 
 import peapod.annotations.Vertex;
 import java.util.List;

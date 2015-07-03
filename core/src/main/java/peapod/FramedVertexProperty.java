@@ -38,9 +38,9 @@ import peapod.annotations.VertexProperty;
  */
 public interface FramedVertexProperty<T> extends FramedElement {
 
-    public void setValue(T t);
+    void setValue(T t);
 
-    public T getValue();
+    T getValue();
 
     default VertexProperty property() {
         return (VertexProperty) element();

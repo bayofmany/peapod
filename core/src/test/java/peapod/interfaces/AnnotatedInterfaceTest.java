@@ -41,38 +41,72 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package peapod;
+package peapod.interfaces;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import peapod.classes.AnnotatedClassTest;
-import peapod.inheritance.InheritanceTest;
-import peapod.linkededge.LinkedEdgeTest;
-import peapod.linkedvertex.LinkedVertexTest;
-import peapod.manytomany.ManyToManyTest;
-import peapod.manytomanyedge.ManyToManyEdgeTest;
-import peapod.manytoone.ManyToOneTest;
-import peapod.multiproperties.MultiPropertiesTest;
-import peapod.property.DatePropertyTest;
-import peapod.property.PropertyTest;
-import peapod.vertexproperty.VertexPropertyTest;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Before;
+import org.junit.Test;
+import peapod.FramedGraph;
+import peapod.FramedVertex;
+import peapod.GraphTest;
 
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-        AnnotatedClassTest.class,
-        DatePropertyTest.class,
-        InheritanceTest.class,
-        FramedElementTest.class,
-        FramedGraphTest.class,
-        LinkedEdgeTest.class,
-        LinkedVertexTest.class,
-        ManyToManyTest.class,
-        ManyToManyEdgeTest.class,
-        ManyToOneTest.class,
-        MultiPropertiesTest.class,
-        PropertyTest.class,
-        VertexPropertyTest.class
-})
-public class GraphTestSuite {
+import java.util.List;
+
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static peapod.TinkerPopHelper.out;
+
+public class AnnotatedInterfaceTest extends GraphTest {
+
+    private Person alice;
+    private Person bob;
+    private Person charlie;
+
+    @Before
+    public void init() {
+        Vertex alice = g.addVertex(T.label, "Person", "p-name", "alice");
+        Vertex bob = g.addVertex(T.label, "Person", "p-name", "bob");
+        Vertex charlie = g.addVertex(T.label, "Person", "p-name", "charlie");
+
+        alice.addEdge("e-friend", bob);
+
+        FramedGraph graph = new FramedGraph(g, Person.class.getPackage());
+        this.alice = graph.v(alice.id());
+        this.bob = graph.v(bob.id());
+        this.charlie = graph.v(charlie.id());
+    }
+
+    @Test
+    public void testGetProperty() {
+        assertEquals("alice", alice.getName());
+    }
+
+    @Test
+    public void testSetProperty() {
+        alice.setName("diane");
+        assertTrue(alice instanceof FramedVertex);
+        assertEquals("diane", ((FramedVertex) alice).vertex().value("p-name"));
+    }
+
+    @Test
+    public void testGetList() {
+        assertEquals(1, alice.getFriends().size());
+    }
+
+    @Test
+    public void testAdd() {
+        alice.addFriend(charlie);
+        List<Vertex> f = out(((FramedVertex) alice).vertex(), "e-friend");
+        assertThat(f, containsInAnyOrder(((FramedVertex) bob).vertex(), ((FramedVertex) charlie).vertex()));
+    }
+
+    @Test
+    public void testRemove() {
+        alice.removeFriend(bob);
+        assertTrue(((FramedVertex) alice).out("e-friend").toList().isEmpty());
+    }
 
 }

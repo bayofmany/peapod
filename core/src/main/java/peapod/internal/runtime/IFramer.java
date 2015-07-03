@@ -35,8 +35,8 @@ public interface IFramer<E extends Element, F> {
 
     String label();
 
-    public F frame(E element, FramedGraph framedGraph);
+    F frame(E element, FramedGraph framedGraph);
 
-    public F frameNew(E element, FramedGraph framedGraph);
+    F frameNew(E element, FramedGraph framedGraph);
 
 }

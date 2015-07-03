@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import peapod.FramedGraph;
 import peapod.GraphTest;

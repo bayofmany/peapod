@@ -41,7 +41,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package peapod.annotation;
+package peapod.classes;
 
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -56,7 +56,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.*;
 import static peapod.TinkerPopHelper.out;
 
-public class AnnotationTest extends GraphTest {
+public class AnnotatedClassTest extends GraphTest {
 
     private Person alice;
     private Person bob;

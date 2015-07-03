@@ -1,4 +1,4 @@
-package peapod.internal;
+package peapod.internal.interfaces;
 
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -9,8 +9,8 @@ import peapod.internal.runtime.Framer;
 import peapod.internal.runtime.IFramer;
 
 @SuppressWarnings("unused")
-public final class Knows$Impl extends Knows
-        implements FramedEdge {
+public final class Knows$Impl
+        implements FramedEdge, Knows {
 
     private FramedGraph graph;
     private Edge e;
@@ -53,7 +53,7 @@ public final class Knows$Impl extends Knows
         }
 
         public Class<Knows> frameClass() {
-            return peapod.internal.Knows.class;
+            return Knows.class;
         }
 
         public String label() {

@@ -41,9 +41,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package peapod.annotation;
+package peapod.interfaces;
 
-import peapod.FramedVertex;
 import peapod.annotations.Edge;
 import peapod.annotations.Property;
 import peapod.annotations.Vertex;
@@ -51,18 +50,18 @@ import peapod.annotations.Vertex;
 import java.util.List;
 
 @Vertex
-public abstract class Person implements FramedVertex<Person> {
+public interface Person {
 
     @Property("p-name")
-    public abstract String getName();
+    String getName();
 
-    public abstract void setName(String name);
+    void setName(String name);
 
     @Edge("e-friend")
-    public abstract void addFriend(Person person);
+    void addFriend(Person person);
 
-    public abstract void removeFriend(Person person);
+    void removeFriend(Person person);
 
-    public abstract List<Person> getFriends();
+    List<Person> getFriends();
 
 }
