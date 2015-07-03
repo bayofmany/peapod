@@ -43,7 +43,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  *   &#64;In
  *   public abstract Software getSoftware();
  * }</pre>
- * <p>By default the class simple name in lower case is used as edge label, but this can be changed via the classes value.
+ * <p>By default the class simple name in lower case is used as edge label, but this can be changed via the annotation value.
  * <p>The wrapper class can optionally implement {@code FramedEdge} to get a reference to the wrapped {@code edge}.</p>
  * <pre>
  * &#64;Edge("has_developed")

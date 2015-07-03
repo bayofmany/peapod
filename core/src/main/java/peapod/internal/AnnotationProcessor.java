@@ -79,17 +79,17 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
         try {
             Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(Vertex.class);
-            messager.printMessage(OTHER, elements.size() + " elements with classes @Vertex");
+            messager.printMessage(OTHER, elements.size() + " elements with annotation @Vertex");
 
             Class<?>[] vImports = {org.apache.tinkerpop.gremlin.structure.Vertex.class, org.apache.tinkerpop.gremlin.structure.Element.class, FramedVertex.class, FramedElement.class, FramedGraph.class, IFramer.class, Framer.class, FrameHelper.class, org.apache.tinkerpop.gremlin.structure.Direction.class, Iterator.class};
             elements.stream().forEach(e -> generateImplementationClass((TypeElement) e, ElementType.Vertex, "FramedVertex<" + getBaseType((TypeElement) e).getSimpleName() + ">", vImports));
 
             elements = roundEnv.getElementsAnnotatedWith(VertexProperty.class);
-            messager.printMessage(OTHER, elements.size() + " elements with classes @VertexProperty");
+            messager.printMessage(OTHER, elements.size() + " elements with annotation @VertexProperty");
             elements.stream().filter(e -> e.getKind().isClass()).forEach(e -> generateVertexPropertyImplementationClass((TypeElement) e));
 
             elements = roundEnv.getElementsAnnotatedWith(Edge.class);
-            messager.printMessage(OTHER, elements.size() + " elements with classes @Edge");
+            messager.printMessage(OTHER, elements.size() + " elements with annotation @Edge");
             Class<?>[] eImports = {org.apache.tinkerpop.gremlin.structure.Edge.class, org.apache.tinkerpop.gremlin.structure.Element.class, FramedEdge.class, FramedElement.class, FramedGraph.class, IFramer.class, Framer.class};
             elements.stream().filter(e -> e.getKind().isClass() || e.getKind().isInterface()).forEach(e -> generateImplementationClass((TypeElement) e, ElementType.Edge, FramedEdge.class.getSimpleName(), eImports));
 
