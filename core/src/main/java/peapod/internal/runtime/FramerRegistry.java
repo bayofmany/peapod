@@ -21,6 +21,7 @@
 
 package peapod.internal.runtime;
 
+import org.apache.commons.lang.ClassUtils;
 import org.apache.tinkerpop.gremlin.structure.Element;
 
 import java.util.HashMap;
@@ -62,7 +63,17 @@ public class FramerRegistry {
             String label = f.label();
             Class<?> aClass = f.frameClass();
             while (aClass != null && !Object.class.equals(aClass)) {
-                tmpClass2Labels.computeIfAbsent(aClass, c -> new HashSet<>()).add(label);
+                if (framers.containsKey(aClass)) {
+                    tmpClass2Labels.computeIfAbsent(aClass, c -> new HashSet<>()).add(label);
+                }
+
+                for (Object i : ClassUtils.getAllInterfaces(aClass)) {
+                    Class<?> anInterface = (Class<?>) i;
+                    if (framers.containsKey(anInterface)) {
+                        tmpClass2Labels.computeIfAbsent(anInterface, c -> new HashSet<>()).add(label);
+                    }
+                }
+
                 aClass = aClass.getSuperclass();
             }
         });

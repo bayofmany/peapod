@@ -43,6 +43,11 @@ public class InheritanceTest extends GraphTest {
         g.addVertex(T.label, "Person", "name", "alice");
         vertex = g.addVertex(T.label, "Programmer", "name", "bob", "yearsExperience", 10);
 
+        g.addVertex(T.label, "Dog", "name", "Shepherd", "numberOfLegs", 4, "hairColor", "brown");
+        g.addVertex(T.label, "Mammal", "name", "Tiger", "numberOfLegs", 4);
+        g.addVertex(T.label, "Salmon", "name", "Atlantic Salmon", "numberOfLegs", 0, "saltWater", true);
+        g.addVertex(T.label, "Fish", "name", "Goldfish", "numberOfLegs", 0, "saltWater", false);
+
         graph = new FramedGraph(g, Person.class.getPackage());
     }
 
@@ -57,6 +62,28 @@ public class InheritanceTest extends GraphTest {
     public void testLoad() {
         Person person = graph.v(vertex.id());
         assertTrue(person instanceof Programmer);
-        assertEquals(10, ((Programmer)person).getYearsExperience());
+        assertEquals(10, ((Programmer) person).getYearsExperience());
     }
+
+    @Test
+    public void testFindWithInterfaces() {
+        assertEquals(4, graph.V(Animal.class).toList().size());
+        assertEquals(2, graph.V(Mammal.class).toList().size());
+        assertEquals(2, graph.V(Fish.class).toList().size());
+        assertEquals(1, graph.V(Salmon.class).toList().size());
+        assertEquals(1, graph.V(Dog.class).toList().size());
+
+        Dog dog = graph.V(Dog.class).next();
+        assertEquals(4, dog.getNumberOfLegs());
+        assertEquals("brown", dog.getHairColor());
+
+        Salmon salmon = graph.V(Salmon.class).next();
+        assertEquals(0, salmon.getNumberOfLegs());
+        assertTrue(salmon.getSaltWater());
+
+        Fish fish = graph.V(Fish.class).has("saltWater", false).next();
+        assertEquals("Goldfish", fish.getName());
+
+    }
+
 }
