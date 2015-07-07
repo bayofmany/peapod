@@ -13,9 +13,9 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  *
- * This project is derived from code in the TinkerPop project under the following licenses:
+ * This project is derived from code in the Tinkerpop project under the following licenses:
  *
- * TinkerPop3
+ * Tinkerpop3
  * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,28 +41,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package peapod.interfaces;
+package peapod.inheritance;
 
-import peapod.FramedVertex;
-import peapod.annotations.Edge;
-import peapod.annotations.Property;
 import peapod.annotations.Vertex;
 
-import java.util.List;
+@Vertex("GOM")
+/**
+ * Test 'multiple inheritance' with interfaces.
+ */
+public interface GeneticallyModifiedOrganism extends Salmon, Dog {
 
-@Vertex
-public interface Person extends FramedVertex<Person> {
-
-    @Property("p-name")
-    String getName();
-
-    void setName(String name);
-
-    @Edge("e-friend")
-    void addFriend(Person person);
-
-    void removeFriend(Person person);
-
-    List<Person> getFriends();
-
+    String getName(); // test a method already defined in the interface hierarchy
 }

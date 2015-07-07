@@ -43,10 +43,13 @@ public class InheritanceTest extends GraphTest {
         g.addVertex(T.label, "Person", "name", "alice");
         vertex = g.addVertex(T.label, "Programmer", "name", "bob", "yearsExperience", 10);
 
-        g.addVertex(T.label, "Dog", "name", "Shepherd", "numberOfLegs", 4, "hairColor", "brown");
+        Vertex v1 = g.addVertex(T.label, "Dog", "name", "Shepherd", "numberOfLegs", 4, "hairColor", "brown");
         g.addVertex(T.label, "Mammal", "name", "Tiger", "numberOfLegs", 4);
         g.addVertex(T.label, "Salmon", "name", "Atlantic Salmon", "numberOfLegs", 0, "saltWater", true);
         g.addVertex(T.label, "Fish", "name", "Goldfish", "numberOfLegs", 0, "saltWater", false);
+        Vertex v2 = g.addVertex(T.label, "GOM", "name", "WeirdAnimal", "numberOfLegs", 2, "saltWater", true);
+
+        v2.addEdge("relatedto", v1, "relation", "same color");
 
         graph = new FramedGraph(g, Person.class.getPackage());
     }
@@ -67,23 +70,31 @@ public class InheritanceTest extends GraphTest {
 
     @Test
     public void testFindWithInterfaces() {
-        assertEquals(4, graph.V(Animal.class).toList().size());
-        assertEquals(2, graph.V(Mammal.class).toList().size());
-        assertEquals(2, graph.V(Fish.class).toList().size());
-        assertEquals(1, graph.V(Salmon.class).toList().size());
-        assertEquals(1, graph.V(Dog.class).toList().size());
+        assertEquals(5, graph.V(Animal.class).toList().size());
+        assertEquals(3, graph.V(Mammal.class).toList().size());
+        assertEquals(3, graph.V(Fish.class).toList().size());
+        assertEquals(2, graph.V(Salmon.class).toList().size());
+        assertEquals(2, graph.V(Dog.class).toList().size());
 
-        Dog dog = graph.V(Dog.class).next();
+        Dog dog = graph.V(Dog.class).has("name", "Shepherd").next();
         assertEquals(4, dog.getNumberOfLegs());
         assertEquals("brown", dog.getHairColor());
 
-        Salmon salmon = graph.V(Salmon.class).next();
+        Salmon salmon = graph.V(Salmon.class).has("name", "Atlantic Salmon").next();
         assertEquals(0, salmon.getNumberOfLegs());
         assertTrue(salmon.getSaltWater());
 
         Fish fish = graph.V(Fish.class).has("saltWater", false).next();
         assertEquals("Goldfish", fish.getName());
 
+        Animal gom = graph.V(Animal.class).has("name", "WeirdAnimal").next();
+        assertTrue(gom instanceof GeneticallyModifiedOrganism);
+
+        assertEquals(1, gom.getRelatedTo().size());
+        RelatedTo relatedTo = gom.getRelatedTo().get(0);
+        assertEquals(gom, relatedTo.getMe());
+        assertEquals(dog, relatedTo.getOther());
+        assertEquals("same color", relatedTo.getRelation());
     }
 
 }

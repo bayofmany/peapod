@@ -23,10 +23,14 @@ package peapod.inheritance;
 
 import peapod.annotations.Vertex;
 
+import java.util.List;
+
 @Vertex
 public interface Animal extends Named {
 
     int getNumberOfLegs();
+
+    List<RelatedTo> getRelatedTo();
 
 }
 

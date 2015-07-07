@@ -165,7 +165,9 @@ public final class AnnotationProcessor extends AbstractProcessor {
         Set<TypeElement> results = new HashSet<>();
         for (TypeMirror tmp : type.getInterfaces()) {
             TypeElement typeElement = (TypeElement) ((DeclaredType) tmp).asElement();
-            results.add(typeElement);
+            if (!typeElement.getQualifiedName().toString().startsWith("peapod.Framed")) {
+                results.add(typeElement);
+            }
         }
         return results;
     }
@@ -460,7 +462,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
     private ClassDescription parse(TypeElement type) {
 
-        List<ExecutableElement> elements = new ArrayList<>();
+        Set<ExecutableElement> methods = new LinkedHashSet<>();
         List<ExecutableElement> postConstructs = new ArrayList<>();
 
         Stack<TypeElement> stack = new Stack<>();
@@ -475,9 +477,9 @@ public final class AnnotationProcessor extends AbstractProcessor {
             }
 
             if (t.getKind().equals(INTERFACE)) {
-                t.getEnclosedElements().stream().filter(e -> e.getKind() == METHOD && !e.getModifiers().contains(Modifier.DEFAULT)).forEach(e -> elements.add((ExecutableElement) e));
+                t.getEnclosedElements().stream().filter(e -> e.getKind() == METHOD && !e.getModifiers().contains(Modifier.DEFAULT)).forEach(e -> methods.add((ExecutableElement) e));
             } else {
-                t.getEnclosedElements().stream().filter(e -> e.getKind() == METHOD && e.getModifiers().contains(Modifier.ABSTRACT)).forEach(e -> elements.add((ExecutableElement) e));
+                t.getEnclosedElements().stream().filter(e -> e.getKind() == METHOD && e.getModifiers().contains(Modifier.ABSTRACT)).forEach(e -> methods.add((ExecutableElement) e));
             }
             t.getEnclosedElements().stream().filter(e -> e.getKind() == METHOD && e.getAnnotation(PostConstruct.class) != null).forEach(e -> postConstructs.add((ExecutableElement) e));
 
@@ -492,9 +494,13 @@ public final class AnnotationProcessor extends AbstractProcessor {
         }
         while (!stack.empty());
 
-        ClassDescription description = new ClassDescription(type, elements, postConstructs);
+        // only retain unique signature methods. A duplicate method signature can come from inheriting multiple interfaces.
+        Set<String> uniqueSignatures = new HashSet<>();
+        List<ExecutableElement> toGenerate = methods.stream().filter(m -> uniqueSignatures.add(m.toString())).collect(Collectors.toList());
 
-        Map<String, List<ExecutableElement>> property2Methods = elements.stream().collect(Collectors.groupingBy(this::extractProperty));
+        ClassDescription description = new ClassDescription(type, toGenerate, postConstructs);
+
+        Map<String, List<ExecutableElement>> property2Methods = methods.stream().collect(Collectors.groupingBy(this::extractProperty));
         property2Methods.forEach((p, l) -> parse(description, p, l));
 
         return description;

@@ -13,9 +13,9 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  *
- * This project is derived from code in the TinkerPop project under the following licenses:
+ * This project is derived from code in the Tinkerpop project under the following licenses:
  *
- * TinkerPop3
+ * Tinkerpop3
  * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,28 +41,21 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package peapod.interfaces;
+package peapod.inheritance;
 
-import peapod.FramedVertex;
 import peapod.annotations.Edge;
-import peapod.annotations.Property;
-import peapod.annotations.Vertex;
+import peapod.annotations.In;
+import peapod.annotations.Out;
 
-import java.util.List;
+@Edge
+public interface RelatedTo {
 
-@Vertex
-public interface Person extends FramedVertex<Person> {
+    @Out
+    Animal getMe();
 
-    @Property("p-name")
-    String getName();
+    @In
+    Animal getOther();
 
-    void setName(String name);
-
-    @Edge("e-friend")
-    void addFriend(Person person);
-
-    void removeFriend(Person person);
-
-    List<Person> getFriends();
+    String getRelation();
 
 }

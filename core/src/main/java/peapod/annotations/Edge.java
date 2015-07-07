@@ -29,8 +29,8 @@ import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * <p>Marks class as a wrapper class for a TinkerPop 3 edge. The wrapper class is obligatory {@code abstract}.
- * Peapod will generate its implementation class at compile-time.</p>
+ * <p>Annotates an {@code abstract class} or {@code interface} as a wrapper class for a TinkerPop 3 edge.
+ * Peapod will generate teh concrete implementation class at compile-time.</p>
  * <pre>
  * &#64;Edge
  * public abstract class Develops {
