@@ -50,7 +50,7 @@
       <tag>HEAD</tag>
   </scm>
     <properties>
-        <tinkerpop.version>3.0.0.M9-incubating</tinkerpop.version>
+        <tinkerpop.version>3.0.1-incubating</tinkerpop.version>
     </properties>
 
     <build>

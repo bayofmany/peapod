@@ -13,7 +13,7 @@ This project is similar to the [Totorom](https://github.com/BrynCooke/totorom) l
 * In a next iteration, the goal is to generate traversal classes based on your graph topology.
 
 To integrate peapod in your project, include the following dependency. <br /> 
-(Disclaimer: The 0.2.0 version is still an experimental release using Apache Tinkerpop 3.0.0.M9-incubating).
+(Disclaimer: The 0.2.0 version is still an experimental release using Apache Tinkerpop 3.0.0-incubating).
 
     <dependency>
         <groupId>org.bayofmany.peapod</groupId>
