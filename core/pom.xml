@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.bayofmany.peapod</groupId>
         <artifactId>peapod-parent</artifactId>
-        <version>0.2.2-SNAPSHOT</version>
+        <version>0.2.2</version>
     </parent>
 
     <artifactId>peapod</artifactId>
