@@ -21,6 +21,7 @@
 
 package peapod.internal;
 
+import com.squareup.javapoet.*;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.T;
 import peapod.*;
@@ -38,7 +39,6 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
@@ -81,8 +81,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
             Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(Vertex.class);
             messager.printMessage(OTHER, elements.size() + " elements with annotation @Vertex");
 
-            Class<?>[] vImports = {org.apache.tinkerpop.gremlin.structure.Vertex.class, org.apache.tinkerpop.gremlin.structure.Element.class, FramedVertex.class, FramedElement.class, FramedGraph.class, IFramer.class, Framer.class, FrameHelper.class, org.apache.tinkerpop.gremlin.structure.Direction.class, Iterator.class};
-            elements.stream().forEach(e -> generateImplementationClass((TypeElement) e, ElementType.Vertex, "FramedVertex<" + getBaseType((TypeElement) e).getSimpleName() + ">", vImports));
+            elements.stream().forEach(e -> generateImplementationClass((TypeElement) e, ElementType.Vertex));
 
             elements = roundEnv.getElementsAnnotatedWith(VertexProperty.class);
             messager.printMessage(OTHER, elements.size() + " elements with annotation @VertexProperty");
@@ -90,8 +89,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
             elements = roundEnv.getElementsAnnotatedWith(Edge.class);
             messager.printMessage(OTHER, elements.size() + " elements with annotation @Edge");
-            Class<?>[] eImports = {org.apache.tinkerpop.gremlin.structure.Edge.class, org.apache.tinkerpop.gremlin.structure.Element.class, FramedEdge.class, FramedElement.class, FramedGraph.class, IFramer.class, Framer.class};
-            elements.stream().filter(e -> e.getKind().isClass() || e.getKind().isInterface()).forEach(e -> generateImplementationClass((TypeElement) e, ElementType.Edge, FramedEdge.class.getSimpleName(), eImports));
+            elements.stream().filter(e -> e.getKind().isClass() || e.getKind().isInterface()).forEach(e -> generateImplementationClass((TypeElement) e, ElementType.Edge));
 
             return true;
         } catch (Exception e) {
@@ -106,56 +104,71 @@ public final class AnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    private void generateImplementationClass(TypeElement type, ElementType elementType, String implementsType, Class<?>... imports) {
+    private void generateImplementationClass(TypeElement type, ElementType elementType) {
+        TypeName implementsType = null;
+
+        if (elementType == ElementType.Vertex) {
+            implementsType = ParameterizedTypeName.get(ClassName.get(FramedVertex.class), ClassName.get(getBaseType(type)));
+
+        } else if (elementType == ElementType.Edge) {
+            implementsType = ClassName.get(FramedEdge.class);
+        }
+
         ClassDescription description = parse(type);
 
         messager.printMessage(OTHER, "Generating " + type.getQualifiedName() + "$Impl");
 
-        try (PrintWriter out = new PrintWriter(new OutputStreamWriter(filer.createSourceFile(type.getQualifiedName() + "$Impl").openOutputStream(), "UTF-8"))) {
-            JavaWriterExt writer = new JavaWriterExt(out);
+        try {
             PackageElement packageEl = (PackageElement) type.getEnclosingElement();
-            writer.emitPackage(packageEl.getQualifiedName().toString())
-                    .emitImports(imports)
-                    .emitImports(description.getImports())
-                    .emitEmptyLine()
-                    .emitAnnotation("SuppressWarnings", "\"unused\"");
 
             String extendsType;
-            String[] implementsInterfaces;
+            Set<TypeName> implementsInterfaces = new HashSet<>();
 
             if (type.getKind().equals(INTERFACE)) {
                 extendsType = null;
 
                 Set<TypeElement> implementingInterfaces = getAllImplementingInterfaces(type); // add all interfaces extended by this interface
-                Set<String> implementsSet = new HashSet<>();
-                implementingInterfaces.forEach(i -> implementsSet.add(i.getQualifiedName().toString()));
-                implementsSet.add(implementsType); // add the necessary interface
-                implementsSet.add(type.getSimpleName().toString()); // add the interface itself
-                implementsInterfaces = implementsSet.toArray(new String[implementsSet.size()]);
+                implementingInterfaces.forEach(i -> implementsInterfaces.add(ClassName.bestGuess(i.getQualifiedName().toString())));
+                implementsInterfaces.add(implementsType); // add the necessary interface
+                implementsInterfaces.add(ClassName.get(type)); // add the interface itself
             } else { // it's a class or abstract class
                 extendsType = type.getQualifiedName().toString();
-                implementsInterfaces = new String[]{implementsType};
+                implementsInterfaces.add(implementsType);
             }
 
-            writer.beginType(type.getQualifiedName() + "$Impl", "class", EnumSet.of(PUBLIC, Modifier.FINAL), extendsType, implementsInterfaces)
-                    .emitEmptyLine()
-                    .emitField(peapod.FramedGraph.class.getName(), "graph", EnumSet.of(PRIVATE))
-                    .emitField(elementType.getClazz().getName(), elementType.getFieldName(), EnumSet.of(PRIVATE))
-                    .beginConstructor(EnumSet.of(PUBLIC), elementType.toString(), elementType.getFieldName(), FramedGraph.class.getSimpleName(), "graph")
-                    .emitStatement("this.%s  = %s", elementType.getFieldName(), elementType.getFieldName())
-                    .emitStatement("this.graph = graph")
-                    .endConstructor()
-                    .beginMethod(peapod.FramedGraph.class.getSimpleName(), "graph", EnumSet.of(PUBLIC))
-                    .emitStatement("return graph")
-                    .endMethod()
-                    .beginMethod("Element", "element", EnumSet.of(PUBLIC))
-                    .emitStatement("return %s", elementType.getFieldName())
-                    .endMethod();
+            MethodSpec constructor = MethodSpec.constructorBuilder().addModifiers(PUBLIC)
+                    .addParameter(ClassName.get(elementType.getClazz()), elementType.getFieldName())
+                    .addParameter(FramedGraph.class, "graph")
+                    .addStatement("this.$L  = $L", elementType.getFieldName(), elementType.getFieldName())
+                    .addStatement("this.graph = graph")
+                    .build();
 
-            implementAbstractMethods(description, writer, elementType);
-            implementFramerMethods(type, writer, elementType, description.getPostConstructMethods());
+            MethodSpec graph = MethodSpec.methodBuilder("graph").addModifiers(PUBLIC).returns(peapod.FramedGraph.class)
+                    .addStatement("return graph")
+                    .build();
 
-            writer.endType();
+            MethodSpec element = MethodSpec.methodBuilder("element").addModifiers(PUBLIC).returns(org.apache.tinkerpop.gremlin.structure.Element.class)
+                    .addStatement("return $L", elementType.getFieldName())
+                    .build();
+
+            TypeSpec.Builder implClass = TypeSpec.classBuilder(type.getSimpleName() + "$Impl")
+                    .addModifiers(PUBLIC, FINAL);
+            if (extendsType != null) {
+                implClass.superclass(ClassName.bestGuess(extendsType));
+            }
+            implClass.addSuperinterfaces(implementsInterfaces)
+                    .addField(FramedGraph.class, "graph", PRIVATE)
+                    .addField(elementType.getClazz(), elementType.getFieldName(), PRIVATE)
+                    .addMethod(constructor)
+                    .addMethod(graph)
+                    .addMethod(element);
+
+
+            implementAbstractMethods(description, implClass, elementType);
+            implementFramerMethods(type, implClass, elementType, description.getPostConstructMethods());
+
+            JavaFile javaFile = JavaFile.builder(packageEl.getQualifiedName().toString(), implClass.build()).build();
+            javaFile.writeTo(filer);
         } catch (IOException e) {
             throw new RuntimeException("Error occurred while generating implementation for " + type.getQualifiedName(), e);
         }
@@ -179,77 +192,101 @@ public final class AnnotationProcessor extends AbstractProcessor {
         Optional<? extends TypeMirror> vertexPropertyClass = type.getInterfaces().stream().filter(i -> i.toString().contains("FramedVertexProperty")).findAny();
         if (!vertexPropertyClass.isPresent()) {
             messager.printMessage(ERROR, type.getQualifiedName() + " does not implement " + FramedVertexProperty.class);
+            return;
         }
 
         DeclaredType vertexPropertyInterface = (DeclaredType) vertexPropertyClass.get();
         TypeMirror propertyType = vertexPropertyInterface.getTypeArguments().get(0);
 
-        try (PrintWriter out = new PrintWriter(new OutputStreamWriter(filer.createSourceFile(type.getQualifiedName() + "$Impl").openOutputStream(), "UTF-8"))) {
-            JavaWriterExt writer = new JavaWriterExt(out);
+        try {
             PackageElement packageEl = (PackageElement) type.getEnclosingElement();
-            writer.emitPackage(packageEl.getQualifiedName().toString())
-                    .emitImports(org.apache.tinkerpop.gremlin.structure.VertexProperty.class, org.apache.tinkerpop.gremlin.structure.Element.class, FramedElement.class, FramedGraph.class, IFramer.class, Framer.class, Iterator.class)
-                    .emitEmptyLine()
-                    .emitAnnotation("SuppressWarnings", "\"unused\"")
-                    .beginType(type.getQualifiedName() + "$Impl", "class", EnumSet.of(PUBLIC, Modifier.FINAL), type.getQualifiedName().toString())
-                    .emitEmptyLine();
+
+
+            TypeName vpType = ParameterizedTypeName.get(ClassName.get(org.apache.tinkerpop.gremlin.structure.VertexProperty.class), ClassName.get(propertyType));
+
+
+            MethodSpec constructor = MethodSpec.constructorBuilder()
+                    .addModifiers(Modifier.PUBLIC)
+                    .addParameter(vpType, "vp")
+                    .addParameter(FramedGraph.class, "graph")
+                    .addStatement("this.$N = $N", "vp", "vp")
+                    .addStatement("this.$N = $N", "graph", "graph")
+                    .build();
+
+            MethodSpec graph = MethodSpec.methodBuilder("graph")
+                    .addModifiers(Modifier.PUBLIC)
+                    .returns(FramedGraph.class)
+                    .addStatement("return $N", "graph")
+                    .build();
+
+            MethodSpec element = MethodSpec.methodBuilder("element")
+                    .addModifiers(Modifier.PUBLIC)
+                    .returns(org.apache.tinkerpop.gremlin.structure.Element.class)
+                    .addStatement("return $N", "vp")
+                    .build();
+
+
+            MethodSpec getValue = MethodSpec.methodBuilder("getValue")
+                    .addModifiers(Modifier.PUBLIC)
+                    .returns(ClassName.get(propertyType))
+                    .addStatement("return vp.value()")
+                    .build();
 
             String label = getLabel(type);
-            writer.emitField(peapod.FramedGraph.class.getSimpleName(), "graph", EnumSet.of(PRIVATE))
-                    .emitField("VertexProperty<" + writer.compressType(propertyType) + ">", "vp", EnumSet.of(PRIVATE))
-                    .beginConstructor(EnumSet.of(PUBLIC), "VertexProperty", "vp", FramedGraph.class.getSimpleName(), "graph")
-                    .emitStatement("this.vp = vp")
-                    .emitStatement("this.graph = graph")
-                    .endConstructor()
-                    .beginMethod(peapod.FramedGraph.class.getSimpleName(), "graph", EnumSet.of(PUBLIC))
-                    .emitStatement("return graph")
-                    .endMethod()
-                    .beginMethod("Element", "element", EnumSet.of(PUBLIC))
-                    .emitStatement("return vp")
-                    .endMethod();
-
-
-            HashSet<Modifier> modifiers = new HashSet<>();
-            modifiers.add(PUBLIC);
-            writer.beginMethod(propertyType.toString(), "getValue", modifiers)
-                    .emitStatement("return vp.value()")
-                    .endMethod();
-
-            writer.beginMethod("void", "setValue", modifiers, writer.compressType(propertyType), "value")
+            MethodSpec setValue = MethodSpec.methodBuilder("setValue")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addParameter(ClassName.get(propertyType), "value")
                     .beginControlFlow("if (value == null)")
-                    .emitStatement("vp.remove()")
+                    .addStatement("vp.remove()")
                     .nextControlFlow("else")
-                    .emitStatement("vp.property(\"%s\", value)", label)
-                    .endControlFlow();
-            writer.endMethod();
+                    .addStatement("vp.property($S, value)", label)
+                    .endControlFlow()
+                    .build();
 
-            implementAbstractMethods(description, writer, ElementType.VertexProperty);
-            implementFramerMethods(type, writer, ElementType.VertexProperty, description.getPostConstructMethods());
+            TypeSpec.Builder implClass = TypeSpec.classBuilder(type.getSimpleName() + "$Impl")
+                    .superclass(ClassName.get(type))
+                    .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                    .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "unused").build())
+                    .addField(vpType, "vp", PRIVATE)
+                    .addField(FramedGraph.class, "graph", PRIVATE)
+                    .addMethod(constructor)
+                    .addMethod(graph)
+                    .addMethod(element)
+                    .addMethod(getValue)
+                    .addMethod(setValue);
 
-            writer.endType();
+            implementAbstractMethods(description, implClass, ElementType.VertexProperty);
+            implementFramerMethods(type, implClass, ElementType.VertexProperty, description.getPostConstructMethods());
+
+            JavaFile javaFile = JavaFile.builder(packageEl.getQualifiedName().toString(), implClass.build()).build();
+            javaFile.writeTo(filer);
+
         } catch (IOException e) {
             messager.printMessage(WARNING, "An exception occurred while generating " + type.getQualifiedName() + "$Impl");
             throw new RuntimeException(e);
         }
     }
 
-    private void implementAbstractMethods(ClassDescription description, JavaWriterExt writer, ElementType elementType) throws IOException {
+    private void implementAbstractMethods(ClassDescription description, TypeSpec.Builder implClass, ElementType elementType) throws IOException {
         for (ExecutableElement method : description.getMethods()) {
             MethodType methodType = MethodType.getType(method);
+            MethodSpec m;
             if (description.isProperty(method)) {
-                implementAbstractPropertyMethod(method, methodType, description.getLabel(method), writer, elementType);
+                m = implementAbstractPropertyMethod(method, methodType, description.getLabel(method), elementType);
             } else {
-                implementAbstractEdgeMethod(method, methodType, description.getLabel(method), writer, elementType);
+                m = implementAbstractEdgeMethod(method, methodType, description.getLabel(method), elementType);
             }
+            implClass.addMethod(m);
         }
     }
 
-    private void implementAbstractPropertyMethod(ExecutableElement method, MethodType methodType, String label, JavaWriterExt writer, ElementType elementType) throws IOException {
+    private MethodSpec implementAbstractPropertyMethod(ExecutableElement method, MethodType methodType, String label, ElementType elementType) throws IOException {
         String fieldName = elementType.getFieldName();
 
         Set<Modifier> modifiers = new HashSet<>(method.getModifiers());
         modifiers.remove(ABSTRACT);
-        writer.beginMethod(method, modifiers);
+
+        MethodSpec.Builder builder1 = beginMethod(method, modifiers);
 
         Element parameterClass = method.getParameters().isEmpty() ? null : types.asElement(method.getParameters().get(0).asType());
         String parameterName = method.getParameters().isEmpty() ? null : method.getParameters().get(0).getSimpleName().toString();
@@ -266,46 +303,47 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
             CollectionType collectionType = getCollectionType(method.getReturnType());
             if (collectionType == null) {
-                writer.emitStatement("return %s.<%s>property(\"%s\").orElse(%s)", fieldName, className, label, getDefaultValue(method.getReturnType()));
+                builder1.addStatement("return $L.<$L>property($S).orElse($L)", fieldName, className, label, getDefaultValue(method.getReturnType()));
             } else {
                 TypeMirror singularizedType = getSingularizedType(method.getReturnType());
 
                 if (isVertexProperty(singularizedType)) {
-                    writer.emitStatement("return graph().frame(v.properties(\"%s\"), %s.class)", label, writer.compressType(singularizedType));
+                    builder1.addStatement("return graph().frame(v.properties($S), $T.class)", label, singularizedType);
                 } else {
-                    writer.emitStatement("return FrameHelper.toList(v.values(\"%s\"))", label);
+                    builder1.addStatement("return $T.toList(v.values($S))", FrameHelper.class, label);
                 }
             }
         } else if (methodType == MethodType.FILTERED_GETTER && isVertexProperty(method.getReturnType())) {
-            writer.emitStatement("return FrameHelper.filterVertexProperty(this, \"%s\", %s, %s.class)", label, parameterName, writer.compressType(method.getReturnType()));
+            builder1.addStatement("return $T.filterVertexProperty(this, $S, $L, $T.class)", FrameHelper.class, label, parameterName, method.getReturnType());
         } else if (methodType == MethodType.SETTER) {
             if (method.getParameters().get(0).asType().getKind().isPrimitive()) {
-                writer.emitStatement(fieldName + ".%s(\"%s\", %s)", "property", label, parameterName);
+                builder1.addStatement(fieldName + ".$L($S, $L)", "property", label, parameterName);
             } else {
-                writer.beginControlFlow("if (%s == null)", parameterName)
-                        .emitStatement(fieldName + ".property(\"%s\").remove()", label)
+                builder1.beginControlFlow("if ($L == null)", parameterName)
+                        .addStatement(fieldName + ".property($S).remove()", label)
                         .nextControlFlow("else")
-                        .emitStatement(fieldName + ".%s(\"%s\", %s)", "property", label, parameterName)
+                        .addStatement(fieldName + ".$L($S, $L)", "property", label, parameterName)
                         .endControlFlow();
             }
         } else if (methodType == MethodType.ADDER && parameterClass != null && returnClass == null) {
-            writer.emitStatement("v.property(org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality.list, \"%s\", %s)", label, parameterName);
+            builder1.addStatement("v.property(org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality.list, $S, $L)", label, parameterName);
         } else if (methodType == MethodType.ADDER && parameterClass != null && isVertexProperty(method.getReturnType())) {
-            writer.emitStatement("return graph.frame(v.property(org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality.list, \"%s\", %s), %s.class)", label, parameterName, writer.compressType(method.getReturnType()));
+            builder1.addStatement("return graph.frame(v.property(org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality.list, $S, $L), $T.class)", label, parameterName, method.getReturnType());
         } else if (methodType == MethodType.REMOVER && parameterClass != null && returnClass == null) {
-            writer.emitStatement("FrameHelper.removeVertexProperty(this, \"%s\", %s)", label, parameterName);
+            builder1.addStatement("$T.removeVertexProperty(this, $S, $L)", FrameHelper.class, label, parameterName);
         } else {
-            generateNotSupportedStatement("nonstandard-property", method, writer);
+            generateNotSupportedStatement("nonstandard-property", method, builder1);
         }
-        writer.endMethod();
+        return builder1.build();
     }
 
-    private void implementAbstractEdgeMethod(ExecutableElement method, MethodType methodType, String label, JavaWriterExt writer, ElementType elementType) throws IOException {
+    private MethodSpec implementAbstractEdgeMethod(ExecutableElement method, MethodType methodType, String label, ElementType elementType) throws IOException {
         String elementName = elementType.getFieldName();
 
         Set<Modifier> modifiers = new HashSet<>(method.getModifiers());
         modifiers.remove(ABSTRACT);
-        writer.beginMethod(method, modifiers);
+
+        MethodSpec.Builder m = beginMethod(method, modifiers);
 
         Element parameterClass = method.getParameters().isEmpty() ? null : types.asElement(method.getParameters().get(0).asType());
         String parameterName = method.getParameters().isEmpty() ? null : method.getParameters().get(0).getSimpleName().toString();
@@ -320,7 +358,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 DeclaredType returnType = (DeclaredType) method.getReturnType();
                 if (returnType.getTypeArguments().size() != 1) {
                     messager.printMessage(ERROR, "Only one type argument supported: " + method);
-                    return;
+                    return null;
                 }
 
                 TypeMirror collectionContent = returnType.getTypeArguments().get(0);
@@ -330,133 +368,166 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 Edge edgeAnnotation = element.getAnnotation(Edge.class);
 
                 if (vertexAnnotation != null) {
-                    writer.emitSingleLineComment("getter-vertex-collection");
-                    writer.emitStatement("return graph().frame(%s.vertices(Direction.%s, \"%s\"), %s.class)", elementName, direction.toString(), label, writer.compressType(collectionContent));
+                    m.addCode("// getter-vertex-collection\n");
+                    m.addStatement("return graph().frame($L.vertices($T.$L, $S), $T.class)", elementName, org.apache.tinkerpop.gremlin.structure.Direction.class, direction, label, collectionContent);
                 } else if (edgeAnnotation != null) {
-                    writer.emitSingleLineComment("getter-edge-collection");
-                    writer.emitStatement("return graph.frame(%s.edges(Direction.%s, \"%s\"), %s.class)", elementName, direction, label, writer.compressType(collectionContent));
+                    m.addCode("// getter-edge-collection\n");
+                    m.addStatement("return graph.frame($L.edges($T.$L, $S), $T.class)", elementName, org.apache.tinkerpop.gremlin.structure.Direction.class, direction, label, collectionContent);
                 } else {
-                    generateNotSupportedStatement("get-collection-no-vertex-or-edge", method, writer);
+                    generateNotSupportedStatement("get-collection-no-vertex-or-edge", method, m);
                 }
             } else if (isVertex(method.getReturnType()) && elementType == ElementType.Vertex) {
-                writer.emitSingleLineComment("vertex-getter-vertex");
-                writer.emitStatement("Iterator<Vertex> it = v.vertices(Direction.%s, \"%s\");", direction, label)
-                        .emitStatement("return it.hasNext() ? graph.frame(it.next(), %s.class) : null", writer.compressType(method.getReturnType()));
+                m.addCode("// vertex-getter-vertex\n");
+                m.addStatement("$T<Vertex> it = v.vertices($T.$L, $S);", Iterator.class, org.apache.tinkerpop.gremlin.structure.Direction.class, direction, label)
+                        .addStatement("return it.hasNext() ? graph.frame(it.next(), $T.class) : null", method.getReturnType());
             } else if (isVertex(method.getReturnType()) && elementType != ElementType.Vertex) {
-                writer.emitSingleLineComment("edge-getter-vertex");
+                m.addCode("// edge-getter-vertex\n");
                 boolean in = method.getAnnotation(In.class) != null;
-                writer.emitStatement("return graph().frame(%s.%sVertex(), %s.class)", elementName, in ? "in" : "out", writer.compressType(method.getReturnType()));
+                m.addStatement("return graph().frame($L.$LVertex(), $T.class)", elementName, in ? "in" : "out", method.getReturnType());
             } else if (isEdge(method.getReturnType()) && elementType == ElementType.Vertex) {
-                writer.emitSingleLineComment("vertex-getter-edge");
-                writer.emitStatement("return FrameHelper.filterEdge(this, \"%s\", ((FramedVertex)%s), %s.class)", label, parameterName, writer.compressType(method.getReturnType()));
+                m.addCode("// vertex-getter-edge\n");
+                m.addStatement("return $T.filterEdge(this, $S, (($T)$L), $T.class)", FrameHelper.class, label, FramedVertex.class, parameterName, method.getReturnType());
             } else {
-                generateNotSupportedStatement("get-no-vertex-or-edge", method, writer);
+                generateNotSupportedStatement("get-no-vertex-or-edge", method, m);
             }
         } else if (methodType == MethodType.SETTER) {
-            writer.emitSingleLineComment("vertex-setter-vertex");
-            String statement = String.format("v.addEdge(\"%s\", ((FramedVertex)%s).vertex())", label, parameterName);
+            m.addCode("// vertex-setter-vertex\n");
+
+            List<Object> args = new ArrayList<>();
+
+            String statement = "v.addEdge($S, ((FramedVertex)$L).vertex())";
+            args.add(label);
+            args.add(parameterName);
             if (returnClass != null && returnClass.getAnnotation(Edge.class) != null) {
-                statement = String.format("return graph.frame(%s, %s.class)", statement, writer.compressType(method.getReturnType()));
+                statement = "return graph.frame(" + statement + ", $T.class)";
+                args.add(method.getReturnType());
             }
 
-            writer.emitStatement("v.edges(Direction.OUT, \"%s\").forEachRemaining(e -> e.remove())", label)
-                    .beginControlFlow("if (%s != null)", parameterName)
-                    .emitStatement(statement);
+            m.addStatement("v.edges($T.OUT, $S).forEachRemaining(e -> e.remove())", org.apache.tinkerpop.gremlin.structure.Direction.class, label)
+                    .beginControlFlow("if ($L != null)", parameterName)
+                    .addStatement(statement, args.toArray());
             if (method.getReturnType().getKind() != VOID) {
-                writer.nextControlFlow("else")
-                        .emitStatement("return null");
+                m.nextControlFlow("else")
+                        .addStatement("return null");
             }
-            writer.endControlFlow();
+            m.endControlFlow();
         } else if (methodType == MethodType.ADDER) {
-            writer.emitSingleLineComment("vertex-adder-vertex");
+            m.addCode("// vertex-adder-vertex\n");
             if (parameterClass != null && parameterClass.getAnnotation(Vertex.class) != null) {
-                String statement = String.format("v.addEdge(\"%s\", ((FramedVertex) %s).vertex())", label, parameterName);
+                String statement = "v.addEdge($S, (($T) $L).vertex())";
+
+                List<Object> args = new ArrayList<>();
+                args.add(label);
+                args.add(FramedVertex.class);
+                args.add(parameterName);
+
                 if (returnClass != null && returnClass.getAnnotation(Edge.class) != null) {
-                    statement = String.format("return graph.frame(%s, %s.class)", statement, writer.compressType(method.getReturnType()));
+                    statement = "return graph.frame(" + statement + ", $T.class)";
+                    args.add(method.getReturnType());
                 }
 
-                writer.emitStatement(statement);
+                m.addStatement(statement, args.toArray());
             } else {
-                generateNotSupportedStatement("added-without-vertex-parameter", method, writer);
+                generateNotSupportedStatement("added-without-vertex-parameter", method, m);
             }
         } else if (methodType == MethodType.REMOVER && parameterClass != null) {
-            writer.emitSingleLineComment("vertex-remover-vertex");
+            m.addCode("// vertex-remover-vertex\n");
             if (parameterClass.getAnnotation(Vertex.class) != null) {
-                writer.emitStatement("FrameHelper.removeEdge(v, Direction.OUT, \"%s\", ((FramedVertex)%s).vertex())", label, parameterName);
+                m.addStatement("$T.removeEdge(v, Direction.OUT, $S, (($T)$L).vertex())", FrameHelper.class, label, FramedVertex.class, parameterName);
             } else if (parameterClass.getAnnotation(Edge.class) != null) {
-                writer.emitStatement("((FramedElement)%s).remove()", parameterName);
+                m.addStatement("(($T)$L).remove()", FramedElement.class, parameterName);
             }
         }
 
-        writer.endMethod();
+
+        return m.build();
     }
 
-    private void implementFramerMethods(TypeElement type, JavaWriterExt writer, ElementType elementType, List<ExecutableElement> postContructMethods) throws IOException {
+    private void implementFramerMethods(TypeElement type, TypeSpec.Builder implClass, ElementType elementType, List<ExecutableElement> postContructMethods) throws IOException {
         String fieldName = elementType.getFieldName();
 
-        writer.beginMethod("int", "hashCode", EnumSet.of(PUBLIC))
-                .emitStatement("return %s.hashCode()", fieldName)
-                .endMethod()
-                .emitEmptyLine();
-        writer.beginMethod("boolean", "equals", EnumSet.of(PUBLIC), Arrays.asList("Object", "other"), Collections.<String>emptyList())
-                .emitStatement("return (other instanceof FramedElement) && %s.equals(((FramedElement) other).element())", fieldName)
-                .endMethod()
-                .emitEmptyLine();
-        writer.beginMethod("String", "toString", EnumSet.of(PUBLIC))
-                .emitStatement("return %s.label() + \"[\" + %s.id() + \"]\"", fieldName, fieldName)
-                .endMethod()
-                .emitEmptyLine();
+        MethodSpec hashCode = MethodSpec.methodBuilder("hashCode").addModifiers(PUBLIC).returns(TypeName.INT)
+                .addStatement("return $L.hashCode()", fieldName)
+                .build();
+        implClass.addMethod(hashCode);
 
-        Set<Modifier> modifiers = new HashSet<>(Arrays.asList(Modifier.PUBLIC, Modifier.STATIC, FINAL));
+        MethodSpec equals = MethodSpec.methodBuilder("equals").addModifiers(PUBLIC).returns(TypeName.BOOLEAN)
+                .addParameter(TypeName.OBJECT, "other")
+                .addStatement("return (other instanceof $T) && $L.equals((($T) other).element())", FramedElement.class, fieldName, FramedElement.class)
+                .build();
+        implClass.addMethod(equals);
 
-        String framer = "IFramer<" + elementType + ", " + type + ">";
-        writer.emitAnnotation("Framer")
-                .beginType(type + "Framer", "class", modifiers, null, framer)
-                .emitEmptyLine()
-                .beginMethod("Class<" + elementType.getClazz().getSimpleName() + ">", "type", Collections.singleton(PUBLIC))
-                .emitStatement("return %s.class", elementType.getClazz().getSimpleName())
-                .endMethod()
-                .emitEmptyLine()
-                .beginMethod("Class<" + type + ">", "frameClass", Collections.singleton(PUBLIC))
-                .emitStatement("return %s.class", writer.compressType(type.toString()))
-                .endMethod()
-                .emitEmptyLine()
-                .beginMethod("String", "label", Collections.singleton(PUBLIC))
-                .emitStatement("return \"%s\"", getLabel(type))
-                .endMethod()
-                .emitEmptyLine()
-                .beginMethod(type.toString(), "frame", Collections.singleton(PUBLIC), elementType.toString(), fieldName, "FramedGraph", "graph")
-                .emitStatement("return new %s$Impl(%s, graph)", type.getSimpleName(), fieldName)
-                .endMethod()
-                .emitEmptyLine()
-                .beginMethod(type.toString(), "frameNew", Collections.singleton(PUBLIC), elementType.toString(), fieldName, "FramedGraph", "graph");
+        MethodSpec toString = MethodSpec.methodBuilder("String").addModifiers(PUBLIC).returns(String.class)
+                .addStatement("return $L.label() + \"[\" + $L.id() + \"]\"", fieldName, fieldName)
+                .build();
+        implClass.addMethod(toString);
+
+        ParameterizedTypeName framerInt = ParameterizedTypeName.get(ClassName.get(IFramer.class), TypeName.get(elementType.getClazz()), TypeName.get(type.asType()));
+
+
+        MethodSpec mType = MethodSpec.methodBuilder("type").addModifiers(PUBLIC)
+                .returns(ParameterizedTypeName.get(Class.class, elementType.getClazz()))
+                .addStatement("return $L.class", elementType.getClazz().getSimpleName())
+                .build();
+
+        MethodSpec frameClass = MethodSpec.methodBuilder("frameClass").addModifiers(PUBLIC)
+                .returns(ParameterizedTypeName.get(ClassName.get(Class.class), ClassName.get(type.asType())))
+                .addStatement("return $T.class", type)
+                .build();
+
+        MethodSpec label = MethodSpec.methodBuilder("label").addModifiers(PUBLIC)
+                .returns(String.class)
+                .addStatement("return $S", getLabel(type))
+                .build();
+
+        MethodSpec frame = MethodSpec.methodBuilder("frame").addModifiers(PUBLIC)
+                .returns(ClassName.get(type))
+                .addParameter(elementType.getClazz(), fieldName)
+                .addParameter(FramedGraph.class, "graph")
+                .addStatement("return new $T$$Impl($L, graph)", type, fieldName)
+                .build();
+
+
+        MethodSpec.Builder frameNew = MethodSpec.methodBuilder("frameNew").addModifiers(PUBLIC)
+                .returns(ClassName.get(type))
+                .addParameter(elementType.getClazz(), fieldName)
+                .addParameter(FramedGraph.class, "graph");
         if (postContructMethods.isEmpty()) {
-            writer.emitStatement("return frame(%s, graph)", fieldName);
+            frameNew.addStatement("return frame($L, graph)", fieldName);
         } else {
-            writer.emitStatement("%s f = frame(%s, graph)", type.getSimpleName(), fieldName);
+            frameNew.addStatement("$L f = frame($L, graph)", type.getSimpleName(), fieldName);
             for (ExecutableElement m : postContructMethods) {
-                writer.emitStatement("f.%s()", m.getSimpleName());
+                frameNew.addStatement("f.$L()", m.getSimpleName());
             }
-            writer.emitStatement("return f");
+            frameNew.addStatement("return f");
         }
 
-        writer.endMethod().endType();
+        TypeSpec framer = TypeSpec.classBuilder(type.getSimpleName() + "Framer").addModifiers(PUBLIC, STATIC, FINAL)
+                .addSuperinterface(framerInt)
+                .addAnnotation(Framer.class)
+                .addMethod(mType)
+                .addMethod(frameClass)
+                .addMethod(label)
+                .addMethod(frame)
+                .addMethod(frameNew.build())
+                .build();
 
+        implClass.addType(framer);
 
     }
 
-    private void generateNotSupportedStatement(String code, ExecutableElement method, JavaWriterExt writer) throws IOException {
+    private void generateNotSupportedStatement(String code, ExecutableElement method, MethodSpec.Builder writer) throws IOException {
         messager.printMessage(WARNING, "Abstract method not yet supported: " + method, method.getEnclosingElement());
-        writer.emitSingleLineComment("TODO: this method cannot be generated and should be implemented");
-        writer.emitStatement("throw new RuntimeException(\"" + code + ": not yet supported\")");
+        writer.addCode("// TODO: this method cannot be generated and should be implemented\n");
+        writer.addStatement("throw new RuntimeException(\"" + code + ": not yet supported\")");
     }
 
-    private TypeElement getBaseType(TypeElement type) {
+    private TypeMirror getBaseType(TypeElement type) {
         TypeMirror superclass = type.getSuperclass();
         if (isVertex(superclass)) {
             return getBaseType((TypeElement) types.asElement(superclass));
         } else {
-            return type;
+            return type.asType();
         }
     }
 
@@ -784,6 +855,18 @@ public final class AnnotationProcessor extends AbstractProcessor {
             }
             return null;
         }
+    }
+
+    private MethodSpec.Builder beginMethod(ExecutableElement method, Set<Modifier> modifiers) throws IOException {
+        MethodSpec.Builder builder = MethodSpec.methodBuilder(method.getSimpleName().toString())
+                .addModifiers(modifiers)
+                .returns(ClassName.get(method.getReturnType()));
+
+        for (VariableElement var : method.getParameters()) {
+            builder.addParameter(ClassName.get(var.asType()), var.getSimpleName().toString());
+        }
+
+        return builder;
     }
 
 }
