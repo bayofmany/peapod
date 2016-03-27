@@ -1,42 +1,47 @@
 package peapod.internal.interfaces;
 
-import java.util.Iterator;
+import java.lang.Class;
+import java.lang.Object;
+import java.lang.String;
+import java.lang.SuppressWarnings;
+import java.util.List;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import peapod.FramedElement;
 import peapod.FramedGraph;
 import peapod.FramedVertex;
-import peapod.internal.runtime.FrameHelper;
 import peapod.internal.runtime.Framer;
 import peapod.internal.runtime.IFramer;
-import java.util.Collections;
-import java.util.List;
-import org.apache.tinkerpop.gremlin.structure.Edge;
 
 @SuppressWarnings("unused")
-public final class Person$Impl
-        implements FramedVertex<Person>, Person {
-
+public final class Person$Impl implements Person, FramedVertex<Person> {
     private FramedGraph graph;
+
     private Vertex v;
+
     public Person$Impl(Vertex v, FramedGraph graph) {
         this.v  = v;
         this.graph = graph;
     }
+
     public FramedGraph graph() {
         return graph;
     }
+
     public Element element() {
         return v;
     }
+
     public String getName() {
         return v.<String>property("name").orElse(null);
     }
+
     public List<Knows> getKnows() {
         // getter-edge-collection
         return graph.frame(v.edges(Direction.OUT, "knows"), Knows.class);
     }
+
     public int hashCode() {
         return v.hashCode();
     }
@@ -50,9 +55,7 @@ public final class Person$Impl
     }
 
     @Framer
-    public static final class PersonFramer
-            implements IFramer<Vertex, Person> {
-
+    public static final class PersonFramer implements IFramer<Vertex, Person> {
         public Class<Vertex> type() {
             return Vertex.class;
         }

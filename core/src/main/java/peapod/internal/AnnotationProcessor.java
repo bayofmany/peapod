@@ -157,6 +157,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 implClass.superclass(ClassName.bestGuess(extendsType));
             }
             implClass.addSuperinterfaces(implementsInterfaces)
+                    .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "unused").build())
                     .addField(FramedGraph.class, "graph", PRIVATE)
                     .addField(elementType.getClazz(), elementType.getFieldName(), PRIVATE)
                     .addMethod(constructor)
@@ -203,7 +204,6 @@ public final class AnnotationProcessor extends AbstractProcessor {
 
 
             TypeName vpType = ParameterizedTypeName.get(ClassName.get(org.apache.tinkerpop.gremlin.structure.VertexProperty.class), ClassName.get(propertyType));
-
 
             MethodSpec constructor = MethodSpec.constructorBuilder()
                     .addModifiers(Modifier.PUBLIC)
@@ -457,7 +457,7 @@ public final class AnnotationProcessor extends AbstractProcessor {
                 .build();
         implClass.addMethod(equals);
 
-        MethodSpec toString = MethodSpec.methodBuilder("String").addModifiers(PUBLIC).returns(String.class)
+        MethodSpec toString = MethodSpec.methodBuilder("toString").addModifiers(PUBLIC).returns(String.class)
                 .addStatement("return $L.label() + \"[\" + $L.id() + \"]\"", fieldName, fieldName)
                 .build();
         implClass.addMethod(toString);

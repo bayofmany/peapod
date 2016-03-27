@@ -1,22 +1,22 @@
 package peapod.internal.interfaces;
 
-import java.util.Iterator;
+import java.lang.Class;
+import java.lang.Integer;
+import java.lang.Object;
+import java.lang.String;
+import java.lang.SuppressWarnings;
+import java.util.List;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import peapod.FramedElement;
 import peapod.FramedGraph;
 import peapod.FramedVertex;
-import peapod.internal.runtime.FrameHelper;
 import peapod.internal.runtime.Framer;
 import peapod.internal.runtime.IFramer;
-import java.util.Collections;
-import java.util.List;
-import org.apache.tinkerpop.gremlin.structure.Edge;
 
 @SuppressWarnings("unused")
-public final class Programmer$Impl
-        implements Programmer, Person, FramedVertex<Programmer> {
+public final class Programmer$Impl implements FramedVertex<Programmer>, Programmer, Person {
 
     private FramedGraph graph;
     private Vertex v;
