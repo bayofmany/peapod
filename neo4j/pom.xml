@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.bayofmany.peapod</groupId>
         <artifactId>peapod-parent</artifactId>
-        <version>0.2.3-SNAPSHOT</version>
+        <version>0.3.0</version>
     </parent>
 
     <artifactId>peapod-neo4j</artifactId>

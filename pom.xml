@@ -9,7 +9,7 @@
 
     <groupId>org.bayofmany.peapod</groupId>
     <artifactId>peapod-parent</artifactId>
-    <version>0.2.3-SNAPSHOT</version>
+    <version>0.3.0</version>
     <packaging>pom</packaging>
     <url>http://www.bayofmany.org</url>
     <name>Peapod</name>
@@ -47,7 +47,7 @@
         <connection>scm:git:git@github.com:bayofmany/peapod.git</connection>
         <developerConnection>scm:git:git@github.com:bayofmany/peapod.git</developerConnection>
         <url>https://github.com/bayofmany/peapod.git</url>
-      <tag>HEAD</tag>
+      <tag>peapod-0.3.0</tag>
   </scm>
     <properties>
         <tinkerpop.version>3.1.1-incubating</tinkerpop.version>
