@@ -109,7 +109,9 @@ public class FramedGraphTest extends GraphTest {
 
     @Test
     public void testVariables() throws Exception {
-        assertEquals(g.variables().keys(), graph.variables().keys());
+        if (g.features().graph().variables().supportsVariables()) {
+            assertEquals(g.variables().keys(), graph.variables().keys());
+        }
     }
 
     @Test
