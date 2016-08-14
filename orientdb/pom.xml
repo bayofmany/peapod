@@ -39,7 +39,7 @@
         <dependency>
             <groupId>com.michaelpollmeier</groupId>
             <artifactId>orientdb-gremlin</artifactId>
-            <version>3.1.1-incubating.1</version>
+            <version>3.2.1.0</version>
         </dependency>
     </dependencies>
 

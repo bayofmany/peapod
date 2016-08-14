@@ -62,7 +62,7 @@ public class FramedElementTest extends GraphTest {
     @Test
     public void testRemove() throws Exception {
         person.remove();
-        assertTrue(!g.traversal().V(person.id()).hasNext());
+        assertTrue(!g.traversal().V().hasLabel("Person").hasNext());
     }
 
     @Test

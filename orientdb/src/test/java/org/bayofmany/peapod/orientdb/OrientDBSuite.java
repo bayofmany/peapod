@@ -57,7 +57,7 @@ import peapod.GraphTestSuite;
 
 public class OrientDBSuite extends GraphTestSuite {
 
-    public static final String URL = "memory:" + OrientDBSuite.class.getSimpleName();
+    private static final String URL = "memory:" + OrientDBSuite.class.getSimpleName();
 
     @ClassRule
     public static TemporaryFolder folder = new TemporaryFolder();
