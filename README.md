@@ -13,15 +13,15 @@ This project is similar to the [Totorom](https://github.com/BrynCooke/totorom) l
 * In a next iteration, the goal is to generate traversal classes based on your graph topology.
 
 To integrate peapod in your project, include the following dependency. <br /> 
-(Disclaimer: The 0.2.3 version is still an experimental release using Apache TinkerPop 3.0.2-incubating).
+(Disclaimer: The 0.3.2 version is still an experimental release using Apache TinkerPop 3.2.1).
 
     <dependency>
         <groupId>org.bayofmany.peapod</groupId>
         <artifactId>peapod</artifactId>
-        <version>0.2.3</version>
+        <version>0.3.2</version>
     </dependency>
 
-<img src="http://www.tinkerpop.com/docs/3.0.0.M7/images/tinkerpop-classic.png" width="400" >
+<img src="http://tinkerpop.apache.org/docs/current/images/tinkerpop-classic.png" width="400" >
 
 This way you define the framed vertices and edges:
 
