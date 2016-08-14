@@ -44,6 +44,7 @@ public class VertexPropertyTest extends GraphTest {
     @Before
     public void init() {
         assumeTrue(g.features().vertex().supportsMetaProperties());
+        assumeTrue(g.features().vertex().supportsMultiProperties());
 
         v = g.addVertex(T.label, "Person", "name", "Alice");
         v.property(VertexProperty.Cardinality.list, "location", "Brussels", "startTime", 2010, "endTime", 2012);
