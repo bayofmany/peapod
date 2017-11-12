@@ -21,8 +21,6 @@
 
 package peapod;
 
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-
 /**
  * Defines the traversals supported on framed vertices.
  *
@@ -30,27 +28,27 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
  * @since 0.1
  */
 @SuppressWarnings({"unchecked", "unused"})
-public interface FramedVertexTraversal<S> {
+public interface FramedVertexTraversal<F> {
 
-    FramedGraphTraversal<S, S> start();
+    FramedGraphTraversal<F> start();
 
-    default FramedGraphTraversal<S, Vertex> out(final String... edgeLabel) {
+    default FramedGraphTraversal<F> out(final String... edgeLabel) {
         return start().out(edgeLabel);
     }
 
-    default <E> FramedGraphTraversal<S, E> out(final String edgeLabel, Class<E> clazz) {
+    default <F2> FramedGraphTraversal<F2> out(final String edgeLabel, Class<F2> clazz) {
         return start().out(edgeLabel, clazz);
     }
 
-    default FramedGraphTraversal<S, Vertex> in(final String... edgeLabel) {
+    default FramedGraphTraversal<F> in(final String... edgeLabel) {
         return start().in(edgeLabel);
     }
 
-    default <E2> FramedGraphTraversal<S, E2> in(final String edgeLabel, Class<E2> clazz) {
+    default <F2> FramedGraphTraversal<F2> in(final String edgeLabel, Class<F2> clazz) {
         return start().in(edgeLabel, clazz);
     }
 
-    default <E2> FramedGraphTraversal<S, E2> properties(Class<E2> clazz) {
+    default <F2> FramedGraphTraversal<F2> properties(Class<F2> clazz) {
         return this.start().properties(clazz);
     }
 

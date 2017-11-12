@@ -41,7 +41,7 @@ public interface FramedVertex<V> extends FramedElement, FramedVertexTraversal<V>
     }
 
     @SuppressWarnings("unchecked")
-    default FramedGraphTraversal<V, V> start() {
+    default FramedGraphTraversal<V> start() {
         FramedGraph graph = graph();
         return new FramedGraphTraversal(graph.traversal().V(id()), graph);
     }

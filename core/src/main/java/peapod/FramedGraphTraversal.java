@@ -21,10 +21,10 @@
 
 package peapod;
 
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapStep;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Defines the framed graph traversals and keeps track of the traversed framed classes.
@@ -41,9 +42,9 @@ import java.util.function.Predicate;
  * @since 0.1
  */
 @SuppressWarnings({"unchecked", "unused"})
-public class FramedGraphTraversal<S, E> implements Iterator<E> {
+public class FramedGraphTraversal<F> implements Iterator<F> {
 
-    private GraphTraversal<S, E> traversal;
+    private GraphTraversal<?, ?> traversal;
     private FramedGraph graph;
 
     private Class<?> lastFramingClass;
@@ -52,126 +53,130 @@ public class FramedGraphTraversal<S, E> implements Iterator<E> {
 
     private Map<String, Class<?>> stepLabel2FrameClass = new HashMap<>();
 
-    public FramedGraphTraversal(GraphTraversal traversal, FramedGraph graph) {
+    FramedGraphTraversal(GraphTraversal<Vertex, Vertex> traversal, FramedGraph graph) {
         this.traversal = traversal;
         this.graph = graph;
     }
 
-    protected FramedGraphTraversal<S, E> labels(Class clazz, String[] labels) {
+    FramedGraphTraversal<F> labels(Class<F> clazz, P<String> labels) {
         this.lastFramingClass = clazz;
         traversal.hasLabel(labels);
         return this;
     }
 
-    public FramedGraphTraversal<S, E> has(final String key) {
+    public FramedGraphTraversal<F> has(final String key) {
         traversal.has(key);
         return this;
     }
 
-    public FramedGraphTraversal<S, E> has(final String key, final Object value) {
+    public FramedGraphTraversal<F> has(final String key, final Object value) {
         traversal.has(key, value);
         return this;
     }
 
-    public FramedGraphTraversal<S, E> has(final T accessor, final Object value) {
+    public FramedGraphTraversal<F> has(final T accessor, final Object value) {
         traversal.has(accessor, value);
         return this;
     }
 
-    public FramedGraphTraversal<S, E> has(final String label, final String key, final Object value) {
+    public FramedGraphTraversal<F> has(final String label, final String key, final Object value) {
         traversal.has(label, key, value);
         return this;
     }
 
-    public FramedGraphTraversal<S, E> hasNot(final String key) {
+    public FramedGraphTraversal<F> hasNot(final String key) {
         traversal.hasNot(key);
         return this;
     }
 
-    public <E2> FramedGraphTraversal<S, E2> values(final String... propertyKeys) {
+    public <E2> FramedGraphTraversal<E2> values(final String... propertyKeys) {
         this.lastFramingClass = null;
         traversal.values(propertyKeys);
-        return (FramedGraphTraversal<S, E2>) this;
+        return (FramedGraphTraversal<E2>) this;
     }
 
-    public FramedGraphTraversal<S, E> filter(final Predicate<Traverser<E>> predicate) {
-        traversal.filter(predicate);
+    public FramedGraphTraversal<F> filter(final Predicate<Traverser<Element>> predicate) {
+        traversal.filter((Predicate) predicate);
         return this;
     }
 
-    public <E2> FramedGraphTraversal<S, E2> in(final String edgeLabel, Class<E2> clazz) {
+    public <F2> FramedGraphTraversal<F2> in(final String edgeLabel, Class<F2> clazz) {
         traversal.in(edgeLabel);
         this.lastFramingClass = clazz;
-        return (FramedGraphTraversal<S, E2>) this;
+        return (FramedGraphTraversal<F2>) this;
     }
 
-    public <E2> FramedGraphTraversal<S, E2> out(final String edgeLabel, Class<E2> clazz) {
+    public <F2> FramedGraphTraversal<F2> out(final String edgeLabel, Class<F2> clazz) {
         traversal.out(edgeLabel);
         this.lastFramingClass = clazz;
-        return (FramedGraphTraversal<S, E2>) this;
+        return (FramedGraphTraversal<F2>) this;
     }
 
-    public FramedGraphTraversal<S, Vertex> out(String... edgeLabels) {
+    public FramedGraphTraversal<F> out(String... edgeLabels) {
         traversal.out(edgeLabels);
-        return (FramedGraphTraversal<S, Vertex>) this;
+        return this;
     }
 
-    public FramedGraphTraversal<S, Vertex> in(String... edgeLabels) {
+    public FramedGraphTraversal<F> in(String... edgeLabels) {
         traversal.in(edgeLabels);
-        return (FramedGraphTraversal<S, Vertex>) this;
+        return this;
     }
 
-    public FramedGraphTraversal<S, E> as(final String label) {
+    public FramedGraphTraversal<F> as(final String label) {
         stepLabel2FrameClass.put(label, lastFramingClass);
         traversal.as(label);
         return this;
     }
 
-    public <E2> FramedGraphTraversal<S, E2> back(final String label) {
+    public <F2> FramedGraphTraversal<F2> back(final String label) {
         lastFramingClass = stepLabel2FrameClass.get(label);
         traversal.select(label);
-        return (FramedGraphTraversal<S, E2>) this;
+        return (FramedGraphTraversal<F2>) this;
     }
 
-    public FramedGraphTraversal<S, E> dedup() {
+    public FramedGraphTraversal<F> dedup() {
         traversal.dedup();
         return this;
     }
 
-    /*public FramedGraphTraversal<S, E> except(String variable) {
+    /*public FramedGraphTraversal<S, E, F> except(String variable) {
         traversal.except(variable);
         return this;
     }
 
-    public FramedGraphTraversal<S, E> except(E exceptionObject) {
+    public FramedGraphTraversal<S, E, F> except(E exceptionObject) {
         traversal.except(exceptionObject instanceof FramedElement ? (E) ((FramedElement) exceptionObject).element() : exceptionObject);
         return this;
     }
 
-    public FramedGraphTraversal<S, E> except(Collection<E> exceptionCollection) {
+    public FramedGraphTraversal<S, E, F> except(Collection<E> exceptionCollection) {
         traversal.except(exceptionCollection.stream().map(e -> e instanceof FramedElement ? (E) ((FramedElement) e).element() : e).collect(Collectors.toList()));
         return this;
     }*/
 
-    public List<E> toList() {
-        addFrameStep(lastFramingClass);
-        return traversal.toList();
+    public List<F> toList() {
+        if (lastFramingClass == null) {
+            return (List<F>) traversal.toList();
+        } else {
+            return traversal.toList().stream().map(this::frame).collect(Collectors.toList());
+        }
     }
 
-    public Set<E> toSet() {
-        addFrameStep(lastFramingClass);
-        return traversal.toSet();
+    public Set<F> toSet() {
+        if (lastFramingClass == null) {
+            return (Set<F>) traversal.toList();
+        } else {
+            return traversal.toList().stream().map(this::frame).collect(Collectors.toSet());
+        }
     }
 
     @Override
     public boolean hasNext() {
-        addFrameStep(lastFramingClass);
         return traversal.hasNext();
     }
 
-    public E next() {
-        addFrameStep(lastFramingClass);
-        return traversal.next();
+    public F next() {
+        return frame(traversal.next());
     }
 
     @Override
@@ -180,60 +185,39 @@ public class FramedGraphTraversal<S, E> implements Iterator<E> {
     }
 
     @Override
-    public void forEachRemaining(Consumer<? super E> action) {
-        addFrameStep(lastFramingClass);
-        traversal.forEachRemaining(action);
+    public void forEachRemaining(Consumer<? super F> action) {
+        traversal.forEachRemaining(e -> action.accept(frame((Element) e)));
     }
 
-    public Optional<E> tryNext() {
-        addFrameStep(lastFramingClass);
-        return traversal.tryNext();
+    public Optional<F> tryNext() {
+        return this.hasNext() ? Optional.of(frame(this.next())) : Optional.empty();
     }
 
-    public FramedGraphTraversal<S, Long> count() {
+    public FramedGraphTraversal<Long> count() {
         this.lastFramingClass = null;
 
         traversal.count();
-        return (FramedGraphTraversal<S, Long>) this;
+        return (FramedGraphTraversal<Long>) this;
     }
 
 
-    public <E2> FramedGraphTraversal<S, E2> properties(Class<E2> framingClass) {
+    public <E2> FramedGraphTraversal<E2> properties(Class<E2> framingClass) {
         String label = graph.framer(framingClass).label();
         traversal.properties(label);
         this.lastFramingClass = framingClass;
-        return (FramedGraphTraversal<S, E2>) this;
+        return (FramedGraphTraversal<E2>) this;
     }
 
-
-    private <F> void addFrameStep(Class<F> framingClass) {
-        if (framingClass == null || framed) {
-            return;
-        }
-
-        traversal.asAdmin().addStep(new FrameMapStep(traversal.asAdmin(), graph, framingClass));
-        framed = true;
-    }
-
-
-    public <E2> FramedGraphTraversal<S, E2> value() {
+    public <E2> FramedGraphTraversal<F> value() {
         traversal.value();
-        return (FramedGraphTraversal<S, E2>) this;
+        return this;
     }
 
-    private static class FrameMapStep<F> extends MapStep {
-        private FramedGraph graph;
-        private final Class<F> framingClass;
-
-        public FrameMapStep(Traversal.Admin traversal, FramedGraph graph, Class<F> framingClass) {
-            super(traversal);
-            this.graph = graph;
-            this.framingClass = framingClass;
-        }
-
-        @Override
-        protected F map(Traverser.Admin traverser) {
-            return graph.frame((Element) traverser.get(), framingClass);
+    protected F frame(Object e) {
+        if (e instanceof Element) {
+            return graph.frame((Element) e, (Class<F>) lastFramingClass);
+        } else {
+            return (F) e;
         }
     }
 }

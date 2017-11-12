@@ -184,7 +184,7 @@ public class ShowcaseClassicTest {
         graph.graph().traversal().V().drop();
     }
 
-    private void assertEqualCount(long expected, FramedGraphTraversal<?, Long> traversal) {
+    private void assertEqualCount(long expected, FramedGraphTraversal<Long> traversal) {
         assertEquals(expected, traversal.tryNext().orElse(0L).longValue());
     }
 

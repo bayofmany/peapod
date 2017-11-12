@@ -82,6 +82,8 @@ public class ShowcaseCrewTest {
         assertEquals(2010, marko.getDevelops(tinkergraph).getSince());
         assertEquals(marko, marko.getDevelops(tinkergraph).getDeveloper());
 
+        assertThat(marko.getDevelopedSoftwareNames(), containsInAnyOrder("gremlin", "tinkergraph"));
+
         assertEquals(4, marko.getLocations().size());
         assertThat(marko.getLocationNames(), containsInAnyOrder("san diego", "santa cruz", "brussels", "santa fe"));
 

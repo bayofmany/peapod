@@ -21,6 +21,7 @@
 
 package peapod;
 
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -102,8 +103,8 @@ public class FramedGraph implements AutoCloseable {
     }
 
     @SuppressWarnings("unchecked")
-    public <S, V> FramedGraphTraversal<S, V> V(Class<V> clazz) {
-        return new FramedGraphTraversal(traversal.V(), this).labels(clazz, registry.labels(clazz));
+    public <V> FramedGraphTraversal<V> V(Class<V> clazz) {
+        return new FramedGraphTraversal(traversal.V(), this).labels(clazz, P.within(registry.labels(clazz)));
     }
 
     /**

@@ -45,5 +45,10 @@ public abstract class Person implements FramedVertex<Person> {
 
     public abstract Develops getDevelops(Software software);
 
+    public List<String> getDevelopedSoftwareNames() {
+        return out("develops", Software.class).<String>values("name").toList();
+    }
+
+
 }
 
